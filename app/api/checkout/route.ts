@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { createServiceSupabaseClient } from '@/lib/supabase-server';
 
 interface StripeConfig {
   deploy: string;
@@ -8,7 +8,7 @@ interface StripeConfig {
 }
 
 const stripeKeys: StripeConfig = {
-  deploy: process.env.STRIPE_SECRET_KEY_LIVE || '',
+  deploy: process.env.STRIPE_SECRET_KEY_DEPLOY || '',
   test: process.env.STRIPE_SECRET_KEY_TEST || ''
 };
 
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return total + (Number(item.price) * Math.floor(Number(item.quantity)));
     }, 0);
 
-    const supabase = await createServerSupabaseClient();
+    const supabase = createServiceSupabaseClient();
 
     // Handle free tickets - skip Stripe and go directly to success
     if (totalOrderAmount === 0) {

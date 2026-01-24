@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAuth } from "@/hooks/use-auth"
+import posthog from 'posthog-js'
 
 interface TicketModalProps {
   isOpen: boolean
@@ -50,6 +51,12 @@ export default function TicketModal({
   const handleNext = async () => {
     if (step === 1) {
       setIsLoading(true)
+      // Track step 1 completion
+      posthog.capture('ticket_modal_step_1_completed', { 
+        email: email,
+        eventTitle: eventTitle,
+        eventCity: eventCity 
+      })
       // Simulate brief loading
       setTimeout(() => {
         setStep(2)
@@ -57,6 +64,14 @@ export default function TicketModal({
       }, 300)
     } else if (step === 2) {
       setIsLoading(true)
+      // Track step 2 completion
+      posthog.capture('ticket_modal_step_2_completed', { 
+        name: name,
+        age: age,
+        gender: gender,
+        eventTitle: eventTitle,
+        eventCity: eventCity 
+      })
       setTimeout(() => {
         setStep(3)
         setIsLoading(false)
@@ -64,6 +79,16 @@ export default function TicketModal({
     } else if (step === 3) {
       setIsLoading(true)
       setRegistrationError(null)
+      
+      // Track checkout initiation
+      posthog.capture('checkout_initiated', { 
+        eventTitle: eventTitle,
+        eventCity: eventCity,
+        price: getCurrentPrice(),
+        gender: gender,
+        discountApplied: discountApplied,
+        discountAmount: discountAmount 
+      })
       
       try {
         // Create checkout session
@@ -99,6 +124,14 @@ export default function TicketModal({
 
         const { url, checkoutId, isFree } = await response.json();
 
+        // Track successful checkout session creation
+        posthog.capture('checkout_session_created', { 
+          checkoutId: checkoutId,
+          eventTitle: eventTitle,
+          eventCity: eventCity,
+          isFree: isFree 
+        })
+
         // Redirect to Stripe checkout or success page
         if (url) {
           window.location.href = url;
@@ -107,6 +140,12 @@ export default function TicketModal({
         }
       } catch (error) {
         console.error('Checkout error:', error)
+        // Track checkout error
+        posthog.capture('checkout_error', { 
+          error: error instanceof Error ? error.message : 'Unknown error',
+          eventTitle: eventTitle,
+          eventCity: eventCity 
+        })
         setRegistrationError(
           error instanceof Error 
             ? error.message 
@@ -137,14 +176,28 @@ export default function TicketModal({
       case "welcome15":
         setDiscountApplied(true)
         setDiscountAmount(0.15)
+        posthog.capture('discount_code_applied', { 
+          code: lowerCaseCode,
+          discountAmount: 0.15,
+          eventTitle: eventTitle 
+        })
         break
       case "tempo20":
         setDiscountApplied(true)
         setDiscountAmount(0.20)
+        posthog.capture('discount_code_applied', { 
+          code: lowerCaseCode,
+          discountAmount: 0.20,
+          eventTitle: eventTitle 
+        })
         break
       default:
         setDiscountApplied(false)
         setDiscountAmount(0)
+        posthog.capture('discount_code_failed', { 
+          code: lowerCaseCode,
+          eventTitle: eventTitle 
+        })
         alert("Invalid discount code")
     }
   }
