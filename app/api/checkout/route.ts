@@ -66,7 +66,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const siteName = domain.split('.')[0] || 'tempodating';
 
     const stripe = new Stripe(getStripeKey(), {
-      apiVersion: '2024-11-20.acacia',
+      apiVersion: '2025-12-15.clover',
     });
     
     // Validate items (allow zero price for free tickets)
