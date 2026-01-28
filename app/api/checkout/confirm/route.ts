@@ -29,6 +29,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const updates: Record<string, any> = {};
     let emailSent = false;
     let userProfileCreated = false;
+    let userProfileUpdated = false;
 
     // Assign user ID if provided and not already assigned
     if (assignUserId && !checkout.user_id) {
@@ -61,6 +62,35 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           } else {
             userProfileCreated = true;
             console.log('✅ User profile created for:', assignUserId);
+          }
+        } else {
+          // Update existing user profile with checkout data (name, is_male, city)
+          const updateData: Record<string, any> = {};
+          
+          if (checkout.name) {
+            updateData.full_name = checkout.name;
+          }
+          if (checkout.is_male !== null) {
+            updateData.is_male = checkout.is_male;
+          }
+          if (checkout.query_city) {
+            updateData.city = checkout.query_city;
+          }
+          
+          if (Object.keys(updateData).length > 0) {
+            updateData.updated_at = new Date().toISOString();
+            
+            const { error: updateError } = await supabase
+              .from('users')
+              .update(updateData)
+              .eq('id', assignUserId);
+
+            if (updateError) {
+              console.error('Error updating user profile:', updateError);
+            } else {
+              userProfileUpdated = true;
+              console.log('✅ User profile updated with checkout data for:', assignUserId);
+            }
           }
         }
       }
@@ -176,6 +206,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
       emailSent,
       userProfileCreated,
+      userProfileUpdated,
     });
   } catch (error: any) {
     console.error('Error in checkout confirm:', error);

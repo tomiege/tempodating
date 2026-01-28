@@ -52,11 +52,6 @@ export function Header() {
                     Log in
                   </Button>
                 </Link>
-                <Link href="/register">
-                  <Button size="sm">
-                    Get Started
-                  </Button>
-                </Link>
               </>
             )}
           </div>
@@ -100,11 +95,6 @@ export function Header() {
                   <Link href="/login">
                     <Button variant="ghost" size="sm" className="w-full justify-start">
                       Log in
-                    </Button>
-                  </Link>
-                  <Link href="/register">
-                    <Button size="sm" className="w-full">
-                      Get Started
                     </Button>
                   </Link>
                 </>

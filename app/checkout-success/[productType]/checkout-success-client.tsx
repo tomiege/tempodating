@@ -55,13 +55,12 @@ export default function CheckoutSuccessClient({
 
     const processCheckout = async () => {
       try {
-        // First, confirm the checkout (send email if needed, assign user if logged in)
+        // First, confirm the checkout (send email if needed)
         const confirmResponse = await fetch('/api/checkout/confirm', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             checkoutSessionId,
-            assignUserId: user?.id || null,
           }),
         })
 
@@ -93,39 +92,42 @@ export default function CheckoutSuccessClient({
     }
   }, [checkoutSessionId, user?.id, authLoading])
 
-  // When user logs in, update checkout and create user profile if needed
+  // =========================================================
+  // ASSIGN CHECKOUT TO USER
+  // This runs every time a logged-in user is on this page
+  // It does 2 things:
+  // 1. Assigns the checkout to the user (sets user_id)
+  // 2. Transfers checkout data to user profile (name, is_male, city)
+  // =========================================================
   useEffect(() => {
-    if (user?.id && checkout && !checkout.user_id) {
-      const completeSetup = async () => {
+    if (user?.id && checkout) {
+      const assignCheckoutToUser = async () => {
         try {
-          // Assign user to checkout and create profile if new user
-          const response = await fetch('/api/checkout/confirm', {
+          console.log('🚀 Calling assign-checkout-to-user API...')
+          
+          const response = await fetch('/api/checkout/assign-to-user', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               checkoutSessionId,
-              assignUserId: user.id,
-              createUserProfile: true,
-              profileData: {
-                name: checkout.name,
-                email: checkout.email,
-                is_male: checkout.is_male,
-                query_city: checkout.query_city,
-              },
+              userId: user.id,
             }),
           })
 
           if (response.ok) {
-            const { checkout: updatedCheckout } = await response.json()
+            const { checkout: updatedCheckout, fieldsUpdated } = await response.json()
+            console.log('✅ Checkout assigned to user. Fields updated:', fieldsUpdated)
             setCheckout(updatedCheckout)
             setStep('complete')
+          } else {
+            console.error('❌ Failed to assign checkout to user')
           }
         } catch (err) {
-          console.error('Error completing setup:', err)
+          console.error('❌ Error assigning checkout to user:', err)
         }
       }
 
-      completeSetup()
+      assignCheckoutToUser()
     }
   }, [user?.id, checkout, checkoutSessionId])
 

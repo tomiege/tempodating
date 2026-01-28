@@ -256,7 +256,7 @@ function ProductContent() {
                   
                   <div className="space-y-6">
                     <div className="flex gap-4">
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-pink-200 text-pink-700 flex items-center justify-center text-sm font-medium">
                         1
                       </div>
                       <div>
@@ -268,7 +268,7 @@ function ProductContent() {
                     </div>
 
                     <div className="flex gap-4">
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-pink-200 text-pink-700 flex items-center justify-center text-sm font-medium">
                         2
                       </div>
                       <div>
@@ -280,7 +280,7 @@ function ProductContent() {
                     </div>
 
                     <div className="flex gap-4">
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-pink-200 text-pink-700 flex items-center justify-center text-sm font-medium">
                         3
                       </div>
                       <div>
@@ -292,7 +292,7 @@ function ProductContent() {
                     </div>
 
                     <div className="flex gap-4">
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-pink-200 text-pink-700 flex items-center justify-center text-sm font-medium">
                         4
                       </div>
                       <div>

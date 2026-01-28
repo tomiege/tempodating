@@ -353,15 +353,21 @@ export default function DashboardProfileComponent({ user, onUserUpdate, validati
         {/* Gender */}
         <div className="space-y-2">
           <Label htmlFor="gender">Gender</Label>
-          <Select onValueChange={(value) => setIsMale(value === "male")}>
-            <SelectTrigger className={hasValidationError('gender') ? 'border-destructive focus:border-destructive' : ''}>
-              <SelectValue placeholder={isMale === undefined ? "Select gender" : (isMale ? "Male" : "Female")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="male">Male</SelectItem>
-              <SelectItem value="female">Female</SelectItem>
-            </SelectContent>
-          </Select>
+          {isMale !== undefined ? (
+            <div className="flex items-center h-10 px-3 rounded-md border border-input bg-muted text-muted-foreground">
+              {isMale ? "Male" : "Female"}
+            </div>
+          ) : (
+            <Select onValueChange={(value) => setIsMale(value === "male")}>
+              <SelectTrigger className={hasValidationError('gender') ? 'border-destructive focus:border-destructive' : ''}>
+                <SelectValue placeholder="Select gender" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="male">Male</SelectItem>
+                <SelectItem value="female">Female</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
           {hasValidationError('gender') && (
             <p className="text-destructive text-xs mt-1">Please select your gender to enable matching</p>
           )}
