@@ -1,9 +1,43 @@
+"use client"
+
+import { useState } from "react"
 import Link from "next/link"
-import { Heart, Instagram, Twitter, Facebook, Youtube } from "lucide-react"
+import { Heart, Instagram, Twitter, Facebook, Youtube, Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
 export function Footer() {
+  const [email, setEmail] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email) return
+
+    setIsLoading(true)
+    setMessage(null)
+
+    try {
+      const response = await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+
+      if (response.ok) {
+        setMessage({ type: 'success', text: 'Thanks for subscribing!' })
+        setEmail("")
+      } else {
+        setMessage({ type: 'error', text: 'Something went wrong. Please try again.' })
+      }
+    } catch {
+      setMessage({ type: 'error', text: 'Something went wrong. Please try again.' })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <footer className="bg-foreground text-background pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -39,8 +73,6 @@ export function Footer() {
             <ul className="space-y-3 text-sm">
               <li><Link href="#" className="text-background/60 hover:text-background transition-colors">Find Events</Link></li>
               <li><Link href="#" className="text-background/60 hover:text-background transition-colors">How It Works</Link></li>
-              <li><Link href="#" className="text-background/60 hover:text-background transition-colors">Pricing</Link></li>
-              <li><Link href="#" className="text-background/60 hover:text-background transition-colors">Cities</Link></li>
             </ul>
           </div>
 
@@ -48,19 +80,17 @@ export function Footer() {
             <h3 className="font-semibold text-background mb-4">Workshops</h3>
             <ul className="space-y-3 text-sm">
               <li><Link href="#" className="text-background/60 hover:text-background transition-colors">Browse Workshops</Link></li>
-              <li><Link href="#" className="text-background/60 hover:text-background transition-colors">Become a Coach</Link></li>
               <li><Link href="#" className="text-background/60 hover:text-background transition-colors">Gift a Workshop</Link></li>
-              <li><Link href="#" className="text-background/60 hover:text-background transition-colors">Corporate Events</Link></li>
             </ul>
           </div>
 
           <div>
             <h3 className="font-semibold text-background mb-4">Company</h3>
             <ul className="space-y-3 text-sm">
-              <li><Link href="#" className="text-background/60 hover:text-background transition-colors">About Us</Link></li>
-              <li><Link href="#" className="text-background/60 hover:text-background transition-colors">Blog</Link></li>
-              <li><Link href="#" className="text-background/60 hover:text-background transition-colors">Careers</Link></li>
-              <li><Link href="#" className="text-background/60 hover:text-background transition-colors">Press</Link></li>
+              <li><Link href="/about" className="text-background/60 hover:text-background transition-colors">About Us</Link></li>
+              <li><Link href="/blog" className="text-background/60 hover:text-background transition-colors">Blog</Link></li>
+              <li><Link href="/careers" className="text-background/60 hover:text-background transition-colors">Careers</Link></li>
+              {/* <li><Link href="/press" className="text-background/60 hover:text-background transition-colors">Press</Link></li> */}
             </ul>
           </div>
 
@@ -69,16 +99,30 @@ export function Footer() {
             <p className="text-background/60 text-sm mb-4">
               Get dating tips and event updates in your inbox.
             </p>
-            <div className="flex gap-2">
+            <form onSubmit={handleSubscribe} className="flex gap-2">
               <Input 
                 type="email" 
-                placeholder="Enter email" 
+                placeholder="Enter email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
                 className="bg-background/10 border-background/20 text-background placeholder:text-background/40"
               />
-              <Button variant="secondary" size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                Join
+              <Button 
+                type="submit"
+                variant="secondary" 
+                size="sm" 
+                disabled={isLoading}
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Join'}
               </Button>
-            </div>
+            </form>
+            {message && (
+              <p className={`text-sm mt-2 ${message.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+                {message.text}
+              </p>
+            )}
           </div>
         </div>
 
@@ -87,9 +131,9 @@ export function Footer() {
             © {new Date().getFullYear()} Tempo Dating. All rights reserved.
           </p>
           <div className="flex items-center gap-6 text-sm">
-            <Link href="#" className="text-background/40 hover:text-background transition-colors">Privacy Policy</Link>
-            <Link href="#" className="text-background/40 hover:text-background transition-colors">Terms of Service</Link>
-            <Link href="#" className="text-background/40 hover:text-background transition-colors">Cookie Policy</Link>
+            <Link href="/privacy" className="text-background/40 hover:text-background transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="text-background/40 hover:text-background transition-colors">Terms of Service</Link>
+            <Link href="/cookies" className="text-background/40 hover:text-background transition-colors">Cookie Policy</Link>
           </div>
         </div>
       </div>

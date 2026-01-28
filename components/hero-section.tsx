@@ -95,7 +95,7 @@ export function HeroSection() {
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-foreground">Age Matched</p>
-                    <p className="text-[10px] text-muted-foreground">25-35 years</p>
+                    <p className="text-[10px] text-muted-foreground">Compatible ranges</p>
                   </div>
                 </div>
               </div>
@@ -103,12 +103,16 @@ export function HeroSection() {
               {/* Live Now badge */}
               <div className="bg-card rounded-xl px-4 py-3 shadow-lg border border-border">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                    <Users className="w-4 h-4 text-purple-600" />
+                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 relative">
+                    <Users className="w-4 h-4 text-green-600" />
+                    <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-foreground">Live Now</p>
-                    <p className="text-[10px] text-muted-foreground">24 people online</p>
+                    <p className="text-xs font-semibold text-foreground flex items-center gap-1">
+                      Live Now
+                      <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">124 people online</p>
                   </div>
                 </div>
               </div>

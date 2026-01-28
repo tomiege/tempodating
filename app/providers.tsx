@@ -10,7 +10,9 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY as string, {
       api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-      defaults: '2025-11-30'
+      defaults: '2025-11-30',
+    autocapture: false, // Prevents every click from being an event
+    capture_pageview: true 
     })
   }, [])
 

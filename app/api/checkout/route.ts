@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { createServiceSupabaseClient } from '@/lib/supabase-server';
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server';
 
 interface StripeConfig {
   deploy: string;
@@ -84,6 +84,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return total + (Number(item.price) * Math.floor(Number(item.quantity)));
     }, 0);
 
+    // Get authenticated user from session (if any)
+    const sessionSupabase = await createServerSupabaseClient();
+    const { data: { user } } = await sessionSupabase.auth.getUser();
+    const userId = user?.id || null;
+
+    // Use service client for database operations
     const supabase = createServiceSupabaseClient();
 
     // Handle free tickets - skip Stripe and go directly to success
@@ -95,6 +101,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         .from('checkout')
         .insert({
           checkout_session_id: checkoutSessionId,
+          user_id: userId,
           email: normalizedEmail,
           site_name: siteName,
           total_order: 0,
@@ -136,7 +143,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           product_data: {
             name: item.name,
           },
-          unit_amount: Math.round(item.price * 100), // Convert to cents
+          unit_amount: Math.round(item.price), // Convert to cents
         },
         quantity: Math.floor(Number(item.quantity)),
       })),
@@ -156,6 +163,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       .from('checkout')
       .insert({
         checkout_session_id: session.id,
+        user_id: userId,
         email: normalizedEmail,
         site_name: siteName,
         total_order: totalOrderAmount,

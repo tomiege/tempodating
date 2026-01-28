@@ -10,7 +10,6 @@ const workshops = [
     duration: "90 min",
     attendees: "20 max",
     rating: 4.9,
-    price: "$29",
   },
   {
     title: "Dress to Connect",
@@ -18,7 +17,6 @@ const workshops = [
     duration: "60 min",
     attendees: "15 max",
     rating: 4.8,
-    price: "$24",
   },
   {
     title: "Conversation Mastery",
@@ -26,7 +24,6 @@ const workshops = [
     duration: "75 min",
     attendees: "25 max",
     rating: 4.9,
-    price: "$34",
   },
 ]
 
@@ -89,7 +86,6 @@ export function WorkshopsSection() {
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
-                      <p className="font-serif text-2xl font-semibold text-foreground">{workshop.price}</p>
                       <Button variant="outline" size="sm">
                         Enroll
                       </Button>

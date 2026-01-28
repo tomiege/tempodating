@@ -13,7 +13,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "eventType": "onlineSpeedDating",
-        "zoomInvite": "",
+        "zoomInvite": "https://web.whatsapp.com/",
         "region_id": "NY_NJ_21"
     }
 ]

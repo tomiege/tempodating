@@ -44,6 +44,7 @@ function ProductContent() {
   const searchParams = useSearchParams()
   const productId = searchParams.get('productId')
   const eventType = searchParams.get('eventType')
+  const cityOverride = searchParams.get('city')
   
   const [product, setProduct] = useState<OnlineSpeedDatingEvent | null>(null)
   const [loading, setLoading] = useState(true)
@@ -171,14 +172,24 @@ function ProductContent() {
             Back to Home
           </Link>
 
-          {/* Event Banner */}
-          <div className="relative rounded-2xl overflow-hidden mb-8 bg-gradient-to-br from-pink-100 to-pink-50 p-12 text-center">
-            <Heart className="w-16 h-16 text-primary mx-auto mb-4 fill-primary" />
+          {/* Banner Image */}
+          <div className="relative rounded-2xl overflow-hidden mb-8 aspect-video">
+            <Image
+              src={`/${eventType}/banner.jpg`}
+              alt={product.title}
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
+
+          {/* Event Title */}
+          <div className="mb-8 text-center">
             <h1 className="font-serif text-3xl sm:text-4xl font-semibold text-foreground mb-2">
               {product.title}
             </h1>
             <p className="text-lg text-muted-foreground">
-              {product.city}, {product.country}
+              {cityOverride || product.city}, {product.country}
             </p>
           </div>
           <div className="grid lg:grid-cols-3 gap-8">
@@ -195,7 +206,7 @@ function ProductContent() {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Location</p>
-                        <p className="font-medium text-foreground">{product.city}, {product.country}</p>
+                        <p className="font-medium text-foreground">{cityOverride || product.city}, {product.country}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -232,15 +243,6 @@ function ProductContent() {
                       <div>
                         <p className="text-sm text-muted-foreground">Platform</p>
                         <p className="font-medium text-foreground">Zoom</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Users className="w-5 h-5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Region</p>
-                        <p className="font-medium text-foreground">{product.region_id}</p>
                       </div>
                     </div>
                   </div>
@@ -351,25 +353,7 @@ function ProductContent() {
                     </div>
                   ) : (
                     <>
-                      <div className="text-center mb-6">
-                        <p className="text-sm text-muted-foreground mb-1">Event Price</p>
-                        <div className="flex items-center justify-center gap-4">
-                          <div>
-                            <p className="font-serif text-3xl font-semibold text-foreground">
-                              {product.currency} {product.male_price}
-                            </p>
-                            <p className="text-sm text-muted-foreground">Men</p>
-                          </div>
-                          <div className="text-muted-foreground">/</div>
-                          <div>
-                            <p className="font-serif text-3xl font-semibold text-foreground">
-                              {product.currency} {product.female_price}
-                            </p>
-                            <p className="text-sm text-muted-foreground">Women</p>
-                          </div>
-                        </div>
-                      </div>
-
+                      <h3 className="font-serif text-xl font-semibold text-foreground mb-4 text-center">Spots Are Limited!</h3>
                       <div className="space-y-3 mb-6">
                         <div className="flex items-center gap-2 text-sm">
                           <Heart className="w-4 h-4 text-primary" />
@@ -385,7 +369,7 @@ function ProductContent() {
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <MapPin className="w-4 h-4 text-primary" />
-                          <span className="text-muted-foreground">{product.city}, {product.country}</span>
+                          <span className="text-muted-foreground">{cityOverride || product.city}, {product.country}</span>
                         </div>
                       </div>
 
@@ -428,7 +412,7 @@ function ProductContent() {
             minute: '2-digit',
             timeZoneName: 'short'
           })}
-          eventCity={product.city}
+          eventCity={cityOverride || product.city}
           price={product.male_price}
           femalePrice={product.female_price}
           currency={product.currency}

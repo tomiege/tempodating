@@ -27,17 +27,17 @@ export function CTASection() {
             Find Your Event
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
-          <Button 
+          {/* <Button 
             size="lg" 
             variant="outline" 
             className="text-base px-8 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 bg-transparent"
           >
             Take Personality Quiz
-          </Button>
+          </Button> */}
         </div>
         
         <p className="text-primary-foreground/60 text-sm mt-8">
-          Free to join. Your first event is just $19.
+          Your Perfect Match is Just a Click Away!
         </p>
       </div>
     </section>

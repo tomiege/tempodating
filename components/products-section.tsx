@@ -7,7 +7,6 @@ const products = [
     title: "The Complete Online Dating Guide",
     type: "eBook",
     description: "A comprehensive guide to mastering online dating in the modern age.",
-    price: "$19",
     icon: BookOpen,
     available: true,
   },
@@ -15,7 +14,6 @@ const products = [
     title: "Conversation Starters Deck",
     type: "Digital Cards",
     description: "50 thoughtful conversation starters for your next video date.",
-    price: "$12",
     icon: Sparkles,
     available: true,
   },
@@ -23,7 +21,6 @@ const products = [
     title: "Tempo Dating Kit",
     type: "Physical Product",
     description: "Everything you need for the perfect at-home date night.",
-    price: "$49",
     icon: ShoppingBag,
     available: false,
   },
@@ -67,8 +64,7 @@ export function ProductsSection() {
                 <h3 className="font-semibold text-lg text-foreground mb-2">{product.title}</h3>
                 <p className="text-muted-foreground text-sm mb-6">{product.description}</p>
                 
-                <div className="flex items-center justify-between">
-                  <p className="font-serif text-2xl font-semibold text-foreground">{product.price}</p>
+                <div className="flex items-center justify-end">
                   <Button 
                     variant={product.available ? "default" : "outline"} 
                     size="sm"

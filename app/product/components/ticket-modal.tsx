@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { X, User, Mail, Calendar, CheckCircle, Shield, Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -29,8 +29,8 @@ export default function TicketModal({
   eventDate = "Saturday, February 1, 2026",
   eventTime = "7:00 PM GMT",
   eventCity = "London",
-  price = 15,
-  femalePrice = 15,
+  price = 1500,
+  femalePrice = 1500,
   currency = "£",
   productId,
   eventType = "onlineSpeedDating"
@@ -44,38 +44,187 @@ export default function TicketModal({
   const [discountCode, setDiscountCode] = useState("")
   const [discountApplied, setDiscountApplied] = useState(false)
   const [discountAmount, setDiscountAmount] = useState(0)
+  const [showDiscountInput, setShowDiscountInput] = useState(false)
   const [registrationSuccess, setRegistrationSuccess] = useState(false)
   const [registrationError, setRegistrationError] = useState<string | null>(null)
+  const [isNewUser, setIsNewUser] = useState(false)
+  const [leadId, setLeadId] = useState<number | null>(null)
+  const [isExistingAccountFlow, setIsExistingAccountFlow] = useState(false)
   const { user } = useAuth()
+
+  // If user is already logged in, skip to payment step
+  useEffect(() => {
+    if (isOpen && user) {
+      // Pre-fill user data from their profile
+      const fetchUserData = async () => {
+        try {
+          const response = await fetch('/api/user/profile')
+          if (response.ok) {
+            const userData = await response.json()
+            setEmail(userData.email || user.email || "")
+            setName(userData.full_name || "")
+            setGender(userData.gender || "")
+            setAge(userData.age?.toString() || "")
+            setStep(3) // Go directly to payment step
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error)
+          // Fallback to basic user data
+          setEmail(user.email || "")
+          setStep(3)
+        }
+      }
+      fetchUserData()
+    }
+  }, [isOpen, user])
 
   const handleNext = async () => {
     if (step === 1) {
+      // Create lead and go to step 2
       setIsLoading(true)
-      // Track step 1 completion
-      posthog.capture('ticket_modal_step_1_completed', { 
-        email: email,
-        eventTitle: eventTitle,
-        eventCity: eventCity 
-      })
-      // Simulate brief loading
-      setTimeout(() => {
+      setRegistrationError(null)
+      
+      try {
+        // Create lead
+        const leadResponse = await fetch('/api/leads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            email: email.toLowerCase().trim(),
+            city: eventCity,
+            country: eventCity,
+            product_id: productId,
+            product_type: eventType
+          })
+        })
+
+        if (leadResponse.ok) {
+          const leadData = await leadResponse.json()
+          setLeadId(leadData.id)
+          console.log('📝 Lead created:', leadData.id)
+          
+          posthog.capture('lead_created', { 
+            leadId: leadData.id,
+            email: email,
+            eventTitle: eventTitle,
+            eventCity: eventCity 
+          })
+        } else {
+          console.error('Failed to create lead, continuing anyway...')
+        }
+
+        // Go directly to step 2 to collect user details
+        setIsNewUser(true)
         setStep(2)
         setIsLoading(false)
-      }, 300)
-    } else if (step === 2) {
+        
+        posthog.capture('ticket_modal_new_user', { 
+          email: email,
+          eventTitle: eventTitle 
+        })
+      } catch (error) {
+        console.error('Error in step 1:', error)
+        setRegistrationError(error instanceof Error ? error.message : 'Failed to continue. Please try again.')
+        setIsLoading(false)
+      }
+    } else if (step === 1.5) {
+      // Existing account flow - create lead with provided email and go to step 2
       setIsLoading(true)
-      // Track step 2 completion
-      posthog.capture('ticket_modal_step_2_completed', { 
+      setRegistrationError(null)
+      
+      try {
+        // Create lead
+        const leadResponse = await fetch('/api/leads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            email: email.toLowerCase().trim(),
+            city: eventCity,
+            country: eventCity,
+            product_id: productId,
+            product_type: eventType
+          })
+        })
+
+        if (leadResponse.ok) {
+          const leadData = await leadResponse.json()
+          setLeadId(leadData.id)
+          console.log('📝 Lead created for existing account:', leadData.id)
+          
+          posthog.capture('lead_created_existing_account', { 
+            leadId: leadData.id,
+            email: email,
+            eventTitle: eventTitle,
+            eventCity: eventCity 
+          })
+        } else {
+          console.error('Failed to create lead, continuing anyway...')
+        }
+
+        // Go to step 2 to collect user details
+        setStep(2)
+        setIsLoading(false)
+        
+        posthog.capture('ticket_modal_existing_account_email_entered', { 
+          email: email,
+          eventTitle: eventTitle 
+        })
+      } catch (error) {
+        console.error('Error in step 1.5:', error)
+        setRegistrationError(error instanceof Error ? error.message : 'Failed to continue. Please try again.')
+        setIsLoading(false)
+      }
+    } else if (step === 2) {
+      // Update lead with user details
+      setIsLoading(true)
+      setRegistrationError(null)
+      
+      posthog.capture('ticket_modal_user_details_completed', { 
+        leadId: leadId,
         name: name,
         age: age,
         gender: gender,
         eventTitle: eventTitle,
         eventCity: eventCity 
       })
-      setTimeout(() => {
+      
+      try {
+        // Update the lead with user details
+        if (leadId) {
+          const leadResponse = await fetch('/api/leads', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: leadId,
+              name: name,
+              age: parseInt(age),
+              gender: gender,
+              city: eventCity,
+              country: eventCity
+            })
+          })
+          
+          if (leadResponse.ok) {
+            console.log('✅ Lead updated successfully')
+            posthog.capture('lead_updated', { 
+              leadId: leadId,
+              name: name,
+              age: age,
+              gender: gender 
+            })
+          } else {
+            console.error('Failed to update lead, continuing anyway...')
+          }
+        }
+        
+        setStep(3) // Go to payment
+        setIsLoading(false)
+      } catch (error) {
+        console.error('Error updating lead:', error)
+        // Still proceed to payment even if lead update fails
         setStep(3)
         setIsLoading(false)
-      }, 300)
+      }
     } else if (step === 3) {
       setIsLoading(true)
       setRegistrationError(null)
@@ -97,7 +246,7 @@ export default function TicketModal({
           productId: productId,
           productType: eventType,
           items: [{
-            price: finalPrice * 100, // Convert to cents for Stripe
+            price: finalPrice, // Price is already in cents
             quantity: 1,
             name: `${eventTitle} - ${eventCity}`
           }],
@@ -165,8 +314,12 @@ export default function TicketModal({
     setDiscountCode("")
     setDiscountApplied(false)
     setDiscountAmount(0)
+    setShowDiscountInput(false)
     setRegistrationSuccess(false)
     setRegistrationError(null)
+    setIsNewUser(false)
+    setLeadId(null)
+    setIsExistingAccountFlow(false)
     onClose()
   }
 
@@ -202,16 +355,22 @@ export default function TicketModal({
     }
   }
 
+  // Returns price in cents (prices from API are already in cents)
   const getCurrentPrice = () => {
     const basePrice = gender === 'male' ? price : femalePrice
-    return basePrice * (1 - discountAmount)
+    return Math.round(basePrice * (1 - discountAmount))
+  }
+
+  // Format cents to display currency (e.g., 1500 -> "15.00")
+  const formatPrice = (cents: number) => {
+    return (cents / 100).toFixed(2)
   }
 
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-foreground/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-gradient-to-br from-card via-secondary/30 to-secondary rounded-3xl w-full max-w-3xl text-foreground overflow-y-auto max-h-[95vh] relative shadow-2xl border border-border">
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+      <div className="bg-card rounded-3xl w-full max-w-3xl text-foreground overflow-y-auto max-h-[95vh] relative shadow-2xl border border-border">
         <button 
           onClick={handleClose} 
           className="absolute top-6 right-6 p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-xl transition-all duration-200 z-10"
@@ -262,12 +421,8 @@ export default function TicketModal({
           ) : (
             <>
           {step === 1 && (
-            <div className="space-y-8">
-              <div className="text-center mb-8">
-                <div className="inline-flex items-center bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-bold mb-4">
-                  <Mail className="w-4 h-4 mr-2" />
-                  Step 1 of 3
-                </div>
+            <div className="space-y-6">
+              <div className="text-center mb-6">
                 <h3 className="font-serif text-3xl font-semibold text-foreground mb-2">
                   {"Let's Get Started"}
                 </h3>
@@ -277,18 +432,89 @@ export default function TicketModal({
               </div>
 
               <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="flex items-center text-sm font-bold text-foreground">
-                    <Mail className="w-4 h-4 mr-2 text-primary" />
-                    Email Address
-                  </label>
+                <div className="relative">
+                  <Mail className="w-5 h-5 text-muted-foreground absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none z-10" />
                   <Input
                     type="email"
-                    placeholder="your.email@example.com"
+                    placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="border-border focus:border-primary focus:ring-primary/20 rounded-xl h-12 font-medium text-lg"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && email && !isLoading) {
+                        handleNext()
+                      }
+                    }}
+                    className="border-border focus:border-primary focus:ring-primary/20 rounded-xl h-14 font-medium text-base pl-12"
                   />
+                </div>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-border"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-4 bg-card text-muted-foreground font-medium">or</span>
+                  </div>
+                </div>
+
+                <div className="text-center">
+                  <p className="text-muted-foreground text-sm">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsExistingAccountFlow(true)
+                        setStep(1.5)
+                      }}
+                      className="text-primary font-semibold hover:underline"
+                    >
+                      Already have an account? Click here
+                    </button>
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {step === 1.5 && (
+            <div className="space-y-6">
+              <div className="text-center mb-6">
+                <h3 className="font-serif text-3xl font-semibold text-foreground mb-2">
+                  Welcome Back!
+                </h3>
+                <p className="text-muted-foreground font-medium">
+                  Enter the email you used to sign up
+                </p>
+              </div>
+
+              <div className="space-y-6">
+                <div className="relative">
+                  <Mail className="w-5 h-5 text-muted-foreground absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none z-10" />
+                  <Input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && email && !isLoading) {
+                        handleNext()
+                      }
+                    }}
+                    className="border-border focus:border-primary focus:ring-primary/20 rounded-xl h-14 font-medium text-base pl-12"
+                  />
+                </div>
+
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsExistingAccountFlow(false)
+                      setEmail('')
+                      setStep(1)
+                    }}
+                    className="text-primary font-semibold hover:underline text-sm"
+                  >
+                    ← Back to new registration
+                  </button>
                 </div>
               </div>
             </div>
@@ -373,6 +599,17 @@ export default function TicketModal({
                 </p>
               </div>
 
+              {/* Prominent Ticket Type Badge */}
+              <div className="text-center">
+                <div className={`inline-flex items-center px-6 py-3 rounded-2xl text-lg font-bold ${
+                  gender === 'male' 
+                    ? 'bg-blue-100 text-blue-800 border-2 border-blue-200' 
+                    : 'bg-pink-100 text-pink-800 border-2 border-pink-200'
+                }`}>
+                  {gender === 'male' ? '👨' : '👩'} {gender === 'male' ? 'Male' : 'Female'} Ticket
+                </div>
+              </div>
+
               {/* Order Summary */}
               <div className="bg-card border border-border p-6 rounded-2xl shadow-sm">
                 <h4 className="font-semibold text-foreground mb-4 flex items-center gap-2">
@@ -393,55 +630,70 @@ export default function TicketModal({
                     <span className="text-muted-foreground">Attendee</span>
                     <span className="font-medium text-foreground">{name}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Ticket Type</span>
-                    <span className="font-medium text-foreground capitalize">{gender} Ticket</span>
-                  </div>
                 </div>
 
                 {/* Price Display */}
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Event Ticket</span>
-                  <div className="flex items-center space-x-2">
-                    {discountApplied ? (
-                      <>
-                        <span className="text-muted-foreground line-through font-medium">
-                          {currency}{(gender === 'male' ? price : femalePrice).toFixed(2)}
+                  <span className="text-muted-foreground">{gender === 'male' ? 'Male' : 'Female'} Ticket</span>
+                  <div className="flex flex-col items-end">
+                    <div className="flex items-center space-x-2">
+                      {discountApplied ? (
+                        <>
+                          <span className="text-muted-foreground line-through font-medium">
+                            {currency}{formatPrice(gender === 'male' ? price : femalePrice)}
+                          </span>
+                          <span className="text-2xl font-bold text-foreground">
+                            {currency}{formatPrice(getCurrentPrice())}
+                          </span>
+                          <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">
+                            {(discountAmount * 100).toFixed(0)}% OFF
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-2xl font-bold text-foreground">
+                          {currency}{formatPrice(gender === 'male' ? price : femalePrice)}
                         </span>
-                        <span className="text-2xl font-bold text-primary">
-                          {currency}{getCurrentPrice().toFixed(2)}
-                        </span>
-                        <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">
-                          {(discountAmount * 100).toFixed(0)}% OFF
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-2xl font-bold text-primary">
-                        {currency}{(gender === 'male' ? price : femalePrice).toFixed(2)}
-                      </span>
-                    )}
+                      )}
+                    </div>
+                    <span className="text-red-600 text-sm font-bold mt-1">
+                      Last Ticket at this price!
+                    </span>
                   </div>
                 </div>
               </div>
 
-              {/* Discount Code */}
-              <div className="flex gap-2">
-                <Input
-                  type="text"
-                  placeholder="Discount code"
-                  value={discountCode}
-                  onChange={(e) => setDiscountCode(e.target.value)}
-                  className="border-border focus:border-primary rounded-xl h-11"
-                />
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={handleApplyDiscount}
-                  className="rounded-xl h-11 px-6 bg-transparent"
-                >
-                  Apply
-                </Button>
-              </div>
+              {/* Discount Code - Hidden by default */}
+              {!discountApplied && (
+                <div className="text-center">
+                  {!showDiscountInput ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowDiscountInput(true)}
+                      className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+                    >
+                      Have a discount code?
+                    </button>
+                  ) : (
+                    <div className="flex gap-2 max-w-xs mx-auto">
+                      <Input
+                        type="text"
+                        placeholder="Discount code"
+                        value={discountCode}
+                        onChange={(e) => setDiscountCode(e.target.value)}
+                        className="border-border focus:border-primary rounded-xl h-10 text-sm"
+                      />
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={handleApplyDiscount}
+                        className="rounded-xl h-10 px-4 bg-transparent text-sm"
+                      >
+                        Apply
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
@@ -452,7 +704,8 @@ export default function TicketModal({
               onClick={handleNext}
               disabled={
                 (step === 1 && !email) || 
-                (step === 2 && (!name || !age || !gender)) || 
+                (step === 1.5 && !email) ||
+                (step === 2 && (!name || !age || !gender)) ||
                 isLoading
               }
               className="w-full sm:w-auto bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-primary-foreground font-bold px-12 py-3 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200"
@@ -480,8 +733,10 @@ export default function TicketModal({
                 </span>
               ) : step === 1 ? (
                 "Continue"
+              ) : step === 1.5 ? (
+                "Continue"
               ) : step === 2 ? (
-                "Continue to Checkout"
+                "Continue to Payment"
               ) : (
                 "Complete Purchase"
               )}

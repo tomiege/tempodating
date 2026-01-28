@@ -40,13 +40,8 @@ export function Header() {
             {user ? (
               <>
                 <Link href="/dashboard">
-                  <Button variant="ghost" size="sm">
+                  <Button size="sm" className="bg-primary hover:bg-primary/90 cursor-pointer">
                     Dashboard
-                  </Button>
-                </Link>
-                <Link href="/event">
-                  <Button size="sm">
-                    Browse Events
                   </Button>
                 </Link>
               </>
@@ -95,13 +90,8 @@ export function Header() {
               {user ? (
                 <>
                   <Link href="/dashboard">
-                    <Button variant="ghost" size="sm" className="w-full justify-start">
+                    <Button size="sm" className="w-full bg-primary hover:bg-primary/90 cursor-pointer">
                       Dashboard
-                    </Button>
-                  </Link>
-                  <Link href="/event">
-                    <Button size="sm" className="w-full">
-                      Browse Events
                     </Button>
                   </Link>
                 </>
