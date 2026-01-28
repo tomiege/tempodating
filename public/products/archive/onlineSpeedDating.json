@@ -1,0 +1,19 @@
+[{
+        "productId": 355,
+        "gmtdatetime": "2026-02-15T23:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "USA",
+        "city": "New York City",
+        "latitude": null,
+        "longitude": null,
+        "timezone": "America/New_York",
+        "male_price":1600,
+        "female_price":1200,
+        "currency": "USD",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "eventType": "onlineSpeedDating",
+        "zoomInvite": "https://web.whatsapp.com/",
+        "region_id": "NY_NJ_21"
+    }
+]
