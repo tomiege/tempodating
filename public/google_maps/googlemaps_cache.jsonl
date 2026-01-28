@@ -1,0 +1,20 @@
+{"input": "Charlotte, USA", "output": [35.2270768, -80.84089329999999]}
+{"input": "Boston, USA", "output": [42.3555076, -71.0565364]}
+{"input": "Sydney, Australia", "output": [-33.8622503, 151.207684]}
+{"input": "Melbourne, Australia", "output": [-37.8136276, 144.9630576]}
+{"input": "London, United Kingdom", "output": [51.5072178, -0.1275862]}
+{"input": "Birmingham, United Kingdom", "output": [52.4822694, -1.8900078]}
+{"input": "Bristol, United Kingdom", "output": [51.454513, -2.58791]}
+{"input": "Leeds, United Kingdom", "output": [53.8007554, -1.5490774]}
+{"input": "Chicago, USA", "output": [41.88325, -87.6323879]}
+{"input": "Calgary, Canada", "output": [51.04473309999999, -114.0718831]}
+{"input": "Los Angeles, USA", "output": [34.0549076, -118.242643]}
+{"input": "Jacksonville, USA", "output": [30.3297566, -81.6591529]}
+{"input": "Columbus, USA", "output": [39.9625112, -83.0032218]}
+{"input": "Ottawa, Canada", "output": [45.4200572, -75.7003397]}
+{"input": "Montreal, Canada", "output": [45.5018869, -73.56739189999999]}
+{"input": "Houston, USA", "output": [29.7600771, -95.37011079999999]}
+{"input": "Phoenix, USA", "output": [33.4482948, -112.0725488]}
+{"input": "Vancouver, Canada", "output": [49.2827291, -123.1207375]}
+{"input": "Seattle, USA", "output": [47.6061389, -122.3328481]}
+{"input": "New York City, USA", "output": [40.7127753, -74.0059728]}
