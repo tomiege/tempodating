@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import TicketModal from "./components/ticket-modal"
+import { PhotoGallery } from "./components/photo-gallery"
 import { 
   MapPin, 
   Calendar, 
@@ -336,6 +337,39 @@ function ProductContent() {
               {cityOverride || product.city}, {product.country}
             </p>
           </div>
+
+          {/* Mobile Register Now Button - Shows only on mobile */}
+          {!product.soldOut && (
+            <div className="lg:hidden mb-8">
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="font-serif text-xl font-semibold text-foreground mb-4 text-center">Spots Are Limited!</h3>
+                  <Button 
+                    size="lg" 
+                    className="w-full"
+                    onClick={() => setIsModalOpen(true)}
+                  >
+                    Register Now
+                  </Button>
+                  <p className="text-xs text-center text-muted-foreground mt-4">
+                    Secure payment. Cancel up to 24hrs before for full refund.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Photo Gallery */}
+          <PhotoGallery 
+            photos={[
+              "/onlineSpeedDating/gallery/1.jpg",
+              "/onlineSpeedDating/gallery/2.jpg",
+              "/onlineSpeedDating/gallery/3.jpg",
+              "/onlineSpeedDating/gallery/4.jpg"
+            ]} 
+            title="Event Photos" 
+          />
+
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
