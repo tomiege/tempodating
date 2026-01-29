@@ -351,9 +351,9 @@ function ProductContent() {
                   >
                     Register Now
                   </Button>
-                  <p className="text-xs text-center text-muted-foreground mt-4">
+                  {/* <p className="text-xs text-center text-muted-foreground mt-4">
                     Secure payment. Cancel up to 24hrs before for full refund.
-                  </p>
+                  </p> */}
                 </CardContent>
               </Card>
             </div>
@@ -559,9 +559,9 @@ function ProductContent() {
                         Register Now
                       </Button>
 
-                      <p className="text-xs text-center text-muted-foreground mt-4">
+                      {/* <p className="text-xs text-center text-muted-foreground mt-4">
                         Secure payment. Cancel up to 24hrs before for full refund.
-                      </p>
+                      </p> */}
                     </>
                   )}
                 </CardContent>
