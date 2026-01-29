@@ -36,6 +36,24 @@
         "region_id": "MA_2"
     },
     {
+        "productId": 358,
+        "gmtdatetime": "2026-02-28T20:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "USA",
+        "city": "Philadelphia",
+        "latitude": null,
+        "longitude": null,
+        "timezone": "America/New_York",
+        "male_price": 1600,
+        "female_price": 1200,
+        "currency": "USD",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/89440852349?pwd=5XCc5BSw7uWm5e3VGw8VoaJK2RZlZz.1",
+        "region_id": "DC_PA_MD_3"
+    },
+    {
         "productId": 359,
         "gmtdatetime": "2026-03-01T08:00:00Z",
         "title": "Online Speed Dating",
