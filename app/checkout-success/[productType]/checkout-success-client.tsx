@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/hooks/use-auth'
 import { sendOTP, verifyOTP } from '@/lib/auth-utils'
+import posthog from 'posthog-js'
 
 interface CheckoutData {
   checkout_id: number
@@ -72,6 +73,15 @@ export default function CheckoutSuccessClient({
         setCheckout(checkoutData)
         setAuthEmail(checkoutData.email || '')
         setEmailConfirmed(emailSent || checkoutData.confirmation_email_sent)
+        
+        // Track checkout success in PostHog
+        posthog.capture('checkout_success', {
+          product_type: productType,
+          checkout_session_id: checkoutSessionId,
+          email: checkoutData.email,
+          total_order: checkoutData.total_order,
+          product_description: checkoutData.product_description,
+        })
         
         // If user is already logged in, mark as complete
         if (user?.id) {
