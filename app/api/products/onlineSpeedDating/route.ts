@@ -18,7 +18,7 @@ export const OnlineSpeedDatingEventSchema = z.object({
   currency: z.string().length(3), // e.g., "USD"
   duration_in_minutes: z.number().int().positive(),
   soldOut: z.boolean(),
-  eventType: z.string().refine(val => val === 'onlineSpeedDating'),
+  productType: z.string().refine(val => val === 'onlineSpeedDating'),
   zoomInvite: z.string(),
   region_id: z.string().min(1),
 });

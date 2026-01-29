@@ -108,7 +108,7 @@ def get_sheet_data_and_convert_to_json(output_json_path="events.json", max_retri
                         "currency": row["currency"],
                         "duration_in_minutes": int(float(row["duration_in_minutes"])),
                         "soldOut": str(row["soldOut"]).lower() == "true",
-                        "eventType": row["eventType"],
+                        "productType": row["eventType"],
                         "zoomInvite": row["zoomInvite"],
                         "region_id": row["region_id"],
 

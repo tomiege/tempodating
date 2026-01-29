@@ -51,7 +51,7 @@ interface OnlineSpeedDatingProduct {
   currency: string
   duration_in_minutes: number
   soldOut: boolean
-  eventType: string
+  productType: string
   zoomInvite: string
   region_id: string
 }

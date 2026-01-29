@@ -35,7 +35,7 @@ interface OnlineSpeedDatingEvent {
   currency: string
   duration_in_minutes: number
   soldOut: boolean
-  eventType: string
+  productType: string
   zoomInvite: string
   region_id: string
 }
@@ -43,7 +43,7 @@ interface OnlineSpeedDatingEvent {
 function ProductContent() {
   const searchParams = useSearchParams()
   const productId = searchParams.get('productId')
-  const eventType = searchParams.get('eventType')
+  const productType = searchParams.get('productType')
   const cityOverride = searchParams.get('city')
   
   const [product, setProduct] = useState<OnlineSpeedDatingEvent | null>(null)
@@ -53,8 +53,8 @@ function ProductContent() {
 
   useEffect(() => {
     async function fetchProduct() {
-      if (!productId || !eventType) {
-        setError('Missing productId or eventType in URL')
+      if (!productId || !productType) {
+        setError('Missing productId or productType in URL')
         setLoading(false)
         return
       }
@@ -62,13 +62,13 @@ function ProductContent() {
       try {
         let apiUrl = ''
         
-        // Map eventType to API endpoint
-        if (eventType === 'onlineSpeedDating') {
+        // Map productType to API endpoint
+        if (productType === 'onlineSpeedDating') {
           apiUrl = '/api/products/onlineSpeedDating'
-        } else if (eventType === 'workshop') {
+        } else if (productType === 'workshop') {
           apiUrl = '/api/products/workshop'
         } else {
-          setError(`Unknown event type: ${eventType}`)
+          setError(`Unknown product type: ${productType}`)
           setLoading(false)
           return
         }
@@ -99,7 +99,7 @@ function ProductContent() {
     }
 
     fetchProduct()
-  }, [productId, eventType])
+  }, [productId, productType])
 
   if (loading) {
     return (
@@ -175,7 +175,7 @@ function ProductContent() {
           {/* Banner Image */}
           <div className="relative rounded-2xl overflow-hidden mb-8 aspect-video">
             <Image
-              src={`/${eventType}/banner.jpg`}
+              src={`/${productType}/banner.jpg`}
               alt={product.title}
               fill
               className="object-contain"
@@ -417,7 +417,7 @@ function ProductContent() {
           femalePrice={product.female_price}
           currency={product.currency}
           productId={product.productId}
-          eventType={product.eventType}
+          productType={product.productType}
         />
       )}
     </main>

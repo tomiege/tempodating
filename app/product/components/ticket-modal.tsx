@@ -19,7 +19,7 @@ interface TicketModalProps {
   femalePrice?: number
   currency?: string
   productId?: number
-  eventType?: string
+  productType?: string
 }
 
 export default function TicketModal({ 
@@ -33,7 +33,7 @@ export default function TicketModal({
   femalePrice = 1500,
   currency = "£",
   productId,
-  eventType = "onlineSpeedDating"
+  productType = "onlineSpeedDating"
 }: TicketModalProps) {
   const [step, setStep] = useState(1)
   const [name, setName] = useState("")
@@ -94,7 +94,7 @@ export default function TicketModal({
             city: eventCity,
             country: eventCity,
             product_id: productId,
-            product_type: eventType
+            product_type: productType
           })
         })
 
@@ -142,7 +142,7 @@ export default function TicketModal({
             city: eventCity,
             country: eventCity,
             product_id: productId,
-            product_type: eventType
+            product_type: productType
           })
         })
 
@@ -244,7 +244,7 @@ export default function TicketModal({
         const finalPrice = getCurrentPrice();
         const checkoutData = {
           productId: productId,
-          productType: eventType,
+          productType: productType,
           items: [{
             price: finalPrice, // Price is already in cents
             quantity: 1,

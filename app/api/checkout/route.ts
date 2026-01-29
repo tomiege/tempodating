@@ -149,7 +149,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       })),
       mode: 'payment',
       success_url: `${request.nextUrl.origin}/checkout-success/${productType}?checkoutSessionId={CHECKOUT_SESSION_ID}&email=${normalizedEmail}`,
-      cancel_url: `${request.nextUrl.origin}/product?productId=${productId}&eventType=${productType}`,
+      cancel_url: `${request.nextUrl.origin}/product?productId=${productId}&productType=${productType}`,
     };
 
     if (normalizedEmail) {
