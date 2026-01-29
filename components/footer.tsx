@@ -52,7 +52,7 @@ export function Footer() {
             <p className="text-background/60 text-sm mb-4">
               Finding love at the right pace. Online speed dating for meaningful connections.
             </p>
-            <div className="flex items-center gap-4">
+            {/* <div className="flex items-center gap-4">
               <Link href="#" className="text-background/60 hover:text-background transition-colors" aria-label="Instagram">
                 <Instagram className="w-5 h-5" />
               </Link>
@@ -65,13 +65,13 @@ export function Footer() {
               <Link href="#" className="text-background/60 hover:text-background transition-colors" aria-label="YouTube">
                 <Youtube className="w-5 h-5" />
               </Link>
-            </div>
+            </div> */}
           </div>
 
           <div>
             <h3 className="font-semibold text-background mb-4">Speed Dating</h3>
             <ul className="space-y-3 text-sm">
-              <li><Link href="#" className="text-background/60 hover:text-background transition-colors">Find Events</Link></li>
+              <li><Link href="/products/onlineSpeedDating" className="text-background/60 hover:text-background transition-colors">Find Events</Link></li>
               <li><Link href="#" className="text-background/60 hover:text-background transition-colors">How It Works</Link></li>
             </ul>
           </div>
@@ -79,8 +79,8 @@ export function Footer() {
           <div>
             <h3 className="font-semibold text-background mb-4">Workshops</h3>
             <ul className="space-y-3 text-sm">
-              <li><Link href="#" className="text-background/60 hover:text-background transition-colors">Browse Workshops</Link></li>
-              <li><Link href="#" className="text-background/60 hover:text-background transition-colors">Gift a Workshop</Link></li>
+              <li><Link href="/products/workshop" className="text-background/60 hover:text-background transition-colors">Browse Workshops</Link></li>
+              <li><Link href="/products/workshop" className="text-background/60 hover:text-background transition-colors">Gift a Workshop</Link></li>
             </ul>
           </div>
 

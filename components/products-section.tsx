@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { BookOpen, ShoppingBag, ArrowRight, Sparkles } from "lucide-react"
@@ -79,9 +80,11 @@ export function ProductsSection() {
         </div>
 
         <div className="text-center mt-12">
-          <Button variant="link" className="text-primary">
-            Browse All Products
-            <ArrowRight className="w-4 h-4 ml-2" />
+          <Button variant="link" className="text-primary" asChild>
+            <Link href="/products/onDemand">
+              Browse All Products
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Link>
           </Button>
         </div>
       </div>

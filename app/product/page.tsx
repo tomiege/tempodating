@@ -18,7 +18,10 @@ import {
   Heart, 
   ArrowLeft,
   Loader2,
-  CheckCircle2
+  CheckCircle2,
+  Download,
+  BookOpen,
+  ShoppingBag
 } from "lucide-react"
 
 interface OnlineSpeedDatingEvent {
@@ -40,6 +43,20 @@ interface OnlineSpeedDatingEvent {
   region_id: string
 }
 
+interface OnDemandProduct {
+  productId: number
+  title: string
+  description: string
+  productType: string
+  category: string
+  price: number
+  currency: string
+  imageUrl: string
+  available: boolean
+  featured: boolean
+  downloadUrl: string
+}
+
 function ProductContent() {
   const searchParams = useSearchParams()
   const productId = searchParams.get('productId')
@@ -47,6 +64,7 @@ function ProductContent() {
   const cityOverride = searchParams.get('city')
   
   const [product, setProduct] = useState<OnlineSpeedDatingEvent | null>(null)
+  const [onDemandProduct, setOnDemandProduct] = useState<OnDemandProduct | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -67,6 +85,8 @@ function ProductContent() {
           apiUrl = '/api/products/onlineSpeedDating'
         } else if (productType === 'workshop') {
           apiUrl = '/api/products/workshop'
+        } else if (productType === 'onDemand' || productType === 'datingEbook') {
+          apiUrl = '/api/products/onDemand'
         } else {
           setError(`Unknown product type: ${productType}`)
           setLoading(false)
@@ -83,13 +103,17 @@ function ProductContent() {
         
         // Filter for the specific product by productId
         const foundProduct = products.find(
-          (p: OnlineSpeedDatingEvent) => p.productId === parseInt(productId)
+          (p: OnlineSpeedDatingEvent | OnDemandProduct) => p.productId === parseInt(productId)
         )
 
         if (!foundProduct) {
           setError(`Product with ID ${productId} not found`)
         } else {
-          setProduct(foundProduct)
+          if (productType === 'onDemand' || productType === 'datingEbook') {
+            setOnDemandProduct(foundProduct as OnDemandProduct)
+          } else {
+            setProduct(foundProduct as OnlineSpeedDatingEvent)
+          }
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load product')
@@ -117,7 +141,7 @@ function ProductContent() {
     )
   }
 
-  if (error || !product) {
+  if (error || (!product && !onDemandProduct)) {
     return (
       <main className="min-h-screen">
         <Header />
@@ -142,6 +166,126 @@ function ProductContent() {
         <Footer />
       </main>
     )
+  }
+
+  // Format price helper
+  const formatPrice = (price: number, currency: string) => {
+    const formatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency,
+    })
+    return formatter.format(price / 100)
+  }
+
+  // OnDemand Product Display
+  if (onDemandProduct) {
+    return (
+      <main className="min-h-screen">
+        <Header />
+        
+        <section className="pt-24 pb-16">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Back link */}
+            <Link 
+              href="/" 
+              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Home
+            </Link>
+
+            <div className="grid lg:grid-cols-2 gap-12 items-start">
+              {/* Product Image */}
+              <div className="relative rounded-2xl overflow-hidden shadow-xl border border-border">
+                <div className="aspect-square bg-gradient-to-br from-pink-100 to-pink-50 flex items-center justify-center">
+                  <BookOpen className="w-32 h-32 text-primary/30" />
+                </div>
+              </div>
+
+              {/* Product Details */}
+              <div>
+                <div className="inline-flex items-center gap-2 text-primary text-sm font-medium mb-4">
+                  <ShoppingBag className="w-4 h-4" />
+                  <span>{onDemandProduct.category}</span>
+                </div>
+
+                <h1 className="font-serif text-3xl sm:text-4xl font-semibold text-foreground mb-4">
+                  {onDemandProduct.title}
+                </h1>
+
+                <p className="text-lg text-muted-foreground mb-8">
+                  {onDemandProduct.description}
+                </p>
+
+                {/* Price Card */}
+                <Card className="mb-8">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Price</p>
+                        <p className="text-3xl font-bold text-foreground">
+                          {formatPrice(onDemandProduct.price, onDemandProduct.currency)}
+                        </p>
+                      </div>
+                      {onDemandProduct.featured && (
+                        <span className="text-xs font-medium px-3 py-1 rounded-full bg-primary/10 text-primary">
+                          Featured
+                        </span>
+                      )}
+                    </div>
+
+                    <Button 
+                      size="lg" 
+                      className="w-full text-lg py-6 cursor-pointer"
+                      disabled={!onDemandProduct.available}
+                    >
+                      <ShoppingBag className="w-5 h-5 mr-2" />
+                      Buy Now · {formatPrice(onDemandProduct.price, onDemandProduct.currency)}
+                    </Button>
+
+                    <p className="text-xs text-center text-muted-foreground mt-4">
+                      Instant digital delivery. Secure payment.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                {/* What's Included */}
+                <Card>
+                  <CardContent className="p-6">
+                    <h2 className="font-serif text-xl font-semibold text-foreground mb-4">What&apos;s Included</h2>
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-muted-foreground">Instant digital download</p>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-muted-foreground">Lifetime access to content</p>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-muted-foreground">Works on all devices</p>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-muted-foreground">30-day money-back guarantee</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <Footer />
+      </main>
+    )
+  }
+
+  // Original OnlineSpeedDating/Workshop Display
+  if (!product) {
+    return null
   }
 
   const eventDate = new Date(product.gmtdatetime)

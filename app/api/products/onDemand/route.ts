@@ -3,32 +3,26 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { z } from 'zod';
 
-// Schema Definition for Workshop Product
-export const WorkshopProductSchema = z.object({
+// Schema Definition for OnDemand Product
+export const OnDemandProductSchema = z.object({
   productId: z.number().int().positive(),
   title: z.string().min(1),
   description: z.string().min(1),
-  productType: z.string().refine(val => val === 'workshop'),
-  gmtdatetime: z.string().datetime(),
-  timezone: z.string().min(1),
-  duration_in_minutes: z.number().int().positive(),
+  productType: z.string().refine(val => val === 'onDemand'),
+  category: z.string().min(1),
   price: z.number().int().nonnegative(),
   currency: z.string().length(3),
-  maxAttendees: z.number().int().positive(),
-  currentAttendees: z.number().int().nonnegative(),
-  instructor: z.string().min(1),
-  instructorBio: z.string().min(1),
-  rating: z.number().min(0).max(5),
-  soldOut: z.boolean(),
-  location: z.string().min(1),
-  zoomInvite: z.string(),
+  imageUrl: z.string(),
+  available: z.boolean(),
+  featured: z.boolean(),
+  downloadUrl: z.string(),
 });
 
-export type WorkshopProduct = z.infer<typeof WorkshopProductSchema>;
+export type OnDemandProduct = z.infer<typeof OnDemandProductSchema>;
 
-const WorkshopProductsArraySchema = z.array(WorkshopProductSchema);
+const OnDemandProductsArraySchema = z.array(OnDemandProductSchema);
 
-export type WorkshopProducts = z.infer<typeof WorkshopProductsArraySchema>;
+export type OnDemandProducts = z.infer<typeof OnDemandProductsArraySchema>;
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
   try {
@@ -37,7 +31,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       process.cwd(),
       'public',
       'products',
-      'workshops.json'
+      'onDemand.json'
     );
 
     // Read the file
@@ -45,7 +39,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const rawData = JSON.parse(fileContent);
 
     // Validate against schema
-    const validatedData = WorkshopProductsArraySchema.parse(rawData);
+    const validatedData = OnDemandProductsArraySchema.parse(rawData);
 
     // Return the validated data
     return NextResponse.json(validatedData, {
@@ -81,7 +75,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         {
           error: 'File not found',
-          message: 'workshops.json not found',
+          message: 'onDemand.json not found',
         },
         { status: 404 }
       );

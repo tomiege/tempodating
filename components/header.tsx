@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Heart, Menu, X } from "lucide-react"
 import { useState } from "react"
@@ -9,6 +10,8 @@ import { useAuth } from "@/hooks/use-auth"
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { user } = useAuth()
+  const pathname = usePathname()
+  const isHomePage = pathname === "/"
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
@@ -21,20 +24,22 @@ export function Header() {
             <span className="font-serif text-xl font-semibold text-foreground">Tempo</span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-8">
-            <Link href="#speed-dating" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Speed Dating
-            </Link>
-            <Link href="#workshops" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Workshops
-            </Link>
-            <Link href="#products" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Products
-            </Link>
-            <Link href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              How It Works
-            </Link>
-          </nav>
+          {isHomePage && (
+            <nav className="hidden md:flex items-center gap-8">
+              <Link href="#speed-dating" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Speed Dating
+              </Link>
+              <Link href="#workshops" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Workshops
+              </Link>
+              {/* <Link href="#products" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Products
+              </Link> */}
+              <Link href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                How It Works
+              </Link>
+            </nav>
+          )}
 
           <div className="hidden md:flex items-center gap-4">
             {user ? (
@@ -48,7 +53,7 @@ export function Header() {
             ) : (
               <>
                 <Link href="/login">
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" className="cursor-pointer">
                     Log in
                   </Button>
                 </Link>
@@ -69,19 +74,23 @@ export function Header() {
       {mobileMenuOpen && (
         <div className="md:hidden bg-background border-b border-border">
           <nav className="flex flex-col px-4 py-4 gap-4">
-            <Link href="#speed-dating" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Speed Dating
-            </Link>
-            <Link href="#workshops" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Workshops
-            </Link>
-            <Link href="#products" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Products
-            </Link>
-            <Link href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              How It Works
-            </Link>
-            <div className="flex flex-col gap-2 pt-4 border-t border-border">
+            {isHomePage && (
+              <>
+                <Link href="#speed-dating" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Speed Dating
+                </Link>
+                <Link href="#workshops" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Workshops
+                </Link>
+                <Link href="#products" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Products
+                </Link>
+                <Link href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  How It Works
+                </Link>
+              </>
+            )}
+            <div className={`flex flex-col gap-2 ${isHomePage ? 'pt-4 border-t border-border' : ''}`}>
               {user ? (
                 <>
                   <Link href="/dashboard">

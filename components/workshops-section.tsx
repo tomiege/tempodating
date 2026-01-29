@@ -1,4 +1,5 @@
 import Image from "next/image"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Clock, Users, Star, ArrowRight } from "lucide-react"
@@ -85,20 +86,17 @@ export function WorkshopsSection() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <Button variant="outline" size="sm">
-                        Enroll
-                      </Button>
-                    </div>
                   </div>
                 </CardContent>
               </Card>
             ))}
 
             <div className="text-center pt-4">
-              <Button variant="link" className="text-primary">
-                View All Workshops
-                <ArrowRight className="w-4 h-4 ml-2" />
+              <Button variant="link" className="text-primary" asChild>
+                <Link href="/products/workshop">
+                  View All Workshops
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
               </Button>
             </div>
           </div>

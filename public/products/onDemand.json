@@ -1,1 +1,28 @@
-{}
+[
+  {
+    "productId": 1001,
+    "title": "The Complete Online Dating Guide",
+    "description": "A comprehensive guide to mastering online dating in the modern age. Learn profile optimization, messaging strategies, and how to make genuine connections.",
+    "productType": "datingEbook",
+    "category": "eBook",
+    "price": 2499,
+    "currency": "USD",
+    "imageUrl": "/images/products/dating-guide.jpg",
+    "available": true,
+    "featured": true,
+    "downloadUrl": "/downloads/complete-dating-guide.pdf"
+  },
+  {
+    "productId": 1002,
+    "title": "Conversation Starters Deck",
+    "description": "50 thoughtful conversation starters designed to spark meaningful connections on your next video date. Break the ice and keep the conversation flowing.",
+    "productType": "datingEbook",
+    "category": "Digital Cards",
+    "price": 999,
+    "currency": "USD",
+    "imageUrl": "/images/products/conversation-cards.jpg",
+    "available": true,
+    "featured": false,
+    "downloadUrl": "/downloads/conversation-starters.pdf"
+  }
+]

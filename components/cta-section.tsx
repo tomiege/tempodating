@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Heart } from "lucide-react"
 
@@ -23,9 +24,12 @@ export function CTASection() {
             size="lg" 
             variant="secondary" 
             className="text-base px-8 bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+            asChild
           >
-            Find Your Event
-            <ArrowRight className="w-4 h-4 ml-2" />
+            <Link href="/products/onlineSpeedDating">
+              Find Your Event
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Link>
           </Button>
           {/* <Button 
             size="lg" 

@@ -53,7 +53,7 @@ export function SpeedDatingSection() {
             </div>
 
             <Button size="lg" asChild>
-              <Link href="/event">
+              <Link href="/products/onlineSpeedDating">
                 Browse Events
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Link>

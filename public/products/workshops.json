@@ -1,1 +1,40 @@
-{}
+[
+  {
+    "productId": 2001,
+    "title": "The Art of First Impressions",
+    "description": "Learn how to make a memorable first impression in the first 30 seconds of meeting someone new. Master body language, tone, and conversation openers.",
+    "productType": "workshop",
+    "gmtdatetime": "2026-02-15T18:00:00Z",
+    "timezone": "America/New_York",
+    "duration_in_minutes": 90,
+    "price": 4900,
+    "currency": "USD",
+    "maxAttendees": 20,
+    "currentAttendees": 12,
+    "instructor": "Dr. Sarah Mitchell",
+    "instructorBio": "Certified dating coach with 10+ years of experience in relationship psychology.",
+    "rating": 4.9,
+    "soldOut": false,
+    "location": "Online via Zoom",
+    "zoomInvite": "https://us02web.zoom.us/j/81234567890"
+  },
+  {
+    "productId": 2002,
+    "title": "Conversation Mastery Workshop",
+    "description": "Master the art of engaging conversation with techniques to keep the spark alive. Learn active listening, storytelling, and how to create emotional connections.",
+    "productType": "workshop",
+    "gmtdatetime": "2026-02-22T19:00:00Z",
+    "timezone": "America/New_York",
+    "duration_in_minutes": 75,
+    "price": 3900,
+    "currency": "USD",
+    "maxAttendees": 25,
+    "currentAttendees": 18,
+    "instructor": "James Rodriguez",
+    "instructorBio": "Communication expert and bestselling author of 'Connect & Captivate'.",
+    "rating": 4.8,
+    "soldOut": false,
+    "location": "Online via Zoom",
+    "zoomInvite": "https://us02web.zoom.us/j/89876543210"
+  }
+]
