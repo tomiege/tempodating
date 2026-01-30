@@ -587,10 +587,6 @@ export default function TicketModal({
           {step === 3 && (
             <div className="space-y-6">
               <div className="text-center mb-6">
-                <div className="inline-flex items-center bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-bold mb-4">
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Step 3 of 3
-                </div>
                 <h3 className="font-serif text-3xl font-semibold text-foreground mb-2">
                   Complete Your Registration
                 </h3>
@@ -599,51 +595,19 @@ export default function TicketModal({
                 </p>
               </div>
 
-              {/* Prominent Ticket Type Badge */}
-              <div className="text-center">
-                <div className={`inline-flex items-center px-6 py-3 rounded-2xl text-lg font-bold ${
-                  gender === 'male' 
-                    ? 'bg-blue-100 text-blue-800 border-2 border-blue-200' 
-                    : 'bg-pink-100 text-pink-800 border-2 border-pink-200'
-                }`}>
-                  {gender === 'male' ? '👨' : '👩'} {gender === 'male' ? 'Male' : 'Female'} Ticket
-                </div>
-              </div>
-
               {/* Order Summary */}
               <div className="bg-card border border-border p-6 rounded-2xl shadow-sm">
-                <h4 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                  <Heart className="w-5 h-5 text-primary" />
-                  Order Summary
-                </h4>
-                
-                <div className="space-y-3 mb-4 pb-4 border-b border-border">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Event</span>
-                    <span className="font-medium text-foreground">{eventTitle} - {eventCity}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Date</span>
-                    <span className="font-medium text-foreground">{eventDate}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Attendee</span>
-                    <span className="font-medium text-foreground">{name}</span>
-                  </div>
-                </div>
-
-                {/* Price Display */}
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">{gender === 'male' ? 'Male' : 'Female'} Ticket</span>
+                  <span className="text-lg font-medium text-foreground">Speed Dating Ticket</span>
                   <div className="flex flex-col items-end">
                     <div className="flex items-center space-x-2">
                       {discountApplied ? (
                         <>
                           <span className="text-muted-foreground line-through font-medium">
-                            {currency}{formatPrice(gender === 'male' ? price : femalePrice)}
+                            {['USD', 'CAD', 'AUD'].includes(currency.toUpperCase()) ? '$' : currency === '£' ? '£' : currency}{formatPrice(gender === 'male' ? price : femalePrice)} {currency.toUpperCase()}
                           </span>
                           <span className="text-2xl font-bold text-foreground">
-                            {currency}{formatPrice(getCurrentPrice())}
+                            {['USD', 'CAD', 'AUD'].includes(currency.toUpperCase()) ? '$' : currency === '£' ? '£' : currency}{formatPrice(getCurrentPrice())} {currency.toUpperCase()}
                           </span>
                           <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">
                             {(discountAmount * 100).toFixed(0)}% OFF
@@ -651,12 +615,12 @@ export default function TicketModal({
                         </>
                       ) : (
                         <span className="text-2xl font-bold text-foreground">
-                          {currency}{formatPrice(gender === 'male' ? price : femalePrice)}
+                          {['USD', 'CAD', 'AUD'].includes(currency.toUpperCase()) ? '$' : currency === '£' ? '£' : currency}{formatPrice(gender === 'male' ? price : femalePrice)} {currency.toUpperCase()}
                         </span>
                       )}
                     </div>
                     <span className="text-red-600 text-sm font-bold mt-1">
-                      Last Ticket at this price!
+                      🔥 Last Ticket at this price!
                     </span>
                   </div>
                 </div>
@@ -746,11 +710,12 @@ export default function TicketModal({
 
           {step === 3 && !registrationSuccess && (
             <div className="mt-8 pt-8 border-t border-border">
-              <div className="flex items-center justify-center space-x-3 text-muted-foreground">
-                <Shield className="w-5 h-5 text-primary" />
-                <p className="text-sm font-medium">
-                  Secure payment. Cancel up to 24hrs before for full refund.
+              <div className="flex items-center justify-center space-x-3">
+                <Shield className="w-6 h-6 text-green-600" />
+                <p className="text-base font-semibold text-foreground">
+                  Secure payment powered by
                 </p>
+                <img src="/brands/stripe-logo.png" alt="Stripe" className="h-14" />
               </div>
             </div>
           )}
