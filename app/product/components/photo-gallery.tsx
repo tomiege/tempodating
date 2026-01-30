@@ -26,22 +26,22 @@ export function PhotoGallery({ photos, title }: PhotoGalleryProps) {
   const showNext = () => setCurrentIndex((prev) => (prev === photos.length - 1 ? 0 : prev + 1))
 
   return (
-    <div className="mb-8">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-xl font-semibold">{title} ({photos.length})</h3>
-        <Button variant="link" onClick={() => openModal(0)}>See all</Button>
+    <div className="mb-6">
+      <div className="flex justify-between items-center mb-3">
+        <h3 className="text-lg font-semibold">{title}</h3>
+        <Button variant="link" size="sm" onClick={() => openModal(0)}>See all</Button>
       </div>
-      <div className="grid grid-cols-3 gap-4">
-        {photos.slice(0, 3).map((photo, index) => (
-          <Image
-            key={index}
-            src={photo}
-            alt={`${title} ${index + 1}`}
-            width={300}
-            height={200}
-            className="rounded-lg cursor-pointer object-cover"
-            onClick={() => openModal(index)}
-          />
+      <div className="grid grid-cols-4 gap-2">
+        {photos.slice(0, 4).map((photo, index) => (
+          <div key={index} className="relative aspect-square">
+            <Image
+              src={photo}
+              alt={`${title} ${index + 1}`}
+              fill
+              className="rounded-lg cursor-pointer object-cover hover:opacity-90 transition-opacity"
+              onClick={() => openModal(index)}
+            />
+          </div>
         ))}
       </div>
 
