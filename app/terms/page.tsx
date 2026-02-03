@@ -56,9 +56,7 @@ export default function TermsOfServicePage() {
 
             <h2 className="font-serif text-2xl font-semibold text-foreground mt-8 mb-4">6. Payments and Refunds</h2>
             <p className="text-muted-foreground mb-6">
-              Event fees are charged at the time of registration. Refunds are available for cancellations made 
-              at least 24 hours before the event start time. No refunds will be provided for cancellations made 
-              less than 24 hours before the event or for no-shows.
+              Event fees are charged at the time of registration. All sales are final and no refunds will be issued for any reason, including cancellations or no-shows.
             </p>
 
             <h2 className="font-serif text-2xl font-semibold text-foreground mt-8 mb-4">7. Intellectual Property</h2>
