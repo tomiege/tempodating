@@ -54,8 +54,8 @@ export default function TicketModal({
   const { user } = useAuth()
   
   // Get feature flag variant
-  const checkoutVariant = useFeatureFlagVariantKey('ticket-modal-test')
-  // const checkoutVariant = 'test'
+  // const checkoutVariant = useFeatureFlagVariantKey('ticket-modal-test')
+  const checkoutVariant = 'test'
   // Log feature flag variant only when it changes
   useEffect(() => {
     console.log(`🚩 Ticket Modal Feature Flag - checkout variant: ${checkoutVariant}`)
@@ -399,9 +399,9 @@ export default function TicketModal({
           <h2 className="font-serif text-3xl font-semibold mb-2">
             {eventTitle} - {eventCity}
           </h2>
-          <p className="text-primary-foreground/80 text-lg font-medium">
+          {/* <p className="text-primary-foreground/80 text-lg font-medium">
             Secure your spot today
-          </p>
+          </p> */}
         </div>
 
         <div className="p-8">
@@ -595,13 +595,10 @@ export default function TicketModal({
 
           {step === 3 && (
             <div className="space-y-6">
-              <div className="text-center mb-6">
-                <h3 className="font-serif text-3xl font-semibold text-foreground mb-2">
-                  Complete Your Registration
-                </h3>
-                <p className="text-muted-foreground font-medium">
-                  Review your details and checkout
-                </p>
+              <div className="text-center mb-4">
+                {/* <h3 className="font-serif text-2xl font-semibold text-foreground">
+                  Checkout
+                </h3> */}
               </div>
 
               {/* Order Summary */}
@@ -615,7 +612,7 @@ export default function TicketModal({
                       <img 
                         src="/onlineSpeedDating/speed-dating-ticket.png" 
                         alt="Speed Dating Ticket"
-                        className="w-32 h-32 object-cover rounded-lg"
+                        className="w-32 h-16 object-cover rounded-lg"
                       />
                     </div>
                     
@@ -653,12 +650,12 @@ export default function TicketModal({
                     
                     {/* Important Notice */}
                     <div className="pt-3 border-t border-border">
-                      <p className="text-sm text-muted-foreground flex items-start gap-2">
+                      {/* <p className="text-sm text-muted-foreground flex items-start gap-2">
                         <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span>Please arrive 5 minutes prior to the scheduled start time</span>
-                      </p>
+                      </p> */}
                     </div>
                   </div>
 
@@ -669,7 +666,7 @@ export default function TicketModal({
                       <img 
                         src="/onlineSpeedDating/speed-dating-ticket.png" 
                         alt="Speed Dating Ticket"
-                        className="w-24 h-24 object-cover rounded-lg"
+                        className="w-16 h-16 object-cover rounded-lg"
                       />
                     </div>
                     
@@ -677,7 +674,7 @@ export default function TicketModal({
                     <div className="flex-grow">
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <h4 className="text-lg font-semibold text-foreground">Online Speed Dating</h4>
+                          <h4 className="text-lg font-semibold text-foreground">Online Speed Dating Admission</h4>
                           <p className="text-sm text-muted-foreground">1× Admission</p>
                         </div>
                         <div className="flex flex-col items-end">
@@ -750,39 +747,6 @@ export default function TicketModal({
                   </div>
                 </div>
               )}
-
-              {/* Discount Code - Hidden by default */}
-              {!discountApplied && (
-                <div className="text-center">
-                  {!showDiscountInput ? (
-                    <button
-                      type="button"
-                      onClick={() => setShowDiscountInput(true)}
-                      className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
-                    >
-                      Have a discount code?
-                    </button>
-                  ) : (
-                    <div className="flex gap-2 max-w-xs mx-auto">
-                      <Input
-                        type="text"
-                        placeholder="Discount code"
-                        value={discountCode}
-                        onChange={(e) => setDiscountCode(e.target.value)}
-                        className="border-border focus:border-primary rounded-xl h-10 text-sm"
-                      />
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={handleApplyDiscount}
-                        className="rounded-xl h-10 px-4 bg-transparent text-sm"
-                      >
-                        Apply
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           )}
 
@@ -831,6 +795,39 @@ export default function TicketModal({
               )}
             </Button>
           </div>
+          )}
+
+          {/* Discount Code - Below Complete Purchase button */}
+          {step === 3 && !discountApplied && !registrationSuccess && (
+            <div className="text-center mt-4">
+              {!showDiscountInput ? (
+                <button
+                  type="button"
+                  onClick={() => setShowDiscountInput(true)}
+                  className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+                >
+                  Have a discount code?
+                </button>
+              ) : (
+                <div className="flex gap-2 max-w-xs mx-auto">
+                  <Input
+                    type="text"
+                    placeholder="Discount code"
+                    value={discountCode}
+                    onChange={(e) => setDiscountCode(e.target.value)}
+                    className="border-border focus:border-primary rounded-xl h-10 text-sm"
+                  />
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={handleApplyDiscount}
+                    className="rounded-xl h-10 px-4 bg-transparent text-sm"
+                  >
+                    Apply
+                  </Button>
+                </div>
+              )}
+            </div>
           )}
 
           {step === 3 && !registrationSuccess && (
