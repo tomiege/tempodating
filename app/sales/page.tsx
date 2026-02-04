@@ -31,6 +31,7 @@ async function getSalesData(): Promise<SalesData[]> {
     .from('checkout')
     .select('product_id, is_male')
     .not('user_id', 'is', null)
+    .eq('confirmation_email_sent', true)
 
   if (error) {
     console.error('Error fetching checkouts:', error)
@@ -74,6 +75,7 @@ async function getHourlyCheckouts(): Promise<HourlyData[]> {
     .from('checkout')
     .select('checkout_time')
     .not('user_id', 'is', null)
+    .eq('confirmation_email_sent', true)
     .order('checkout_time', { ascending: true })
 
   if (error || !checkouts) {
