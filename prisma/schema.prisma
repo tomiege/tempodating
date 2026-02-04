@@ -14,3 +14,22 @@ model Event {
   startsAt    DateTime?
   createdAt   DateTime @default(now())
 }
+
+model EventInvitation {
+  id             String   @id @map("_id") @default(auto()) @db.ObjectId
+  fromUserId     String   // User who sent the invitation
+  toEmail        String   // Email of the recipient
+  sentAt         DateTime @default(now())
+  discountAmount Float    // Discount amount in percentage (e.g., 20 for 20%)
+  productId      Int      // The event/product being invited to
+  productType    String   // Type of product (e.g., 'onlineSpeedDating')
+  discountCode   String?  // Optional unique discount code generated
+  used           Boolean  @default(false) // Whether the invitation was used
+  usedAt         DateTime? // When the invitation was used
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  @@index([toEmail])
+  @@index([fromUserId])
+  @@index([productId, productType])
+}

@@ -326,12 +326,12 @@ export default function TicketModal({
   const handleApplyDiscount = () => {
     const lowerCaseCode = discountCode.toLowerCase()
     switch (lowerCaseCode) {
-      case "welcome15":
+      case "valentinesinvite20":
         setDiscountApplied(true)
-        setDiscountAmount(0.15)
+        setDiscountAmount(0.20)
         posthog.capture('discount_code_applied', { 
           code: lowerCaseCode,
-          discountAmount: 0.15,
+          discountAmount: 0.20,
           eventTitle: eventTitle 
         })
         break

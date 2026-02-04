@@ -70,6 +70,22 @@ CREATE TABLE IF NOT EXISTS public.matches (
   UNIQUE(user_id, liked_user_id, product_id)
 );
 
+-- Event invitations table
+CREATE TABLE IF NOT EXISTS public.event_invitations (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  from_user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  to_email TEXT NOT NULL,
+  sent_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  discount_amount INTEGER NOT NULL CHECK (discount_amount >= 0 AND discount_amount <= 100),
+  product_id INTEGER NOT NULL,
+  product_type TEXT NOT NULL,
+  discount_code TEXT,
+  used BOOLEAN DEFAULT false,
+  used_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_checkout_session_id ON public.checkout(checkout_session_id);
 CREATE INDEX IF NOT EXISTS idx_checkout_email ON public.checkout(email);
@@ -80,4 +96,7 @@ CREATE INDEX IF NOT EXISTS idx_leads_created_at ON public.leads(created_at);
 CREATE INDEX IF NOT EXISTS idx_matches_user_id ON public.matches(user_id);
 CREATE INDEX IF NOT EXISTS idx_matches_liked_user_id ON public.matches(liked_user_id);
 CREATE INDEX IF NOT EXISTS idx_matches_product ON public.matches(product_id, product_type);
+CREATE INDEX IF NOT EXISTS idx_event_invitations_to_email ON public.event_invitations(to_email);
+CREATE INDEX IF NOT EXISTS idx_event_invitations_from_user_id ON public.event_invitations(from_user_id);
+CREATE INDEX IF NOT EXISTS idx_event_invitations_product ON public.event_invitations(product_id, product_type);
 

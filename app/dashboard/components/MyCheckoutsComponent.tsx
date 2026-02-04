@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -9,8 +10,10 @@ import {
   Video, 
   Heart, 
   Users,
-  Loader2
+  Loader2,
+  UserPlus
 } from "lucide-react"
+import { InviteDialog } from "./InviteDialog"
 
 interface CheckoutData {
   checkoutId: number
@@ -65,6 +68,7 @@ interface EnrolledEvent {
   productId: number
   checkoutTime: string
   zoomInvite?: string
+  city?: string
 }
 
 interface MyCheckoutsComponentProps {
@@ -78,6 +82,13 @@ export function MyCheckoutsComponent({
   onlineSpeedDatingProducts,
   loading = false 
 }: MyCheckoutsComponentProps) {
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
+  const [selectedEvent, setSelectedEvent] = useState<EnrolledEvent | null>(null)
+
+  const handleInviteClick = (event: EnrolledEvent) => {
+    setSelectedEvent(event)
+    setInviteDialogOpen(true)
+  }
   
   // Transform checkouts into enrolled events format
   // Include 'event' and 'onlineSpeedDating' product types
@@ -116,7 +127,8 @@ export function MyCheckoutsComponent({
         productType: checkout.productType,
         productId: checkout.productId,
         checkoutTime: checkout.checkoutTime,
-        zoomInvite: matchingProduct?.zoomInvite
+        zoomInvite: matchingProduct?.zoomInvite,
+        city: matchingProduct?.city || checkout.queryCity || undefined
       }
     })
 
@@ -179,6 +191,19 @@ export function MyCheckoutsComponent({
               </div>
 
               <div className="flex items-center gap-3">
+                {/* Invite button for upcoming onlineSpeedDating events */}
+                {event.status === "upcoming" && event.productType === 'onlineSpeedDating' && (
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    className="gap-2 border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
+                    onClick={() => handleInviteClick(event)}
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    Invite a friend (20% off!)
+                  </Button>
+                )}
+                
                 {/* Join Event button for onlineSpeedDating with zoomInvite */}
                 {event.productType === 'onlineSpeedDating' && event.zoomInvite && (
                   <Button 
@@ -223,6 +248,17 @@ export function MyCheckoutsComponent({
           )}
         </div>
       </CardContent>
+
+      {selectedEvent && (
+        <InviteDialog
+          open={inviteDialogOpen}
+          onOpenChange={setInviteDialogOpen}
+          eventTitle={selectedEvent.title}
+          productId={selectedEvent.productId}
+          productType={selectedEvent.productType}
+          city={selectedEvent.city}
+        />
+      )}
     </Card>
   )
 }
