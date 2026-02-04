@@ -55,7 +55,7 @@ export default function TicketModal({
   
   // Get feature flag variant
   const checkoutVariant = useFeatureFlagVariantKey('ticket-modal-test')
-  
+  // const checkoutVariant = 'test'
   // Log feature flag variant only when it changes
   useEffect(() => {
     console.log(`🚩 Ticket Modal Feature Flag - checkout variant: ${checkoutVariant}`)
@@ -606,9 +606,64 @@ export default function TicketModal({
 
               {/* Order Summary */}
               {checkoutVariant === 'test' ? (
-                // Test variant with ticket image
-                <div className="bg-card border border-border p-6 rounded-2xl shadow-sm">
-                  <div className="flex gap-4 items-center">
+                // Test variant with ticket image - mobile optimized
+                <div className="bg-card border border-border p-4 sm:p-6 rounded-2xl shadow-sm">
+                  {/* Mobile Layout: Image on top, content below */}
+                  <div className="sm:hidden space-y-4">
+                    {/* Ticket Image - Centered on top for mobile */}
+                    <div className="flex justify-center">
+                      <img 
+                        src="/onlineSpeedDating/speed-dating-ticket.png" 
+                        alt="Speed Dating Ticket"
+                        className="w-32 h-32 object-cover rounded-lg"
+                      />
+                    </div>
+                    
+                    {/* Ticket Title */}
+                    <div className="text-center">
+                      <h4 className="text-lg font-semibold text-foreground">Online Speed Dating</h4>
+                      <p className="text-sm text-muted-foreground">1× Admission</p>
+                    </div>
+                    
+                    {/* Pricing */}
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="flex items-center flex-wrap justify-center gap-2">
+                        {discountApplied ? (
+                          <>
+                            <span className="text-base text-muted-foreground line-through font-medium">
+                              {['USD', 'CAD', 'AUD'].includes(currency.toUpperCase()) ? '$' : currency === '£' ? '£' : currency}{formatPrice(gender === 'male' ? price : femalePrice)} {currency.toUpperCase()}
+                            </span>
+                            <span className="text-2xl font-bold text-foreground">
+                              {['USD', 'CAD', 'AUD'].includes(currency.toUpperCase()) ? '$' : currency === '£' ? '£' : currency}{formatPrice(getCurrentPrice())} {currency.toUpperCase()}
+                            </span>
+                            <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">
+                              {(discountAmount * 100).toFixed(0)}% OFF
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-2xl font-bold text-foreground">
+                            {['USD', 'CAD', 'AUD'].includes(currency.toUpperCase()) ? '$' : currency === '£' ? '£' : currency}{formatPrice(gender === 'male' ? price : femalePrice)} {currency.toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-red-600 text-sm font-bold">
+                        🔥 Last Ticket at this price!
+                      </span>
+                    </div>
+                    
+                    {/* Important Notice */}
+                    <div className="pt-3 border-t border-border">
+                      <p className="text-sm text-muted-foreground flex items-start gap-2">
+                        <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Please arrive 5 minutes prior to the scheduled start time</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Desktop Layout: Image on left, content on right */}
+                  <div className="hidden sm:flex gap-4 items-center">
                     {/* Ticket Image */}
                     <div className="flex-shrink-0">
                       <img 
@@ -626,7 +681,7 @@ export default function TicketModal({
                           <p className="text-sm text-muted-foreground">1× Admission</p>
                         </div>
                         <div className="flex flex-col items-end">
-                          <div className="flex items-center space-x-2">
+                          <div className="flex items-center gap-2">
                             {discountApplied ? (
                               <>
                                 <span className="text-muted-foreground line-through font-medium">
