@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAuth } from "@/hooks/use-auth"
 import posthog from 'posthog-js'
+import { useFeatureFlagVariantKey } from 'posthog-js/react'
 
 interface TicketModalProps {
   isOpen: boolean
@@ -51,6 +52,14 @@ export default function TicketModal({
   const [leadId, setLeadId] = useState<number | null>(null)
   const [isExistingAccountFlow, setIsExistingAccountFlow] = useState(false)
   const { user } = useAuth()
+  
+  // Get feature flag variant
+  const checkoutVariant = useFeatureFlagVariantKey('ticket-modal-test')
+  
+  // Log feature flag variant only when it changes
+  useEffect(() => {
+    console.log(`🚩 Ticket Modal Feature Flag - checkout variant: ${checkoutVariant}`)
+  }, [checkoutVariant])
 
   // If user is already logged in, skip to payment step
   useEffect(() => {
@@ -596,35 +605,96 @@ export default function TicketModal({
               </div>
 
               {/* Order Summary */}
-              <div className="bg-card border border-border p-6 rounded-2xl shadow-sm">
-                <div className="flex justify-between items-center">
-                  <span className="text-lg font-medium text-foreground">Speed Dating Ticket</span>
-                  <div className="flex flex-col items-end">
-                    <div className="flex items-center space-x-2">
-                      {discountApplied ? (
-                        <>
-                          <span className="text-muted-foreground line-through font-medium">
-                            {['USD', 'CAD', 'AUD'].includes(currency.toUpperCase()) ? '$' : currency === '£' ? '£' : currency}{formatPrice(gender === 'male' ? price : femalePrice)} {currency.toUpperCase()}
-                          </span>
-                          <span className="text-2xl font-bold text-foreground">
-                            {['USD', 'CAD', 'AUD'].includes(currency.toUpperCase()) ? '$' : currency === '£' ? '£' : currency}{formatPrice(getCurrentPrice())} {currency.toUpperCase()}
-                          </span>
-                          <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">
-                            {(discountAmount * 100).toFixed(0)}% OFF
-                          </span>
-                        </>
-                      ) : (
-                        <span className="text-2xl font-bold text-foreground">
-                          {['USD', 'CAD', 'AUD'].includes(currency.toUpperCase()) ? '$' : currency === '£' ? '£' : currency}{formatPrice(gender === 'male' ? price : femalePrice)} {currency.toUpperCase()}
-                        </span>
-                      )}
+              {checkoutVariant === 'test' ? (
+                // Test variant with ticket image
+                <div className="bg-card border border-border p-6 rounded-2xl shadow-sm">
+                  <div className="flex gap-4 items-center">
+                    {/* Ticket Image */}
+                    <div className="flex-shrink-0">
+                      <img 
+                        src="/onlineSpeedDating/speed-dating-ticket.png" 
+                        alt="Speed Dating Ticket"
+                        className="w-24 h-24 object-cover rounded-lg"
+                      />
                     </div>
-                    <span className="text-red-600 text-sm font-bold mt-1">
-                      🔥 Last Ticket at this price!
-                    </span>
+                    
+                    {/* Ticket Details */}
+                    <div className="flex-grow">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <h4 className="text-lg font-semibold text-foreground">Online Speed Dating</h4>
+                          <p className="text-sm text-muted-foreground">1× Admission</p>
+                        </div>
+                        <div className="flex flex-col items-end">
+                          <div className="flex items-center space-x-2">
+                            {discountApplied ? (
+                              <>
+                                <span className="text-muted-foreground line-through font-medium">
+                                  {['USD', 'CAD', 'AUD'].includes(currency.toUpperCase()) ? '$' : currency === '£' ? '£' : currency}{formatPrice(gender === 'male' ? price : femalePrice)} {currency.toUpperCase()}
+                                </span>
+                                <span className="text-2xl font-bold text-foreground">
+                                  {['USD', 'CAD', 'AUD'].includes(currency.toUpperCase()) ? '$' : currency === '£' ? '£' : currency}{formatPrice(getCurrentPrice())} {currency.toUpperCase()}
+                                </span>
+                                <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">
+                                  {(discountAmount * 100).toFixed(0)}% OFF
+                                </span>
+                              </>
+                            ) : (
+                              <span className="text-2xl font-bold text-foreground">
+                                {['USD', 'CAD', 'AUD'].includes(currency.toUpperCase()) ? '$' : currency === '£' ? '£' : currency}{formatPrice(gender === 'male' ? price : femalePrice)} {currency.toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-red-600 text-sm font-bold mt-1">
+                            🔥 Last Ticket at this price!
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Important Notice */}
+                      <div className="mt-3 pt-3 border-t border-border">
+                        <p className="text-sm text-muted-foreground flex items-center gap-2">
+                          <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Please arrive 5 minutes prior to the scheduled start time
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                // Control variant - original simple version
+                <div className="bg-card border border-border p-6 rounded-2xl shadow-sm">
+                  <div className="flex justify-between items-center">
+                    <span className="text-lg font-medium text-foreground">Speed Dating Ticket</span>
+                    <div className="flex flex-col items-end">
+                      <div className="flex items-center space-x-2">
+                        {discountApplied ? (
+                          <>
+                            <span className="text-muted-foreground line-through font-medium">
+                              {['USD', 'CAD', 'AUD'].includes(currency.toUpperCase()) ? '$' : currency === '£' ? '£' : currency}{formatPrice(gender === 'male' ? price : femalePrice)} {currency.toUpperCase()}
+                            </span>
+                            <span className="text-2xl font-bold text-foreground">
+                              {['USD', 'CAD', 'AUD'].includes(currency.toUpperCase()) ? '$' : currency === '£' ? '£' : currency}{formatPrice(getCurrentPrice())} {currency.toUpperCase()}
+                            </span>
+                            <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">
+                              {(discountAmount * 100).toFixed(0)}% OFF
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-2xl font-bold text-foreground">
+                            {['USD', 'CAD', 'AUD'].includes(currency.toUpperCase()) ? '$' : currency === '£' ? '£' : currency}{formatPrice(gender === 'male' ? price : femalePrice)} {currency.toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-red-600 text-sm font-bold mt-1">
+                        🔥 Last Ticket at this price!
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Discount Code - Hidden by default */}
               {!discountApplied && (
