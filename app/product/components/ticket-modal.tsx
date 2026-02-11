@@ -375,6 +375,15 @@ export default function TicketModal({
     return (cents / 100).toFixed(2)
   }
 
+  // Get currency symbol from currency code
+  const getCurrencySymbol = () => {
+    const currencyUpper = currency.toUpperCase()
+    if (['USD', 'CAD', 'AUD'].includes(currencyUpper)) return '$'
+    if (currencyUpper === 'GBP' || currency === '£') return '£'
+    if (currencyUpper === 'EUR' || currency === '€') return '€'
+    return currency
+  }
+
   if (!isOpen) return null
 
   return (
@@ -628,10 +637,10 @@ export default function TicketModal({
                         {discountApplied ? (
                           <>
                             <span className="text-base text-muted-foreground line-through font-medium">
-                              {['USD', 'CAD', 'AUD'].includes(currency.toUpperCase()) ? '$' : currency === '£' ? '£' : currency}{formatPrice(gender === 'male' ? price : femalePrice)} {currency.toUpperCase()}
+                              {getCurrencySymbol()}{formatPrice(gender === 'male' ? price : femalePrice)}
                             </span>
                             <span className="text-2xl font-bold text-foreground">
-                              {['USD', 'CAD', 'AUD'].includes(currency.toUpperCase()) ? '$' : currency === '£' ? '£' : currency}{formatPrice(getCurrentPrice())} {currency.toUpperCase()}
+                              {getCurrencySymbol()}{formatPrice(getCurrentPrice())}
                             </span>
                             <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">
                               {(discountAmount * 100).toFixed(0)}% OFF
@@ -639,7 +648,7 @@ export default function TicketModal({
                           </>
                         ) : (
                           <span className="text-2xl font-bold text-foreground">
-                            {['USD', 'CAD', 'AUD'].includes(currency.toUpperCase()) ? '$' : currency === '£' ? '£' : currency}{formatPrice(gender === 'male' ? price : femalePrice)} {currency.toUpperCase()}
+                            {getCurrencySymbol()}{formatPrice(gender === 'male' ? price : femalePrice)}
                           </span>
                         )}
                       </div>
@@ -682,10 +691,10 @@ export default function TicketModal({
                             {discountApplied ? (
                               <>
                                 <span className="text-muted-foreground line-through font-medium">
-                                  {['USD', 'CAD', 'AUD'].includes(currency.toUpperCase()) ? '$' : currency === '£' ? '£' : currency}{formatPrice(gender === 'male' ? price : femalePrice)} {currency.toUpperCase()}
+                                  {getCurrencySymbol()}{formatPrice(gender === 'male' ? price : femalePrice)}
                                 </span>
                                 <span className="text-2xl font-bold text-foreground">
-                                  {['USD', 'CAD', 'AUD'].includes(currency.toUpperCase()) ? '$' : currency === '£' ? '£' : currency}{formatPrice(getCurrentPrice())} {currency.toUpperCase()}
+                                  {getCurrencySymbol()}{formatPrice(getCurrentPrice())}
                                 </span>
                                 <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">
                                   {(discountAmount * 100).toFixed(0)}% OFF
@@ -693,7 +702,7 @@ export default function TicketModal({
                               </>
                             ) : (
                               <span className="text-2xl font-bold text-foreground">
-                                {['USD', 'CAD', 'AUD'].includes(currency.toUpperCase()) ? '$' : currency === '£' ? '£' : currency}{formatPrice(gender === 'male' ? price : femalePrice)} {currency.toUpperCase()}
+                                {getCurrencySymbol()}{formatPrice(gender === 'male' ? price : femalePrice)}
                               </span>
                             )}
                           </div>
@@ -725,10 +734,10 @@ export default function TicketModal({
                         {discountApplied ? (
                           <>
                             <span className="text-muted-foreground line-through font-medium">
-                              {['USD', 'CAD', 'AUD'].includes(currency.toUpperCase()) ? '$' : currency === '£' ? '£' : currency}{formatPrice(gender === 'male' ? price : femalePrice)} {currency.toUpperCase()}
+                              {getCurrencySymbol()}{formatPrice(gender === 'male' ? price : femalePrice)}
                             </span>
                             <span className="text-2xl font-bold text-foreground">
-                              {['USD', 'CAD', 'AUD'].includes(currency.toUpperCase()) ? '$' : currency === '£' ? '£' : currency}{formatPrice(getCurrentPrice())} {currency.toUpperCase()}
+                              {getCurrencySymbol()}{formatPrice(getCurrentPrice())}
                             </span>
                             <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">
                               {(discountAmount * 100).toFixed(0)}% OFF
@@ -736,7 +745,7 @@ export default function TicketModal({
                           </>
                         ) : (
                           <span className="text-2xl font-bold text-foreground">
-                            {['USD', 'CAD', 'AUD'].includes(currency.toUpperCase()) ? '$' : currency === '£' ? '£' : currency}{formatPrice(gender === 'male' ? price : femalePrice)} {currency.toUpperCase()}
+                            {getCurrencySymbol()}{formatPrice(gender === 'male' ? price : femalePrice)}
                           </span>
                         )}
                       </div>
