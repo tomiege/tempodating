@@ -86,6 +86,19 @@ CREATE TABLE IF NOT EXISTS public.event_invitations (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Attendance table for event check-ins
+CREATE TABLE IF NOT EXISTS public.attendance (
+  id SERIAL PRIMARY KEY,
+  attendee_name TEXT NOT NULL,
+  preferred_name TEXT NOT NULL,
+  gender TEXT NOT NULL CHECK (gender IN ('male', 'female')),
+  age INTEGER NOT NULL CHECK (age >= 16 AND age <= 100),
+  product_id TEXT NOT NULL,
+  site_name TEXT NOT NULL DEFAULT 'default',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_checkout_session_id ON public.checkout(checkout_session_id);
 CREATE INDEX IF NOT EXISTS idx_checkout_email ON public.checkout(email);
@@ -99,4 +112,6 @@ CREATE INDEX IF NOT EXISTS idx_matches_product ON public.matches(product_id, pro
 CREATE INDEX IF NOT EXISTS idx_event_invitations_to_email ON public.event_invitations(to_email);
 CREATE INDEX IF NOT EXISTS idx_event_invitations_from_user_id ON public.event_invitations(from_user_id);
 CREATE INDEX IF NOT EXISTS idx_event_invitations_product ON public.event_invitations(product_id, product_type);
+CREATE INDEX IF NOT EXISTS idx_attendance_product_id ON public.attendance(product_id);
+CREATE INDEX IF NOT EXISTS idx_attendance_site_name ON public.attendance(site_name);
 
