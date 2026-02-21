@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { CheckCircle, AlertCircle, Loader2, Shuffle, Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -33,6 +33,18 @@ function generateRandomEmoji(): string {
 }
 
 export default function AttendancePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-white via-orange-50 to-orange-100 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+      </div>
+    }>
+      <AttendanceContent />
+    </Suspense>
+  )
+}
+
+function AttendanceContent() {
   const [isVisible, setIsVisible] = useState(false)
   const [firstName, setFirstName] = useState<string>('')
   const [lastName, setLastName] = useState<string>('')

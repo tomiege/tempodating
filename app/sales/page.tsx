@@ -16,6 +16,8 @@ interface SalesData {
   female_tickets: number
   total: number
   differential: number
+  city: string | null
+  gmtdatetime: string | null
 }
 
 interface HourlyData {
@@ -38,6 +40,19 @@ async function getSalesData(): Promise<SalesData[]> {
     return []
   }
 
+  // Load product data for city and datetime info
+  let productMap = new Map<number, { city: string; gmtdatetime: string }>()
+  try {
+    const fs = await import('fs')
+    const path = await import('path')
+    const filePath = path.join(process.cwd(), 'public', 'products', 'onlineSpeedDating.json')
+    const fileContent = fs.readFileSync(filePath, 'utf-8')
+    const products = JSON.parse(fileContent) as Array<{ productId: number; city: string; gmtdatetime: string }>
+    products.forEach(p => productMap.set(p.productId, { city: p.city, gmtdatetime: p.gmtdatetime }))
+  } catch (e) {
+    console.error('Error loading product data:', e)
+  }
+
   // Group by product_id and count male/female tickets
   const salesMap = new Map<number, { male: number; female: number }>()
 
@@ -56,13 +71,18 @@ async function getSalesData(): Promise<SalesData[]> {
   })
 
   // Convert to array format
-  const salesData: SalesData[] = Array.from(salesMap.entries()).map(([productId, counts]) => ({
-    product_id: productId,
-    male_tickets: counts.male,
-    female_tickets: counts.female,
-    total: counts.male + counts.female,
-    differential: counts.male - counts.female,
-  }))
+  const salesData: SalesData[] = Array.from(salesMap.entries()).map(([productId, counts]) => {
+    const product = productMap.get(productId)
+    return {
+      product_id: productId,
+      male_tickets: counts.male,
+      female_tickets: counts.female,
+      total: counts.male + counts.female,
+      differential: counts.male - counts.female,
+      city: product?.city || null,
+      gmtdatetime: product?.gmtdatetime || null,
+    }
+  })
 
   // Sort by product_id
   return salesData.sort((a, b) => a.product_id - b.product_id)
@@ -166,6 +186,8 @@ export default async function SalesPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Product ID</TableHead>
+                  <TableHead>City</TableHead>
+                  <TableHead>Start Date/Time</TableHead>
                   <TableHead className="text-right">Male Tickets</TableHead>
                   <TableHead className="text-right">Female Tickets</TableHead>
                   <TableHead className="text-right">Total</TableHead>
@@ -176,6 +198,18 @@ export default async function SalesPage() {
                 {salesData.map((row) => (
                   <TableRow key={row.product_id}>
                     <TableCell className="font-medium">{row.product_id}</TableCell>
+                    <TableCell>{row.city || '—'}</TableCell>
+                    <TableCell>
+                      {row.gmtdatetime
+                        ? new Date(row.gmtdatetime).toLocaleString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: true,
+                          })
+                        : '—'}
+                    </TableCell>
                     <TableCell className="text-right">{row.male_tickets}</TableCell>
                     <TableCell className="text-right">{row.female_tickets}</TableCell>
                     <TableCell className="text-right font-semibold">{row.total}</TableCell>
