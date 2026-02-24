@@ -1,15 +1,25 @@
 [
     {
-        "productId": 356,
+        "eventId": 356,
         "gmtdatetime": "2026-02-28T18:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "Charlotte",
-        "latitude": null,
-        "longitude": null,
+        "latitude": 35.2270768,
+        "longitude": -80.84089329999999,
         "timezone": "America/New_York",
-        "male_price": 1600,
-        "female_price": 1200,
+        "prices": [
+            {
+                "price": 1600,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1200,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
         "currency": "USD",
         "duration_in_minutes": 60,
         "soldOut": false,
@@ -18,16 +28,26 @@
         "region_id": "NC_1"
     },
     {
-        "productId": 357,
+        "eventId": 357,
         "gmtdatetime": "2026-02-28T19:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "Boston",
-        "latitude": null,
-        "longitude": null,
+        "latitude": 42.3555076,
+        "longitude": -71.0565364,
         "timezone": "America/New_York",
-        "male_price": 1600,
-        "female_price": 1200,
+        "prices": [
+            {
+                "price": 1600,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1200,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
         "currency": "USD",
         "duration_in_minutes": 60,
         "soldOut": false,
@@ -36,16 +56,26 @@
         "region_id": "MA_2"
     },
     {
-        "productId": 358,
+        "eventId": 358,
         "gmtdatetime": "2026-02-28T20:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "Philadelphia",
-        "latitude": null,
-        "longitude": null,
+        "latitude": 39.9525839,
+        "longitude": -75.1652215,
         "timezone": "America/New_York",
-        "male_price": 1600,
-        "female_price": 1200,
+        "prices": [
+            {
+                "price": 1600,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1200,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
         "currency": "USD",
         "duration_in_minutes": 60,
         "soldOut": false,
@@ -54,16 +84,26 @@
         "region_id": "DC_PA_MD_3"
     },
     {
-        "productId": 359,
+        "eventId": 359,
         "gmtdatetime": "2026-03-01T08:00:00Z",
         "title": "Online Speed Dating",
         "country": "Australia",
         "city": "Sydney",
-        "latitude": null,
-        "longitude": null,
+        "latitude": -33.8622503,
+        "longitude": 151.207684,
         "timezone": "Australia/Sydney",
-        "male_price": 2200,
-        "female_price": 1600,
+        "prices": [
+            {
+                "price": 2200,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1600,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
         "currency": "AUD",
         "duration_in_minutes": 60,
         "soldOut": false,
@@ -72,16 +112,26 @@
         "region_id": "NSW_4"
     },
     {
-        "productId": 360,
+        "eventId": 360,
         "gmtdatetime": "2026-03-01T09:00:00Z",
         "title": "Online Speed Dating",
         "country": "Australia",
         "city": "Melbourne",
-        "latitude": null,
-        "longitude": null,
+        "latitude": -37.8136276,
+        "longitude": 144.9630576,
         "timezone": "Australia/Sydney",
-        "male_price": 2200,
-        "female_price": 1600,
+        "prices": [
+            {
+                "price": 2200,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1600,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
         "currency": "AUD",
         "duration_in_minutes": 60,
         "soldOut": false,
@@ -90,16 +140,26 @@
         "region_id": "VIC_5"
     },
     {
-        "productId": 361,
+        "eventId": 361,
         "gmtdatetime": "2026-03-01T18:00:00Z",
         "title": "Online Speed Dating",
         "country": "United Kingdom",
         "city": "London",
-        "latitude": null,
-        "longitude": null,
+        "latitude": 51.5072178,
+        "longitude": -0.1275862,
         "timezone": "Europe/London",
-        "male_price": 1400,
-        "female_price": 1000,
+        "prices": [
+            {
+                "price": 1400,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1000,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
         "currency": "GBP",
         "duration_in_minutes": 60,
         "soldOut": false,
@@ -108,16 +168,26 @@
         "region_id": "LDN_EAST_6"
     },
     {
-        "productId": 362,
+        "eventId": 362,
         "gmtdatetime": "2026-03-01T19:00:00Z",
         "title": "Online Speed Dating",
         "country": "United Kingdom",
         "city": "Birmingham",
-        "latitude": null,
-        "longitude": null,
+        "latitude": 52.4822694,
+        "longitude": -1.8900078,
         "timezone": "Europe/London",
-        "male_price": 1400,
-        "female_price": 1000,
+        "prices": [
+            {
+                "price": 1400,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1000,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
         "currency": "GBP",
         "duration_in_minutes": 60,
         "soldOut": false,
@@ -126,16 +196,26 @@
         "region_id": "E_W_MIDS_7"
     },
     {
-        "productId": 363,
+        "eventId": 363,
         "gmtdatetime": "2026-03-01T20:00:00Z",
         "title": "Online Speed Dating",
         "country": "United Kingdom",
         "city": "Bristol",
-        "latitude": null,
-        "longitude": null,
+        "latitude": 51.454513,
+        "longitude": -2.58791,
         "timezone": "Europe/London",
-        "male_price": 1400,
-        "female_price": 1000,
+        "prices": [
+            {
+                "price": 1400,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1000,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
         "currency": "GBP",
         "duration_in_minutes": 60,
         "soldOut": false,
@@ -144,16 +224,26 @@
         "region_id": "SE_SW_ENG_8"
     },
     {
-        "productId": 364,
+        "eventId": 364,
         "gmtdatetime": "2026-03-01T21:00:00Z",
         "title": "Online Speed Dating",
         "country": "United Kingdom",
         "city": "Leeds",
-        "latitude": null,
-        "longitude": null,
+        "latitude": 53.8007554,
+        "longitude": -1.5490774,
         "timezone": "Europe/London",
-        "male_price": 1400,
-        "female_price": 1000,
+        "prices": [
+            {
+                "price": 1400,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1000,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
         "currency": "GBP",
         "duration_in_minutes": 60,
         "soldOut": false,
@@ -162,16 +252,26 @@
         "region_id": "NW_ENG_YORKS_9"
     },
     {
-        "productId": 365,
+        "eventId": 365,
         "gmtdatetime": "2026-03-07T18:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "Chicago",
-        "latitude": null,
-        "longitude": null,
+        "latitude": 41.88325,
+        "longitude": -87.6323879,
         "timezone": "America/Chicago",
-        "male_price": 1600,
-        "female_price": 1200,
+        "prices": [
+            {
+                "price": 1600,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1200,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
         "currency": "USD",
         "duration_in_minutes": 60,
         "soldOut": false,
@@ -180,16 +280,26 @@
         "region_id": "IL_WI_10"
     },
     {
-        "productId": 366,
+        "eventId": 366,
         "gmtdatetime": "2026-03-07T19:00:00Z",
         "title": "Online Speed Dating",
         "country": "Canada",
         "city": "Calgary",
-        "latitude": null,
-        "longitude": null,
+        "latitude": 51.04473309999999,
+        "longitude": -114.0718831,
         "timezone": "America/Denver",
-        "male_price": 2200,
-        "female_price": 1600,
+        "prices": [
+            {
+                "price": 2200,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1600,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
         "currency": "CAD",
         "duration_in_minutes": 60,
         "soldOut": false,
@@ -198,16 +308,26 @@
         "region_id": "AB_11"
     },
     {
-        "productId": 367,
+        "eventId": 367,
         "gmtdatetime": "2026-03-07T20:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "Los Angeles",
-        "latitude": null,
-        "longitude": null,
+        "latitude": 34.0549076,
+        "longitude": -118.242643,
         "timezone": "America/Los_Angeles",
-        "male_price": 1600,
-        "female_price": 1200,
+        "prices": [
+            {
+                "price": 1600,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1200,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
         "currency": "USD",
         "duration_in_minutes": 60,
         "soldOut": false,
@@ -216,16 +336,26 @@
         "region_id": "CA_12"
     },
     {
-        "productId": 368,
+        "eventId": 368,
         "gmtdatetime": "2026-03-07T21:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "Jacksonville",
-        "latitude": null,
-        "longitude": null,
+        "latitude": 30.3297566,
+        "longitude": -81.6591529,
         "timezone": "America/New_York",
-        "male_price": 1600,
-        "female_price": 1200,
+        "prices": [
+            {
+                "price": 1600,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1200,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
         "currency": "USD",
         "duration_in_minutes": 60,
         "soldOut": false,
@@ -234,16 +364,26 @@
         "region_id": "FL_13"
     },
     {
-        "productId": 369,
+        "eventId": 369,
         "gmtdatetime": "2026-03-08T16:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "Columbus",
-        "latitude": null,
-        "longitude": null,
+        "latitude": 39.9625112,
+        "longitude": -83.0032218,
         "timezone": "America/New_York",
-        "male_price": 1600,
-        "female_price": 1200,
+        "prices": [
+            {
+                "price": 1600,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1200,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
         "currency": "USD",
         "duration_in_minutes": 60,
         "soldOut": false,
@@ -252,16 +392,26 @@
         "region_id": "IN_MI_OH_14"
     },
     {
-        "productId": 370,
+        "eventId": 370,
         "gmtdatetime": "2026-03-08T17:00:00Z",
         "title": "Online Speed Dating",
         "country": "Canada",
         "city": "Ottawa",
-        "latitude": null,
-        "longitude": null,
+        "latitude": 45.4200572,
+        "longitude": -75.7003397,
         "timezone": "America/New_York",
-        "male_price": 2200,
-        "female_price": 1600,
+        "prices": [
+            {
+                "price": 2200,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1600,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
         "currency": "CAD",
         "duration_in_minutes": 60,
         "soldOut": false,
@@ -270,16 +420,26 @@
         "region_id": "ON_15"
     },
     {
-        "productId": 371,
+        "eventId": 371,
         "gmtdatetime": "2026-03-08T18:00:00Z",
         "title": "Online Speed Dating",
         "country": "Canada",
         "city": "Montreal",
-        "latitude": null,
-        "longitude": null,
+        "latitude": 45.5018869,
+        "longitude": -73.56739189999999,
         "timezone": "America/New_York",
-        "male_price": 2200,
-        "female_price": 1600,
+        "prices": [
+            {
+                "price": 2200,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1600,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
         "currency": "CAD",
         "duration_in_minutes": 60,
         "soldOut": false,
@@ -288,16 +448,26 @@
         "region_id": "QC_16"
     },
     {
-        "productId": 372,
+        "eventId": 372,
         "gmtdatetime": "2026-03-08T19:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "Houston",
-        "latitude": null,
-        "longitude": null,
+        "latitude": 29.7600771,
+        "longitude": -95.37011079999999,
         "timezone": "America/Chicago",
-        "male_price": 1600,
-        "female_price": 1200,
+        "prices": [
+            {
+                "price": 1600,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1200,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
         "currency": "USD",
         "duration_in_minutes": 60,
         "soldOut": false,
@@ -306,16 +476,26 @@
         "region_id": "TX_17"
     },
     {
-        "productId": 373,
+        "eventId": 373,
         "gmtdatetime": "2026-03-08T20:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "Phoenix",
-        "latitude": null,
-        "longitude": null,
+        "latitude": 33.4482948,
+        "longitude": -112.0725488,
         "timezone": "America/Phoenix",
-        "male_price": 1600,
-        "female_price": 1200,
+        "prices": [
+            {
+                "price": 1600,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1200,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
         "currency": "USD",
         "duration_in_minutes": 60,
         "soldOut": false,
@@ -324,16 +504,26 @@
         "region_id": "AZ_18"
     },
     {
-        "productId": 374,
+        "eventId": 374,
         "gmtdatetime": "2026-03-08T21:00:00Z",
         "title": "Online Speed Dating",
         "country": "Canada",
         "city": "Vancouver",
-        "latitude": null,
-        "longitude": null,
+        "latitude": 49.2827291,
+        "longitude": -123.1207375,
         "timezone": "America/Los_Angeles",
-        "male_price": 2200,
-        "female_price": 1600,
+        "prices": [
+            {
+                "price": 2200,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1600,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
         "currency": "CAD",
         "duration_in_minutes": 60,
         "soldOut": false,
@@ -342,16 +532,26 @@
         "region_id": "BC_19"
     },
     {
-        "productId": 375,
+        "eventId": 375,
         "gmtdatetime": "2026-03-08T22:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "Seattle",
-        "latitude": null,
-        "longitude": null,
+        "latitude": 47.6061389,
+        "longitude": -122.3328481,
         "timezone": "America/Los_Angeles",
-        "male_price": 1600,
-        "female_price": 1200,
+        "prices": [
+            {
+                "price": 1600,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1200,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
         "currency": "USD",
         "duration_in_minutes": 60,
         "soldOut": false,
@@ -360,21 +560,619 @@
         "region_id": "WA_OR_20"
     },
     {
-        "productId": 376,
+        "eventId": 376,
         "gmtdatetime": "2026-03-08T23:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "New York City",
-        "latitude": null,
-        "longitude": null,
+        "latitude": 40.7127753,
+        "longitude": -74.0059728,
         "timezone": "America/New_York",
-        "male_price": 1600,
-        "female_price": 1200,
+        "prices": [
+            {
+                "price": 1600,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1200,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
         "currency": "USD",
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
         "zoomInvite": "https://us02web.zoom.us/j/86255369586?pwd=rJa318XiciYCYrsKCwzS43jQLXyiAk.1",
+        "region_id": "NY_NJ_21"
+    },
+    {
+        "eventId": 377,
+        "gmtdatetime": "2026-03-29T18:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "USA",
+        "city": "Charlotte",
+        "latitude": 35.2270768,
+        "longitude": -80.84089329999999,
+        "timezone": "America/New_York",
+        "prices": [
+            {
+                "price": 1600,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1200,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
+        "currency": "USD",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/84958223835?pwd=liJkNZ71l6XA9or8Mq8dL9Oa1KckGS.1",
+        "region_id": "NC_1"
+    },
+    {
+        "eventId": 378,
+        "gmtdatetime": "2026-03-29T19:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "USA",
+        "city": "Boston",
+        "latitude": 42.3555076,
+        "longitude": -71.0565364,
+        "timezone": "America/New_York",
+        "prices": [
+            {
+                "price": 1600,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1200,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
+        "currency": "USD",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/83452310598?pwd=257vamA6PwhYtVntdM6IZeG439PaZg.1",
+        "region_id": "MA_2"
+    },
+    {
+        "eventId": 379,
+        "gmtdatetime": "2026-03-29T20:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "USA",
+        "city": "Philadelphia",
+        "latitude": 39.9525839,
+        "longitude": -75.1652215,
+        "timezone": "America/New_York",
+        "prices": [
+            {
+                "price": 1600,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1200,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
+        "currency": "USD",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/81579541928?pwd=uiQVU7k4alnCaPPawQkAY4D0R3S5QW.1",
+        "region_id": "DC_PA_MD_3"
+    },
+    {
+        "eventId": 380,
+        "gmtdatetime": "2026-03-30T08:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "Australia",
+        "city": "Sydney",
+        "latitude": -33.8622503,
+        "longitude": 151.207684,
+        "timezone": "Australia/Sydney",
+        "prices": [
+            {
+                "price": 2200,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1600,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
+        "currency": "AUD",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/81070967070?pwd=rZvogFeDObJpZbJkJxxGNcKciZEZOS.1",
+        "region_id": "NSW_4"
+    },
+    {
+        "eventId": 381,
+        "gmtdatetime": "2026-03-30T09:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "Australia",
+        "city": "Melbourne",
+        "latitude": -37.8136276,
+        "longitude": 144.9630576,
+        "timezone": "Australia/Sydney",
+        "prices": [
+            {
+                "price": 2200,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1600,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
+        "currency": "AUD",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/82335407194?pwd=EbESJP1nYesX1kpJRP0iiMUwrrR4up.1",
+        "region_id": "VIC_5"
+    },
+    {
+        "eventId": 382,
+        "gmtdatetime": "2026-03-30T18:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "United Kingdom",
+        "city": "London",
+        "latitude": 51.5072178,
+        "longitude": -0.1275862,
+        "timezone": "Europe/London",
+        "prices": [
+            {
+                "price": 1400,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1000,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
+        "currency": "GBP",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/82762927473?pwd=EwcLneccUkEKKeQWTCtvxW5siWE4hl.1",
+        "region_id": "LDN_EAST_6"
+    },
+    {
+        "eventId": 383,
+        "gmtdatetime": "2026-03-30T19:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "United Kingdom",
+        "city": "Birmingham",
+        "latitude": 52.4822694,
+        "longitude": -1.8900078,
+        "timezone": "Europe/London",
+        "prices": [
+            {
+                "price": 1400,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1000,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
+        "currency": "GBP",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/83593578640?pwd=ZQTdGDP9CG8Jr40Swk0vntuYAfavb1.1",
+        "region_id": "E_W_MIDS_7"
+    },
+    {
+        "eventId": 384,
+        "gmtdatetime": "2026-03-30T20:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "United Kingdom",
+        "city": "Bristol",
+        "latitude": 51.454513,
+        "longitude": -2.58791,
+        "timezone": "Europe/London",
+        "prices": [
+            {
+                "price": 1400,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1000,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
+        "currency": "GBP",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/81283132830?pwd=dHPGuFyWTdabmotq2lUSBaqWdaI8uu.1",
+        "region_id": "SE_SW_ENG_8"
+    },
+    {
+        "eventId": 385,
+        "gmtdatetime": "2026-03-30T21:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "United Kingdom",
+        "city": "Leeds",
+        "latitude": 53.8007554,
+        "longitude": -1.5490774,
+        "timezone": "Europe/London",
+        "prices": [
+            {
+                "price": 1400,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1000,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
+        "currency": "GBP",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/82050210383?pwd=lpIVRSbaSmhbe6WYZ0PNRhpEoc2Umg.1",
+        "region_id": "NW_ENG_YORKS_9"
+    },
+    {
+        "eventId": 386,
+        "gmtdatetime": "2026-04-04T18:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "USA",
+        "city": "Chicago",
+        "latitude": 41.88325,
+        "longitude": -87.6323879,
+        "timezone": "America/Chicago",
+        "prices": [
+            {
+                "price": 1600,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1200,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
+        "currency": "USD",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/82545757714?pwd=xP7lYxAPaiX8WvTuZOHPPbF57ljbxl.1",
+        "region_id": "IL_WI_10"
+    },
+    {
+        "eventId": 387,
+        "gmtdatetime": "2026-04-04T19:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "Canada",
+        "city": "Calgary",
+        "latitude": 51.04473309999999,
+        "longitude": -114.0718831,
+        "timezone": "America/Denver",
+        "prices": [
+            {
+                "price": 2200,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1600,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
+        "currency": "CAD",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/86472410511?pwd=hFcsbIORbMGwIhaeDXxSlxw6ESeNFR.1",
+        "region_id": "AB_11"
+    },
+    {
+        "eventId": 388,
+        "gmtdatetime": "2026-04-04T20:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "USA",
+        "city": "Los Angeles",
+        "latitude": 34.0549076,
+        "longitude": -118.242643,
+        "timezone": "America/Los_Angeles",
+        "prices": [
+            {
+                "price": 1600,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1200,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
+        "currency": "USD",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/82986975481?pwd=YAzaVebyTyCvRCSPKZwHngY1BUeEP0.1",
+        "region_id": "CA_12"
+    },
+    {
+        "eventId": 389,
+        "gmtdatetime": "2026-04-04T21:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "USA",
+        "city": "Jacksonville",
+        "latitude": 30.3297566,
+        "longitude": -81.6591529,
+        "timezone": "America/New_York",
+        "prices": [
+            {
+                "price": 1600,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1200,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
+        "currency": "USD",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/83030032153?pwd=YsPgtL4qtMapyiEkLE8Twv5DVlif1C.1",
+        "region_id": "FL_13"
+    },
+    {
+        "eventId": 390,
+        "gmtdatetime": "2026-04-05T16:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "USA",
+        "city": "Columbus",
+        "latitude": 39.9625112,
+        "longitude": -83.0032218,
+        "timezone": "America/New_York",
+        "prices": [
+            {
+                "price": 1600,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1200,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
+        "currency": "USD",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/86569070610?pwd=jiFdSIP95ndN8SFDPM3qxM2wSmJHlI.1",
+        "region_id": "IN_MI_OH_14"
+    },
+    {
+        "eventId": 391,
+        "gmtdatetime": "2026-04-05T17:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "Canada",
+        "city": "Ottawa",
+        "latitude": 45.4200572,
+        "longitude": -75.7003397,
+        "timezone": "America/New_York",
+        "prices": [
+            {
+                "price": 2200,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1600,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
+        "currency": "CAD",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/88049882059?pwd=QGxlnzFWQ6X6TPOMmQQEdyruKkRJ6n.1",
+        "region_id": "ON_15"
+    },
+    {
+        "eventId": 392,
+        "gmtdatetime": "2026-04-05T18:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "Canada",
+        "city": "Montreal",
+        "latitude": 45.5018869,
+        "longitude": -73.56739189999999,
+        "timezone": "America/New_York",
+        "prices": [
+            {
+                "price": 2200,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1600,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
+        "currency": "CAD",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/89792403650?pwd=No2FZomUW49XaENbu3rNPBcYHQO50v.1",
+        "region_id": "QC_16"
+    },
+    {
+        "eventId": 393,
+        "gmtdatetime": "2026-04-05T19:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "USA",
+        "city": "Houston",
+        "latitude": 29.7600771,
+        "longitude": -95.37011079999999,
+        "timezone": "America/Chicago",
+        "prices": [
+            {
+                "price": 1600,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1200,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
+        "currency": "USD",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/89526619854?pwd=MRy28pbPFbEVtbzJ761HfT8uaQ0282.1",
+        "region_id": "TX_17"
+    },
+    {
+        "eventId": 394,
+        "gmtdatetime": "2026-04-05T20:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "USA",
+        "city": "Phoenix",
+        "latitude": 33.4482948,
+        "longitude": -112.0725488,
+        "timezone": "America/Phoenix",
+        "prices": [
+            {
+                "price": 1600,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1200,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
+        "currency": "USD",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/89270724549?pwd=Sy6a6Wd8fG8vIqacGHPQLFAmaGcmab.1",
+        "region_id": "AZ_18"
+    },
+    {
+        "eventId": 395,
+        "gmtdatetime": "2026-04-05T21:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "Canada",
+        "city": "Vancouver",
+        "latitude": 49.2827291,
+        "longitude": -123.1207375,
+        "timezone": "America/Los_Angeles",
+        "prices": [
+            {
+                "price": 2200,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1600,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
+        "currency": "CAD",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/88099075828?pwd=EeZrtKbS78atubpGWJ6HWSaBCfkbMa.1",
+        "region_id": "BC_19"
+    },
+    {
+        "eventId": 396,
+        "gmtdatetime": "2026-04-05T22:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "USA",
+        "city": "Seattle",
+        "latitude": 47.6061389,
+        "longitude": -122.3328481,
+        "timezone": "America/Los_Angeles",
+        "prices": [
+            {
+                "price": 1600,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1200,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
+        "currency": "USD",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/86052671827?pwd=GxPZuSv8TTGFI4R0WGyteorCxnylsX.1",
+        "region_id": "WA_OR_20"
+    },
+    {
+        "eventId": 397,
+        "gmtdatetime": "2026-04-05T23:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "USA",
+        "city": "New York City",
+        "latitude": 40.7127753,
+        "longitude": -74.0059728,
+        "timezone": "America/New_York",
+        "prices": [
+            {
+                "price": 1600,
+                "gender": "Male",
+                "daysBeforeEvent": 30
+            },
+            {
+                "price": 1200,
+                "gender": "Female",
+                "daysBeforeEvent": 30
+            }
+        ],
+        "currency": "USD",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/89974582873?pwd=TXIAeexBDAugKrqLWEv0yPaRKUp1tA.1",
         "region_id": "NY_NJ_21"
     }
 ]

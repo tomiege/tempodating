@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createServiceSupabaseClient } from '@/lib/supabase-server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -16,8 +17,7 @@ interface SalesData {
   female_tickets: number
   total: number
   differential: number
-  city: string | null
-  gmtdatetime: string | null
+  city: string
 }
 
 interface HourlyData {
@@ -28,11 +28,10 @@ interface HourlyData {
 async function getSalesData(): Promise<SalesData[]> {
   const supabase = createServiceSupabaseClient()
 
-  // Get all checkouts with non-null user_id
+  // Get only PAID checkouts (confirmation_email_sent = true)
   const { data: checkouts, error } = await supabase
     .from('checkout')
-    .select('product_id, is_male')
-    .not('user_id', 'is', null)
+    .select('product_id, is_male, user_id, email, query_city')
     .eq('confirmation_email_sent', true)
 
   if (error) {
@@ -40,29 +39,30 @@ async function getSalesData(): Promise<SalesData[]> {
     return []
   }
 
-  // Load product data for city and datetime info
-  let productMap = new Map<number, { city: string; gmtdatetime: string }>()
-  try {
-    const fs = await import('fs')
-    const path = await import('path')
-    const filePath = path.join(process.cwd(), 'public', 'products', 'onlineSpeedDating.json')
-    const fileContent = fs.readFileSync(filePath, 'utf-8')
-    const products = JSON.parse(fileContent) as Array<{ productId: number; city: string; gmtdatetime: string }>
-    products.forEach(p => productMap.set(p.productId, { city: p.city, gmtdatetime: p.gmtdatetime }))
-  } catch (e) {
-    console.error('Error loading product data:', e)
-  }
-
-  // Group by product_id and count male/female tickets
-  const salesMap = new Map<number, { male: number; female: number }>()
+  // Group by product_id, deduplicate by user (user_id or email) within each product
+  const productMap = new Map<
+    number,
+    { seenUsers: Set<string>; male: number; female: number; city: string }
+  >()
 
   checkouts?.forEach((checkout) => {
     const productId = checkout.product_id
-    if (!salesMap.has(productId)) {
-      salesMap.set(productId, { male: 0, female: 0 })
+    if (!productMap.has(productId)) {
+      productMap.set(productId, { seenUsers: new Set(), male: 0, female: 0, city: checkout.query_city || '' })
     }
 
-    const current = salesMap.get(productId)!
+    const current = productMap.get(productId)!
+
+    // Deduplicate by user_id first, then email
+    const userKey = checkout.user_id || checkout.email
+    if (current.seenUsers.has(userKey)) return
+    current.seenUsers.add(userKey)
+
+    // Set city if not yet set
+    if (!current.city && checkout.query_city) {
+      current.city = checkout.query_city
+    }
+
     if (checkout.is_male === true) {
       current.male++
     } else if (checkout.is_male === false) {
@@ -71,18 +71,14 @@ async function getSalesData(): Promise<SalesData[]> {
   })
 
   // Convert to array format
-  const salesData: SalesData[] = Array.from(salesMap.entries()).map(([productId, counts]) => {
-    const product = productMap.get(productId)
-    return {
-      product_id: productId,
-      male_tickets: counts.male,
-      female_tickets: counts.female,
-      total: counts.male + counts.female,
-      differential: counts.male - counts.female,
-      city: product?.city || null,
-      gmtdatetime: product?.gmtdatetime || null,
-    }
-  })
+  const salesData: SalesData[] = Array.from(productMap.entries()).map(([productId, counts]) => ({
+    product_id: productId,
+    male_tickets: counts.male,
+    female_tickets: counts.female,
+    total: counts.male + counts.female,
+    differential: counts.male - counts.female,
+    city: counts.city,
+  }))
 
   // Sort by product_id
   return salesData.sort((a, b) => a.product_id - b.product_id)
@@ -95,7 +91,6 @@ async function getHourlyCheckouts(): Promise<HourlyData[]> {
     .from('checkout')
     .select('checkout_time')
     .not('user_id', 'is', null)
-    .eq('confirmation_email_sent', true)
     .order('checkout_time', { ascending: true })
 
   if (error || !checkouts) {
@@ -173,7 +168,7 @@ export default async function SalesPage() {
         <CardHeader>
           <CardTitle>Sales Report</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Checkouts grouped by Product ID (Users only)
+            Paid checkouts grouped by Product ID (deduplicated by user)
           </p>
         </CardHeader>
         <CardContent>
@@ -187,7 +182,6 @@ export default async function SalesPage() {
                 <TableRow>
                   <TableHead>Product ID</TableHead>
                   <TableHead>City</TableHead>
-                  <TableHead>Start Date/Time</TableHead>
                   <TableHead className="text-right">Male Tickets</TableHead>
                   <TableHead className="text-right">Female Tickets</TableHead>
                   <TableHead className="text-right">Total</TableHead>
@@ -197,19 +191,12 @@ export default async function SalesPage() {
               <TableBody>
                 {salesData.map((row) => (
                   <TableRow key={row.product_id}>
-                    <TableCell className="font-medium">{row.product_id}</TableCell>
-                    <TableCell>{row.city || '—'}</TableCell>
-                    <TableCell>
-                      {row.gmtdatetime
-                        ? new Date(row.gmtdatetime).toLocaleString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            hour: 'numeric',
-                            minute: '2-digit',
-                            hour12: true,
-                          })
-                        : '—'}
+                    <TableCell className="font-medium">
+                      <Link href={`/sales/customers?product_id=${row.product_id}`} className="text-blue-600 hover:underline">
+                        {row.product_id}
+                      </Link>
                     </TableCell>
+                    <TableCell>{row.city || '—'}</TableCell>
                     <TableCell className="text-right">{row.male_tickets}</TableCell>
                     <TableCell className="text-right">{row.female_tickets}</TableCell>
                     <TableCell className="text-right font-semibold">{row.total}</TableCell>

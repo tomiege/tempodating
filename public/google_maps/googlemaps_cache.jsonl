@@ -18,3 +18,4 @@
 {"input": "Vancouver, Canada", "output": [49.2827291, -123.1207375]}
 {"input": "Seattle, USA", "output": [47.6061389, -122.3328481]}
 {"input": "New York City, USA", "output": [40.7127753, -74.0059728]}
+{"input": "Philadelphia, USA", "output": [39.9525839, -75.1652215]}
