@@ -133,6 +133,14 @@ export default function TicketModal({
 
     if (userSoldOut) {
       setIsSoldOut(true)
+      posthog.capture('event_sold_out', {
+        eventTitle: eventTitle,
+        eventCity: eventCity,
+        productId: productId,
+        productType: productType,
+        gender: gender,
+        hasNextEvent: !!pricingData.nextEvent,
+      })
       if (pricingData.nextEvent) {
         setSoldOutNextEvent(pricingData.nextEvent)
       } else {
@@ -223,7 +231,9 @@ export default function TicketModal({
             leadId: leadData.id,
             email: email,
             eventTitle: eventTitle,
-            eventCity: eventCity 
+            eventCity: eventCity,
+            productId: productId,
+            productType: productType
           })
         } else {
           console.error('Failed to create lead, continuing anyway...')
@@ -236,7 +246,10 @@ export default function TicketModal({
         
         posthog.capture('ticket_modal_new_user', { 
           email: email,
-          eventTitle: eventTitle 
+          eventTitle: eventTitle,
+          eventCity: eventCity,
+          productId: productId,
+          productType: productType
         })
       } catch (error) {
         console.error('Error in step 1:', error)
@@ -271,7 +284,9 @@ export default function TicketModal({
             leadId: leadData.id,
             email: email,
             eventTitle: eventTitle,
-            eventCity: eventCity 
+            eventCity: eventCity,
+            productId: productId,
+            productType: productType
           })
         } else {
           console.error('Failed to create lead, continuing anyway...')
@@ -283,7 +298,10 @@ export default function TicketModal({
         
         posthog.capture('ticket_modal_existing_account_email_entered', { 
           email: email,
-          eventTitle: eventTitle 
+          eventTitle: eventTitle,
+          eventCity: eventCity,
+          productId: productId,
+          productType: productType
         })
       } catch (error) {
         console.error('Error in step 1.5:', error)
@@ -301,7 +319,9 @@ export default function TicketModal({
         age: age,
         gender: gender,
         eventTitle: eventTitle,
-        eventCity: eventCity 
+        eventCity: eventCity,
+        productId: productId,
+        productType: productType
       })
       
       try {
@@ -326,7 +346,9 @@ export default function TicketModal({
               leadId: leadId,
               name: name,
               age: age,
-              gender: gender 
+              gender: gender,
+              productId: productId,
+              productType: productType
             })
           } else {
             console.error('Failed to update lead, continuing anyway...')
@@ -345,14 +367,32 @@ export default function TicketModal({
       setIsLoading(true)
       setRegistrationError(null)
       
-      // Track checkout initiation
+      // Don't track checkout for sold-out events (would skew conversion analytics)
+      if (isSoldOut) return
+
+      // Calculate hours until event starts
+      const eventDateTime = new Date(`${eventDate} ${eventTime}`)
+      const hoursUntilEvent = Math.round((eventDateTime.getTime() - Date.now()) / (1000 * 60 * 60))
+
+      // Track checkout initiation with full pricing breakdown
       posthog.capture('checkout_initiated', { 
         eventTitle: eventTitle,
         eventCity: eventCity,
-        price: getCurrentPrice(),
+        productId: productId,
+        productType: productType,
         gender: gender,
+        // Base price from product listing (before dynamic pricing)
+        basePrice: gender === 'male' ? price : femalePrice,
+        // Dynamic price from calculate-ticket-price API (demand-adjusted)
+        dynamicPrice: gender === 'male' ? (dynamicMalePrice ?? price) : (dynamicFemalePrice ?? femalePrice),
+        // Final price after discount
+        finalPrice: getCurrentPrice(),
+        currency: currency,
         discountApplied: discountApplied,
-        discountAmount: discountAmount 
+        discountAmount: discountAmount,
+        // Hours until event starts (negative = already started)
+        hoursUntilEvent: hoursUntilEvent,
+        daysUntilEvent: Math.round(hoursUntilEvent / 24)
       })
       
       try {
@@ -394,6 +434,11 @@ export default function TicketModal({
           checkoutId: checkoutId,
           eventTitle: eventTitle,
           eventCity: eventCity,
+          productId: productId,
+          productType: productType,
+          gender: gender,
+          finalPrice: getCurrentPrice(),
+          currency: currency,
           isFree: isFree 
         })
 
@@ -409,7 +454,10 @@ export default function TicketModal({
         posthog.capture('checkout_error', { 
           error: error instanceof Error ? error.message : 'Unknown error',
           eventTitle: eventTitle,
-          eventCity: eventCity 
+          eventCity: eventCity,
+          productId: productId,
+          productType: productType,
+          gender: gender
         })
         setRegistrationError(
           error instanceof Error 
@@ -456,7 +504,9 @@ export default function TicketModal({
         posthog.capture('discount_code_applied', { 
           code: lowerCaseCode,
           discountAmount: 0.20,
-          eventTitle: eventTitle 
+          eventTitle: eventTitle,
+          productId: productId,
+          gender: gender
         })
         break
       case "tempo20":
@@ -465,7 +515,9 @@ export default function TicketModal({
         posthog.capture('discount_code_applied', { 
           code: lowerCaseCode,
           discountAmount: 0.20,
-          eventTitle: eventTitle 
+          eventTitle: eventTitle,
+          productId: productId,
+          gender: gender
         })
         break
       default:
@@ -473,7 +525,8 @@ export default function TicketModal({
         setDiscountAmount(0)
         posthog.capture('discount_code_failed', { 
           code: lowerCaseCode,
-          eventTitle: eventTitle 
+          eventTitle: eventTitle,
+          productId: productId
         })
         alert("Invalid discount code")
     }

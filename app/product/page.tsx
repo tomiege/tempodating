@@ -23,6 +23,7 @@ function ProductContent() {
     const productType = searchParams.get('productType')
     const affiliate = searchParams.get('groupurlname')
     const ageRange = searchParams.get('ar')
+    const faceV = searchParams.get('face_v')
     
     if (posthog && productId) {
       posthog.capture('viewed_product', {
@@ -30,6 +31,7 @@ function ProductContent() {
         affiliate_id: affiliate,
         visitor_age_range: ageRange,
         product_type: productType,
+        face_v: faceV ? parseFloat(faceV) : null,
       })
     }
   }, [searchParams])
