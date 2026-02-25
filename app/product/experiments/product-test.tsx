@@ -558,6 +558,7 @@ function ProductContent() {
           currency={product.currency}
           productId={product.productId}
           productType={product.productType}
+          regionId={product.region_id}
         />
       )}
     </main>

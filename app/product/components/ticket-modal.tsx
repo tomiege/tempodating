@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/hooks/use-auth"
 import posthog from 'posthog-js'
 import { useFeatureFlagVariantKey } from 'posthog-js/react'
+import * as Sentry from '@sentry/nextjs'
 
 interface TicketModalProps {
   isOpen: boolean
@@ -21,6 +22,7 @@ interface TicketModalProps {
   currency?: string
   productId?: number
   productType?: string
+  regionId?: string
 }
 
 export default function TicketModal({ 
@@ -34,7 +36,8 @@ export default function TicketModal({
   femalePrice = 1500,
   currency = "£",
   productId,
-  productType = "onlineSpeedDating"
+  productType = "onlineSpeedDating",
+  regionId
 }: TicketModalProps) {
   const [step, setStep] = useState(1)
   const [name, setName] = useState("")
@@ -51,6 +54,18 @@ export default function TicketModal({
   const [isNewUser, setIsNewUser] = useState(false)
   const [leadId, setLeadId] = useState<number | null>(null)
   const [isExistingAccountFlow, setIsExistingAccountFlow] = useState(false)
+  const [dynamicMalePrice, setDynamicMalePrice] = useState<number | null>(null)
+  const [dynamicFemalePrice, setDynamicFemalePrice] = useState<number | null>(null)
+  const [isSoldOut, setIsSoldOut] = useState(false)
+  const [soldOutNextEvent, setSoldOutNextEvent] = useState<{ productId: number; city: string; gmtdatetime: string } | null>(null)
+  const [isWaitlisted, setIsWaitlisted] = useState(false)
+  const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null)
+  const [pricingLoaded, setPricingLoaded] = useState(false)
+  const [pricingData, setPricingData] = useState<{
+    maleSoldOut: boolean
+    femaleSoldOut: boolean
+    nextEvent: { productId: number; city: string; gmtdatetime: string } | null
+  } | null>(null)
   const { user } = useAuth()
   
   // Get feature flag variant
@@ -60,6 +75,98 @@ export default function TicketModal({
   useEffect(() => {
     console.log(`🚩 Ticket Modal Feature Flag - checkout variant: ${checkoutVariant}`)
   }, [checkoutVariant])
+
+  // Fetch dynamic pricing when modal opens
+  useEffect(() => {
+    if (!isOpen || !productId) return
+
+    const fetchPricing = async () => {
+      try {
+        const params = new URLSearchParams({
+          productId: productId.toString(),
+          malePrice: price.toString(),
+          femalePrice: (femalePrice ?? price).toString(),
+          ...(regionId ? { regionId } : {}),
+        })
+
+        const response = await fetch(`/api/calculate-ticket-price?${params}`)
+        if (!response.ok) {
+          throw new Error(`Pricing API returned ${response.status}`)
+        }
+
+        const data = await response.json()
+
+        console.log(`🎟️ Dynamic pricing for product ${productId}: Male tickets sold=${data.maleTickets}, Female tickets sold=${data.femaleTickets}`)
+        console.log(`💰 Adjusted prices: Male=${data.adjustedMalePrice}, Female=${data.adjustedFemalePrice}`)
+        console.log(`🔒 Sold-out flags: maleSoldOut=${data.maleSoldOut}, femaleSoldOut=${data.femaleSoldOut}, nextEvent=${JSON.stringify(data.nextEvent)}`)
+
+        setDynamicMalePrice(data.adjustedMalePrice)
+        setDynamicFemalePrice(data.adjustedFemalePrice)
+        setPricingData({
+          maleSoldOut: data.maleSoldOut,
+          femaleSoldOut: data.femaleSoldOut,
+          nextEvent: data.nextEvent,
+        })
+        setPricingLoaded(true)
+      } catch (error) {
+        console.error('Error fetching dynamic pricing:', error)
+        Sentry.captureException(error, {
+          tags: { feature: 'dynamic-ticket-pricing' },
+          extra: { productId, regionId },
+        })
+        // Fall back to base prices
+        setPricingLoaded(true)
+      }
+    }
+
+    fetchPricing()
+  }, [isOpen, productId, price, femalePrice, regionId])
+
+  // Check sold-out status when gender is selected and pricing is loaded
+  // Also re-check when step changes (for logged-in users jumping to step 3)
+  useEffect(() => {
+    if (!pricingLoaded || !gender || !pricingData) return
+
+    const userSoldOut = gender === 'male' ? pricingData.maleSoldOut : pricingData.femaleSoldOut
+
+    console.log(`🔍 Sold-out check: gender=${gender}, userSoldOut=${userSoldOut}, step=${step}, maleSoldOut=${pricingData.maleSoldOut}, femaleSoldOut=${pricingData.femaleSoldOut}, nextEvent=${JSON.stringify(pricingData.nextEvent)}`)
+
+    if (userSoldOut) {
+      setIsSoldOut(true)
+      if (pricingData.nextEvent) {
+        setSoldOutNextEvent(pricingData.nextEvent)
+      } else {
+        setIsWaitlisted(true)
+      }
+    } else {
+      setIsSoldOut(false)
+      setSoldOutNextEvent(null)
+      setIsWaitlisted(false)
+    }
+  }, [pricingLoaded, pricingData, gender, step])
+
+  // Start redirect countdown when sold out with next event and at step 3
+  useEffect(() => {
+    if (step === 3 && isSoldOut && soldOutNextEvent && redirectCountdown === null) {
+      setRedirectCountdown(3)
+    }
+  }, [step, isSoldOut, soldOutNextEvent, redirectCountdown])
+
+  // Redirect countdown when sold out with next event
+  useEffect(() => {
+    if (redirectCountdown === null) return
+
+    if (redirectCountdown <= 0 && soldOutNextEvent) {
+      window.location.href = `/product?productId=${soldOutNextEvent.productId}&productType=onlineSpeedDating`
+      return
+    }
+
+    const timer = setTimeout(() => {
+      setRedirectCountdown(redirectCountdown - 1)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [redirectCountdown, soldOutNextEvent])
 
   // If user is already logged in, skip to payment step
   useEffect(() => {
@@ -329,6 +436,14 @@ export default function TicketModal({
     setIsNewUser(false)
     setLeadId(null)
     setIsExistingAccountFlow(false)
+    setIsSoldOut(false)
+    setSoldOutNextEvent(null)
+    setIsWaitlisted(false)
+    setRedirectCountdown(null)
+    setPricingLoaded(false)
+    setDynamicMalePrice(null)
+    setDynamicFemalePrice(null)
+    setPricingData(null)
     onClose()
   }
 
@@ -366,7 +481,12 @@ export default function TicketModal({
 
   // Returns price in cents (prices from API are already in cents)
   const getCurrentPrice = () => {
-    const basePrice = gender === 'male' ? price : femalePrice
+    let basePrice: number
+    if (gender === 'male') {
+      basePrice = dynamicMalePrice ?? price
+    } else {
+      basePrice = dynamicFemalePrice ?? femalePrice
+    }
     return Math.round(basePrice * (1 - discountAmount))
   }
 
@@ -602,7 +722,66 @@ export default function TicketModal({
             </div>
           )}
 
-          {step === 3 && (
+          {step === 3 && !pricingLoaded && (
+            <div className="space-y-6">
+              <div className="text-center py-12">
+                <svg className="animate-spin h-8 w-8 mx-auto mb-4 text-primary" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                <p className="text-muted-foreground font-medium">Checking availability...</p>
+              </div>
+            </div>
+          )}
+
+          {step === 3 && pricingLoaded && isSoldOut && soldOutNextEvent && (
+            <div className="space-y-6">
+              <div className="text-center py-12">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-4">
+                  <Heart className="w-8 h-8 text-orange-600" />
+                </div>
+                <h3 className="font-serif text-2xl font-semibold text-foreground mb-2">
+                  Event Sold Out!
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  Directing you to next event on{' '}
+                  <strong className="text-foreground">
+                    {new Date(soldOutNextEvent.gmtdatetime).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </strong>...
+                </p>
+                <p className="text-lg font-bold text-primary">
+                  {redirectCountdown !== null ? `Redirecting in ${redirectCountdown}s...` : 'Preparing redirect...'}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {step === 3 && pricingLoaded && isSoldOut && isWaitlisted && (
+            <div className="space-y-6">
+              <div className="text-center py-12">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-100 rounded-full mb-4">
+                  <Heart className="w-8 h-8 text-yellow-600" />
+                </div>
+                <h3 className="font-serif text-2xl font-semibold text-foreground mb-2">
+                  Event Sold Out
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  Sorry, your event is sold out. But you have been added to the waitlist!
+                </p>
+                <div className="bg-primary/10 text-primary p-4 rounded-xl">
+                  <p className="font-medium">You&apos;re on the waitlist</p>
+                  <p className="text-sm mt-1">We&apos;ll notify you if a spot opens up or when new events are added for your area.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {step === 3 && pricingLoaded && !isSoldOut && (
             <div className="space-y-6">
               <div className="text-center mb-4">
                 {/* <h3 className="font-serif text-2xl font-semibold text-foreground">
@@ -648,7 +827,7 @@ export default function TicketModal({
                           </>
                         ) : (
                           <span className="text-2xl font-bold text-foreground">
-                            {getCurrencySymbol()}{formatPrice(gender === 'male' ? price : femalePrice)}
+                            {getCurrencySymbol()}{formatPrice(getCurrentPrice())}
                           </span>
                         )}
                       </div>
@@ -702,7 +881,7 @@ export default function TicketModal({
                               </>
                             ) : (
                               <span className="text-2xl font-bold text-foreground">
-                                {getCurrencySymbol()}{formatPrice(gender === 'male' ? price : femalePrice)}
+                                {getCurrencySymbol()}{formatPrice(getCurrentPrice())}
                               </span>
                             )}
                           </div>
@@ -745,7 +924,7 @@ export default function TicketModal({
                           </>
                         ) : (
                           <span className="text-2xl font-bold text-foreground">
-                            {getCurrencySymbol()}{formatPrice(gender === 'male' ? price : femalePrice)}
+                            {getCurrencySymbol()}{formatPrice(getCurrentPrice())}
                           </span>
                         )}
                       </div>
@@ -760,7 +939,7 @@ export default function TicketModal({
           )}
 
           {/* Footer */}
-          {!registrationSuccess && (
+          {!registrationSuccess && !(isSoldOut && step === 3) && !(step === 3 && !pricingLoaded) && (
           <div className="flex justify-center items-center mt-8">
             <Button
               onClick={handleNext}
@@ -807,7 +986,7 @@ export default function TicketModal({
           )}
 
           {/* Discount Code - Below Complete Purchase button */}
-          {step === 3 && !discountApplied && !registrationSuccess && (
+          {step === 3 && pricingLoaded && !isSoldOut && !discountApplied && !registrationSuccess && (
             <div className="text-center mt-4">
               {!showDiscountInput ? (
                 <button
@@ -839,7 +1018,7 @@ export default function TicketModal({
             </div>
           )}
 
-          {step === 3 && !registrationSuccess && (
+          {step === 3 && pricingLoaded && !isSoldOut && !registrationSuccess && (
             <div className="mt-8 pt-8 border-t border-border">
               <div className="flex items-center justify-center space-x-3">
                 <Shield className="w-6 h-6 text-green-600" />
