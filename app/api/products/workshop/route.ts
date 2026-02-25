@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import * as Sentry from '@sentry/nextjs';
 import * as fs from 'fs';
 import * as path from 'path';
 import { z } from 'zod';
@@ -55,6 +56,11 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       },
     });
   } catch (error) {
+    // Report all product API errors to Sentry
+    Sentry.captureException(error, {
+      tags: { source: 'api-products-workshop' },
+    });
+
     // Handle validation errors
     if (error instanceof z.ZodError) {
       return NextResponse.json(

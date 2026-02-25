@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, Suspense } from "react"
+import * as Sentry from '@sentry/nextjs'
 import { useSearchParams } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
@@ -117,6 +118,9 @@ function ProductContent() {
           }
         }
       } catch (err) {
+        Sentry.captureException(err, {
+          tags: { source: 'product-page-control', productId: productId ?? undefined, productType: productType ?? undefined },
+        })
         setError(err instanceof Error ? err.message : 'Failed to load product')
       } finally {
         setLoading(false)
