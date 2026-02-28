@@ -13,6 +13,7 @@ import { useEffect, useState } from "react"
 import { signOut } from "@/lib/auth-utils"
 import DashboardProfileComponent from "./components/DashboardProfileComponent"
 import { MyCheckoutsComponent } from "./components/MyCheckoutsComponent"
+import MyMatchesComponent from "./components/MyMatchesComponent"
 import { User } from "@/types/profile"
 
 interface CheckoutData {
@@ -221,11 +222,14 @@ export default function DashboardPage() {
             </div>
 
             {/* Profile Section - Takes 1 column */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 space-y-8">
               <DashboardProfileComponent 
                 user={userProfile} 
                 onUserUpdate={handleProfileUpdate}
               />
+              {user && (
+                <MyMatchesComponent userId={user.id} />
+              )}
             </div>
           </div>
         </div>

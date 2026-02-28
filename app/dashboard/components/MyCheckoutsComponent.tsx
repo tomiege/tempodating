@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -14,6 +14,7 @@ import {
   UserPlus
 } from "lucide-react"
 import { InviteDialog } from "./InviteDialog"
+import MatchModal from "@/components/MatchModal"
 
 interface CheckoutData {
   checkoutId: number
@@ -62,13 +63,12 @@ interface EnrolledEvent {
   date: string
   time: string
   status: 'upcoming' | 'completed'
-  hasMatches: boolean
-  matchCount?: number
   productType: string
   productId: number
   checkoutTime: string
   zoomInvite?: string
   city?: string
+  gmtdatetime?: string
 }
 
 interface MyCheckoutsComponentProps {
@@ -84,10 +84,32 @@ export function MyCheckoutsComponent({
 }: MyCheckoutsComponentProps) {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<EnrolledEvent | null>(null)
+  const [matchModalOpen, setMatchModalOpen] = useState(false)
+  const [matchModalEvent, setMatchModalEvent] = useState<EnrolledEvent | null>(null)
+  const [now, setNow] = useState(new Date())
+
+  // Update current time every 30 seconds so the Match button enables in real-time
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 30_000)
+    return () => clearInterval(interval)
+  }, [])
 
   const handleInviteClick = (event: EnrolledEvent) => {
     setSelectedEvent(event)
     setInviteDialogOpen(true)
+  }
+
+  const handleMatchClick = (event: EnrolledEvent) => {
+    setMatchModalEvent(event)
+    setMatchModalOpen(true)
+  }
+
+  /** Returns true if the Match button should be enabled (30 min after event start) */
+  const isMatchEnabled = (event: EnrolledEvent) => {
+    if (!event.gmtdatetime) return false
+    const eventStart = new Date(event.gmtdatetime)
+    const unlockTime = new Date(eventStart.getTime() + 30 * 60 * 1000)
+    return now >= unlockTime
   }
   
   // Transform checkouts into enrolled events format
@@ -123,12 +145,12 @@ export function MyCheckoutsComponent({
           timeZoneName: 'short'
         }),
         status: isUpcoming ? 'upcoming' : 'completed',
-        hasMatches: false, // This would need to come from a matches table
         productType: checkout.productType,
         productId: checkout.productId,
         checkoutTime: checkout.checkoutTime,
         zoomInvite: matchingProduct?.zoomInvite,
-        city: matchingProduct?.city || checkout.queryCity || undefined
+        city: matchingProduct?.city || checkout.queryCity || undefined,
+        gmtdatetime: matchingProduct?.gmtdatetime
       }
     })
 
@@ -200,7 +222,7 @@ export function MyCheckoutsComponent({
                     onClick={() => handleInviteClick(event)}
                   >
                     <UserPlus className="w-4 h-4" />
-                    Invite a friend (20% off!)
+                    Invite
                   </Button>
                 )}
                 
@@ -216,22 +238,22 @@ export function MyCheckoutsComponent({
                   </Button>
                 )}
                 
-                {event.status === "completed" && event.hasMatches ? (
-                  <Button className="gap-2">
+                {/* Match button — enabled 30 min after event start */}
+                {event.productType === 'onlineSpeedDating' && (
+                  <Button
+                    size="sm"
+                    className="gap-2"
+                    disabled={!isMatchEnabled(event)}
+                    onClick={() => handleMatchClick(event)}
+                    title={
+                      isMatchEnabled(event)
+                        ? 'View participants and submit matches'
+                        : 'Available 30 minutes after the event starts'
+                    }
+                  >
                     <Heart className="w-4 h-4" />
-                    View Matches ({event.matchCount})
+                    Match
                   </Button>
-                ) : event.status === "upcoming" ? (
-                  <>
-                    {event.hasMatches && (
-                      <Button size="sm" className="gap-2">
-                        <Heart className="w-4 h-4" />
-                        Submit Matches
-                      </Button>
-                    )}
-                  </>
-                ) : (
-                  <span className="text-sm text-muted-foreground">No matches</span>
                 )}
               </div>
             </div>
@@ -257,6 +279,19 @@ export function MyCheckoutsComponent({
           productId={selectedEvent.productId}
           productType={selectedEvent.productType}
           city={selectedEvent.city}
+        />
+      )}
+
+      {matchModalEvent && (
+        <MatchModal
+          isOpen={matchModalOpen}
+          onClose={() => {
+            setMatchModalOpen(false)
+            setMatchModalEvent(null)
+          }}
+          productId={matchModalEvent.productId}
+          productType={matchModalEvent.productType}
+          eventTitle={`${matchModalEvent.title}${matchModalEvent.city ? ` — ${matchModalEvent.city}` : ''}`}
         />
       )}
     </Card>

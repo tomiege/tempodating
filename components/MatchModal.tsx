@@ -315,11 +315,6 @@ export default function MatchModal({
                               {participant.name}
                             </h4>
                             <div className="flex items-center gap-2">
-                              {participant.age && (
-                                <Badge variant="secondary" className="bg-gray-700 text-gray-300">
-                                  {participant.age}
-                                </Badge>
-                              )}
                               {participant.isMale !== undefined && (
                                 <Badge
                                   variant="secondary"
@@ -334,9 +329,6 @@ export default function MatchModal({
                               )}
                             </div>
                           </div>
-                          {participant.city && (
-                            <p className="text-sm text-gray-400">{participant.city}</p>
-                          )}
                           {participant.bio && (
                             <p className="text-sm text-gray-300 mt-1 line-clamp-2">
                               {participant.bio}

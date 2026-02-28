@@ -29,21 +29,27 @@ export async function GET(request: NextRequest) {
 
     const serviceSupabase = createServiceSupabaseClient()
 
-    // Verify the user attended this event
-    const { data: userCheckout, error: userCheckoutError } = await serviceSupabase
+    // Verify the user attended this event (match by user_id OR email, same as checkouts endpoint)
+    const { data: userCheckouts, error: userCheckoutError } = await serviceSupabase
       .from('checkout')
       .select('checkout_id')
-      .eq('user_id', user.id)
+      .or(`user_id.eq.${user.id},email.eq.${user.email}`)
       .eq('product_id', parseInt(productId))
       .eq('product_type', productType)
-      .single()
 
-    if (userCheckoutError || !userCheckout) {
+    if (userCheckoutError || !userCheckouts || userCheckouts.length === 0) {
       return NextResponse.json(
         { error: 'You are not registered for this event' },
         { status: 403 }
       )
     }
+
+    // Get current user's profile to determine gender
+    const { data: currentUserProfile } = await serviceSupabase
+      .from('users')
+      .select('is_male')
+      .eq('id', user.id)
+      .single()
 
     // Get all participants for this event (excluding current user)
     const { data: checkouts, error: checkoutsError } = await serviceSupabase
@@ -65,11 +71,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json([])
     }
 
-    // Get profile information for participants
-    const { data: profiles, error: profilesError } = await serviceSupabase
+    // Get profile information for participants — only show the opposite gender
+    let profilesQuery = serviceSupabase
       .from('users')
       .select('id, full_name, bio, age, city, avatar_url, is_male')
       .in('id', participantIds)
+
+    if (currentUserProfile?.is_male === true) {
+      profilesQuery = profilesQuery.eq('is_male', false)
+    } else if (currentUserProfile?.is_male === false) {
+      profilesQuery = profilesQuery.eq('is_male', true)
+    }
+    // If is_male is null (not set), show all participants as fallback
+
+    const { data: profiles, error: profilesError } = await profilesQuery
 
     if (profilesError) {
       console.error('Error fetching profiles:', profilesError)

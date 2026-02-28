@@ -37,31 +37,29 @@ export async function POST(request: NextRequest) {
     // Use service client for database operations
     const serviceSupabase = createServiceSupabaseClient()
 
-    // Check if both users attended the same event (have checkout records for this product)
-    const { data: userCheckout, error: userCheckoutError } = await serviceSupabase
+    // Check if both users attended the same event (match by user_id OR email, same as checkouts endpoint)
+    const { data: userCheckouts, error: userCheckoutError } = await serviceSupabase
       .from('checkout')
       .select('checkout_id')
-      .eq('user_id', user.id)
+      .or(`user_id.eq.${user.id},email.eq.${user.email}`)
       .eq('product_id', productId)
       .eq('product_type', productType)
-      .single()
 
-    if (userCheckoutError || !userCheckout) {
+    if (userCheckoutError || !userCheckouts || userCheckouts.length === 0) {
       return NextResponse.json(
         { error: 'You are not registered for this event' },
         { status: 403 }
       )
     }
 
-    const { data: likedUserCheckout, error: likedUserCheckoutError } = await serviceSupabase
+    const { data: likedUserCheckouts, error: likedUserCheckoutError } = await serviceSupabase
       .from('checkout')
       .select('checkout_id')
-      .eq('user_id', likedUserId)
       .eq('product_id', productId)
       .eq('product_type', productType)
-      .single()
+      .or(`user_id.eq.${likedUserId}`)
 
-    if (likedUserCheckoutError || !likedUserCheckout) {
+    if (likedUserCheckoutError || !likedUserCheckouts || likedUserCheckouts.length === 0) {
       return NextResponse.json(
         { error: 'The user you are trying to like did not attend this event' },
         { status: 403 }
