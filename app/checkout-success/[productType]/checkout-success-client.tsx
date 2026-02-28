@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CheckCircle2, Mail, Loader2 } from 'lucide-react'
+import { CheckCircle2, Mail, Loader2, Video } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,6 +17,7 @@ interface CheckoutData {
   name: string | null
   total_order: number
   product_type: string
+  product_id: number
   product_description: string | null
   is_male: boolean | null
   query_city: string | null
@@ -45,6 +46,7 @@ export default function CheckoutSuccessClient({
   const [authError, setAuthError] = useState<string | null>(null)
   const [authLoading2, setAuthLoading2] = useState(false)
   const [emailConfirmed, setEmailConfirmed] = useState(false)
+  const [zoomInvite, setZoomInvite] = useState<string | null>(null)
 
   // Fetch checkout data and process confirmation
   useEffect(() => {
@@ -73,7 +75,25 @@ export default function CheckoutSuccessClient({
         setCheckout(checkoutData)
         setAuthEmail(checkoutData.email || '')
         setEmailConfirmed(emailSent || checkoutData.confirmation_email_sent)
-        
+
+        // Fetch Zoom link for onlineSpeedDating products
+        if (checkoutData.product_type === 'onlineSpeedDating' && checkoutData.product_id) {
+          try {
+            const productsResponse = await fetch('/api/products/onlineSpeedDating')
+            if (productsResponse.ok) {
+              const products = await productsResponse.json()
+              const matchingProduct = products.find(
+                (p: { productId: number }) => p.productId === checkoutData.product_id
+              )
+              if (matchingProduct?.zoomInvite) {
+                setZoomInvite(matchingProduct.zoomInvite)
+              }
+            }
+          } catch (err) {
+            console.error('Error fetching product zoom link:', err)
+          }
+        }
+
         // Track checkout success in PostHog
         posthog.capture('checkout_success', {
           product_type: productType,
@@ -263,6 +283,28 @@ export default function CheckoutSuccessClient({
               <p className="text-sm text-green-800 dark:text-green-200">
                 A confirmation email has been sent to <strong>{checkout?.email}</strong>
               </p>
+            </div>
+          )}
+
+          {/* Zoom Join Event Button — always visible regardless of auth */}
+          {zoomInvite && (
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-5 border border-blue-200 dark:border-blue-800">
+              <div className="flex flex-col sm:flex-row items-center gap-4">
+                <div className="flex-1">
+                  <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">Your Event is Ready</h3>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    Click below to join the Zoom meeting when it&apos;s time for your event.
+                  </p>
+                </div>
+                <Button
+                  size="lg"
+                  className="gap-2 bg-blue-600 hover:bg-blue-700 text-white shrink-0"
+                  onClick={() => window.open(zoomInvite, '_blank')}
+                >
+                  <Video className="w-5 h-5" />
+                  Join Event
+                </Button>
+              </div>
             </div>
           )}
 

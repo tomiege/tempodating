@@ -10,6 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { HourlyCheckoutsChart, HourlyLeadsChart } from './charts'
+import { CopyEmailsButton } from './copy-emails-button'
 
 interface SalesData {
   product_id: number
@@ -18,6 +19,8 @@ interface SalesData {
   total: number
   differential: number
   city: string
+  male_emails: string[]
+  female_emails: string[]
 }
 
 interface HourlyData {
@@ -42,13 +45,13 @@ async function getSalesData(): Promise<SalesData[]> {
   // Group by product_id, deduplicate by user (user_id or email) within each product
   const productMap = new Map<
     number,
-    { seenUsers: Set<string>; male: number; female: number; city: string }
+    { seenUsers: Set<string>; male: number; female: number; city: string; male_emails: string[]; female_emails: string[] }
   >()
 
   checkouts?.forEach((checkout) => {
     const productId = checkout.product_id
     if (!productMap.has(productId)) {
-      productMap.set(productId, { seenUsers: new Set(), male: 0, female: 0, city: checkout.query_city || '' })
+      productMap.set(productId, { seenUsers: new Set(), male: 0, female: 0, city: checkout.query_city || '', male_emails: [], female_emails: [] })
     }
 
     const current = productMap.get(productId)!
@@ -65,8 +68,10 @@ async function getSalesData(): Promise<SalesData[]> {
 
     if (checkout.is_male === true) {
       current.male++
+      if (checkout.email) current.male_emails.push(checkout.email)
     } else if (checkout.is_male === false) {
       current.female++
+      if (checkout.email) current.female_emails.push(checkout.email)
     }
   })
 
@@ -78,6 +83,8 @@ async function getSalesData(): Promise<SalesData[]> {
     total: counts.male + counts.female,
     differential: counts.male - counts.female,
     city: counts.city,
+    male_emails: counts.male_emails,
+    female_emails: counts.female_emails,
   }))
 
   // Sort by product_id
@@ -197,9 +204,18 @@ export default async function SalesPage() {
                       </Link>
                     </TableCell>
                     <TableCell>{row.city || '—'}</TableCell>
-                    <TableCell className="text-right">{row.male_tickets}</TableCell>
-                    <TableCell className="text-right">{row.female_tickets}</TableCell>
-                    <TableCell className="text-right font-semibold">{row.total}</TableCell>
+                    <TableCell className="text-right">
+                      {row.male_tickets}
+                      <CopyEmailsButton emails={row.male_emails} />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {row.female_tickets}
+                      <CopyEmailsButton emails={row.female_emails} />
+                    </TableCell>
+                    <TableCell className="text-right font-semibold">
+                      {row.total}
+                      <CopyEmailsButton emails={[...row.male_emails, ...row.female_emails]} />
+                    </TableCell>
                     <TableCell className={`text-right font-semibold ${getDifferentialColor(row.differential)}`}>
                       {formatDifferential(row.differential)}
                     </TableCell>
