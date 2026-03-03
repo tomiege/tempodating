@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { readFile } from 'fs/promises'
+import path from 'path'
 import { createServiceSupabaseClient } from '@/lib/supabase-server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -14,6 +16,14 @@ import { CopyEmailsButton } from './copy-emails-button'
 import { SendZoomEmailButton } from './send-zoom-email-button'
 import { Star } from 'lucide-react'
 
+interface EventEntry {
+  productId: number
+  gmtdatetime: string
+  timezone: string
+  title: string
+  city: string
+}
+
 interface SalesData {
   product_id: number
   male_tickets: number
@@ -23,6 +33,8 @@ interface SalesData {
   city: string
   male_emails: string[]
   female_emails: string[]
+  event_datetime: string | null
+  event_timezone: string | null
 }
 
 interface HourlyData {
@@ -30,8 +42,40 @@ interface HourlyData {
   count: number
 }
 
+async function getEventsMap(): Promise<Map<number, EventEntry>> {
+  try {
+    const filePath = path.join(process.cwd(), 'public', 'events.json')
+    const raw = await readFile(filePath, 'utf-8')
+    const events: EventEntry[] = JSON.parse(raw)
+    const map = new Map<number, EventEntry>()
+    events.forEach((e) => map.set(e.productId, e))
+    return map
+  } catch {
+    console.error('Error loading events.json')
+    return new Map()
+  }
+}
+
+function formatEventDatetime(gmtdatetime: string, timezone: string): string {
+  const date = new Date(gmtdatetime)
+  return date.toLocaleString('en-US', {
+    timeZone: timezone,
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  })
+}
+
+function isEventFinished(gmtdatetime: string): boolean {
+  return new Date(gmtdatetime) < new Date()
+}
+
 async function getSalesData(): Promise<SalesData[]> {
   const supabase = createServiceSupabaseClient()
+  const eventsMap = await getEventsMap()
 
   // Get only PAID checkouts (confirmation_email_sent = true)
   const { data: checkouts, error } = await supabase
@@ -78,16 +122,21 @@ async function getSalesData(): Promise<SalesData[]> {
   })
 
   // Convert to array format
-  const salesData: SalesData[] = Array.from(productMap.entries()).map(([productId, counts]) => ({
-    product_id: productId,
-    male_tickets: counts.male,
-    female_tickets: counts.female,
-    total: counts.male + counts.female,
-    differential: counts.male - counts.female,
-    city: counts.city,
-    male_emails: counts.male_emails,
-    female_emails: counts.female_emails,
-  }))
+  const salesData: SalesData[] = Array.from(productMap.entries()).map(([productId, counts]) => {
+    const event = eventsMap.get(productId)
+    return {
+      product_id: productId,
+      male_tickets: counts.male,
+      female_tickets: counts.female,
+      total: counts.male + counts.female,
+      differential: counts.male - counts.female,
+      city: counts.city,
+      male_emails: counts.male_emails,
+      female_emails: counts.female_emails,
+      event_datetime: event?.gmtdatetime ?? null,
+      event_timezone: event?.timezone ?? null,
+    }
+  })
 
   // Sort by product_id
   return salesData.sort((a, b) => a.product_id - b.product_id)
@@ -233,6 +282,7 @@ export default async function SalesPage() {
                 <TableRow>
                   <TableHead>Product ID</TableHead>
                   <TableHead>City</TableHead>
+                  <TableHead>Event Date</TableHead>
                   <TableHead className="text-right">Male Tickets</TableHead>
                   <TableHead className="text-right">Female Tickets</TableHead>
                   <TableHead className="text-right">Total</TableHead>
@@ -249,6 +299,19 @@ export default async function SalesPage() {
                       </Link>
                     </TableCell>
                     <TableCell>{row.city || '—'}</TableCell>
+                    <TableCell>
+                      {row.event_datetime ? (
+                        <span className={`font-medium ${
+                          isEventFinished(row.event_datetime)
+                            ? 'text-green-600'
+                            : 'text-blue-600'
+                        }`}>
+                          {formatEventDatetime(row.event_datetime, row.event_timezone || 'UTC')}
+                        </span>
+                      ) : (
+                        '—'
+                      )}
+                    </TableCell>
                     <TableCell className="text-right">
                       {row.male_tickets}
                       <CopyEmailsButton emails={row.male_emails} />

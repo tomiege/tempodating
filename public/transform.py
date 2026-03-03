@@ -4,7 +4,7 @@ import json
 from time import sleep
 from random import uniform
 import math
-# from google_maps.googlemaps import GoogleMaps
+from google_maps.googlemaps import GoogleMaps
 
 def get_sheet_data_and_convert_to_json(output_json_path="events.json", max_retries=3, sheet_id="1DKRL7HTK2DNcyMTo6ItvXDvZIem4Vls6hIvnqHfNY8E"):
     """
@@ -59,7 +59,7 @@ def get_sheet_data_and_convert_to_json(output_json_path="events.json", max_retri
             print(f"Filtered {len(valid_rows)} valid rows from {len(df)} total rows")
             
             # Initialize GoogleMaps for coordinate lookup
-            # gmaps = GoogleMaps()
+            gmaps = GoogleMaps()
             
             # Convert valid rows to the desired JSON format
             json_data = []

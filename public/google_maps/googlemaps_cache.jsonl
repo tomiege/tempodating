@@ -19,3 +19,11 @@
 {"input": "Seattle, USA", "output": [47.6061389, -122.3328481]}
 {"input": "New York City, USA", "output": [40.7127753, -74.0059728]}
 {"input": "Philadelphia, USA", "output": [39.9525839, -75.1652215]}
+{"input": "Kansas City, USA", "output": [39.0997265, -94.5785667]}
+{"input": "Atlanta, USA", "output": [33.7501275, -84.3885209]}
+{"input": "Virginia Beach, USA", "output": [36.8516437, -75.97921939999999]}
+{"input": "Brisbane, Australia", "output": [-27.4704528, 153.0260341]}
+{"input": "Amsterdam, Netherlands", "output": [52.3675734, 4.9041389]}
+{"input": "Glasgow, UK", "output": [55.86167039999999, -4.2583345]}
+{"input": "Dublin, Ireland", "output": [53.3498053, -6.2603097]}
+{"input": "New Orleans, USA", "output": [29.9508941, -90.07583559999999]}
