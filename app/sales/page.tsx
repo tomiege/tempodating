@@ -11,6 +11,8 @@ import {
 } from '@/components/ui/table'
 import { HourlyCheckoutsChart, HourlyLeadsChart } from './charts'
 import { CopyEmailsButton } from './copy-emails-button'
+import { SendZoomEmailButton } from './send-zoom-email-button'
+import { Star } from 'lucide-react'
 
 interface SalesData {
   product_id: number
@@ -150,6 +152,16 @@ async function getHourlyLeads(): Promise<HourlyData[]> {
     .sort((a, b) => a.hour.localeCompare(b.hour))
 }
 
+interface FeedbackData {
+  id: number
+  user_name: string | null
+  rating: number
+  message: string
+  product_id: number | null
+  product_type: string | null
+  created_at: string
+}
+
 function getDifferentialColor(diff: number): string {
   if (Math.abs(diff) <= 4) return 'text-green-600'
   if (diff > 0) return 'text-blue-600' // More males
@@ -162,11 +174,43 @@ function formatDifferential(diff: number): string {
   return `+${Math.abs(diff)} F`
 }
 
+async function getRecentFeedback(): Promise<FeedbackData[]> {
+  const supabase = createServiceSupabaseClient()
+
+  const { data: feedback, error } = await supabase
+    .from('feedback')
+    .select('id, user_name, rating, message, product_id, product_type, created_at')
+    .order('created_at', { ascending: false })
+    .limit(50)
+
+  if (error) {
+    console.error('Error fetching feedback:', error)
+    return []
+  }
+
+  return feedback || []
+}
+
+function timeAgo(dateString: string): string {
+  const now = new Date()
+  const date = new Date(dateString)
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+  if (diffMins < 1) return 'just now'
+  if (diffMins < 60) return `${diffMins}m ago`
+  const diffHours = Math.floor(diffMins / 60)
+  if (diffHours < 24) return `${diffHours}h ago`
+  const diffDays = Math.floor(diffHours / 24)
+  if (diffDays < 30) return `${diffDays}d ago`
+  return date.toLocaleDateString()
+}
+
 export default async function SalesPage() {
-  const [salesData, hourlyCheckouts, hourlyLeads] = await Promise.all([
+  const [salesData, hourlyCheckouts, hourlyLeads, recentFeedback] = await Promise.all([
     getSalesData(),
     getHourlyCheckouts(),
     getHourlyLeads(),
+    getRecentFeedback(),
   ])
 
   return (
@@ -193,6 +237,7 @@ export default async function SalesPage() {
                   <TableHead className="text-right">Female Tickets</TableHead>
                   <TableHead className="text-right">Total</TableHead>
                   <TableHead className="text-right">Gender Balance</TableHead>
+                  <TableHead className="text-right w-10"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -219,6 +264,13 @@ export default async function SalesPage() {
                     <TableCell className={`text-right font-semibold ${getDifferentialColor(row.differential)}`}>
                       {formatDifferential(row.differential)}
                     </TableCell>
+                    <TableCell className="text-right">
+                      <SendZoomEmailButton
+                        productId={row.product_id}
+                        maleEmails={row.male_emails}
+                        femaleEmails={row.female_emails}
+                      />
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -231,6 +283,61 @@ export default async function SalesPage() {
         <HourlyCheckoutsChart data={hourlyCheckouts} />
         <HourlyLeadsChart data={hourlyLeads} />
       </div>
+
+      {/* Recent Feedback Feed */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Feedback</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            {recentFeedback.length} feedback entries from users
+          </p>
+        </CardHeader>
+        <CardContent>
+          {recentFeedback.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">
+              No feedback yet
+            </p>
+          ) : (
+            <div className="space-y-4">
+              {recentFeedback.map((fb) => (
+                <div
+                  key={fb.id}
+                  className="border rounded-lg p-4 space-y-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm">
+                        {fb.user_name || 'Anonymous'}
+                      </span>
+                      <div className="flex">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className={`w-3.5 h-3.5 ${
+                              star <= fb.rating
+                                ? 'fill-yellow-400 text-yellow-400'
+                                : 'text-gray-300'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {timeAgo(fb.created_at)}
+                    </span>
+                  </div>
+                  <p className="text-sm text-foreground">{fb.message}</p>
+                  {(fb.product_type || fb.product_id) && (
+                    <p className="text-xs text-muted-foreground">
+                      {fb.product_type}{fb.product_id ? ` #${fb.product_id}` : ''}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }

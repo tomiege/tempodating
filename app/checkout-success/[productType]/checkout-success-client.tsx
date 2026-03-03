@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/hooks/use-auth'
 import { sendOTP, verifyOTP } from '@/lib/auth-utils'
+import { createClient } from '@/lib/supabase-client'
+import { useRouter } from 'next/navigation'
 import posthog from 'posthog-js'
 
 interface CheckoutData {
@@ -37,6 +39,7 @@ export default function CheckoutSuccessClient({
   email: initialEmail,
 }: CheckoutSuccessClientProps) {
   const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
   const [checkout, setCheckout] = useState<CheckoutData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -47,6 +50,7 @@ export default function CheckoutSuccessClient({
   const [authLoading2, setAuthLoading2] = useState(false)
   const [emailConfirmed, setEmailConfirmed] = useState(false)
   const [zoomInvite, setZoomInvite] = useState<string | null>(null)
+  const [skipLoading, setSkipLoading] = useState(false)
 
   // Fetch checkout data and process confirmation
   useEffect(() => {
@@ -184,6 +188,49 @@ export default function CheckoutSuccessClient({
       setAuthError('Failed to send verification code. Please try again.')
     } finally {
       setAuthLoading2(false)
+    }
+  }
+
+  const handleSkipVerification = async () => {
+    setSkipLoading(true)
+    setAuthError(null)
+
+    try {
+      const response = await fetch('/api/checkout/skip-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          checkoutSessionId,
+          email: authEmail || checkout?.email,
+        }),
+      })
+
+      if (!response.ok) {
+        const errData = await response.json()
+        setAuthError(errData.error || 'Failed to skip verification')
+        setSkipLoading(false)
+        return
+      }
+
+      const { tokenHash } = await response.json()
+
+      // Use the token hash to establish a real Supabase session
+      if (tokenHash) {
+        const supabase = createClient()
+        const { error: verifyError } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: 'email',
+        })
+        if (verifyError) {
+          console.error('Session verification failed:', verifyError)
+        }
+      }
+
+      // Navigate to dashboard (now authenticated)
+      router.push('/dashboard')
+    } catch (err) {
+      setAuthError('Something went wrong. Please try again.')
+      setSkipLoading(false)
     }
   }
 
@@ -341,6 +388,14 @@ export default function CheckoutSuccessClient({
                   )}
                 </Button>
               </form>
+              <button
+                type="button"
+                onClick={handleSkipVerification}
+                disabled={skipLoading}
+                className="mt-3 w-full text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline transition-colors"
+              >
+                {skipLoading ? 'Setting up...' : 'Skip for now'}
+              </button>
             </div>
           )}
 

@@ -235,19 +235,31 @@ export default function AdminAttendancePage() {
     if (!pairings) return
 
     const tableData: string[] = []
+    const copyCounts = new Map<string, number>()
     
     pairings.forEach(round => {
+      // Snapshot counts BEFORE this round (byes don't count as matches)
+      const snapshotCounts = new Map(copyCounts);
+      // Then increment for this round's pairings
+      round.pairings.forEach(p => {
+        copyCounts.set(p.male_id, (copyCounts.get(p.male_id) || 0) + 1);
+        copyCounts.set(p.female_id, (copyCounts.get(p.female_id) || 0) + 1);
+      });
+
       tableData.push(`ROUND ${round.round}`)
       tableData.push('Male\tFemale\tAge Diff\tCost')
       
       round.pairings.forEach(pairing => {
-        tableData.push(`${pairing.male_name} (${pairing.male_age})\t${pairing.female_name} (${pairing.female_age})\t${pairing.age_diff}\t${pairing.cost.toFixed(2)}`)
+        const maleCount = snapshotCounts.get(pairing.male_id) || 0;
+        const femaleCount = snapshotCounts.get(pairing.female_id) || 0;
+        tableData.push(`${pairing.male_name} (${maleCount}) (${pairing.male_age})\t${pairing.female_name} (${femaleCount}) (${pairing.female_age})\t${pairing.age_diff}\t${pairing.cost.toFixed(2)}`)
       })
       
       if (round.byes.length > 0) {
         tableData.push('\nByes:')
         round.byes.forEach(bye => {
-          tableData.push(`${bye.attendee_name}\t\t\t${bye.bye_penalty.toFixed(2)}`)
+          const byeCount = snapshotCounts.get(bye.attendee_id) || 0;
+          tableData.push(`${bye.attendee_name} (${byeCount})\t\t\t${bye.bye_penalty.toFixed(2)}`)
         })
       }
       
@@ -382,7 +394,18 @@ export default function AdminAttendancePage() {
                 </div>
 
                 <div className="space-y-4">
-                  {pairings.map((round) => (
+                  {(() => {
+                    // Compute cumulative match counts across rounds (only actual matches, not byes)
+                    const cumulativeMatchCounts = new Map<string, number>();
+                    return pairings.map((round) => {
+                      // Snapshot counts BEFORE this round (shows how many dates they've had so far)
+                      const roundCounts = new Map(cumulativeMatchCounts);
+                      // Then increment match counts for this round's pairings (byes don't count)
+                      round.pairings.forEach(p => {
+                        cumulativeMatchCounts.set(p.male_id, (cumulativeMatchCounts.get(p.male_id) || 0) + 1);
+                        cumulativeMatchCounts.set(p.female_id, (cumulativeMatchCounts.get(p.female_id) || 0) + 1);
+                      });
+                      return (
                     <div key={round.round} className="bg-white rounded border border-gray-200 p-3">
                       <h3 className="text-xl font-bold text-gray-800 mb-3">
                         Round {round.round}
@@ -414,7 +437,7 @@ export default function AdminAttendancePage() {
                                   {/* Person 1 */}
                                   <div className="flex-1 min-w-0">
                                     <div className="font-semibold text-gray-800 text-base leading-tight truncate">
-                                      {pairing.male_name}
+                                      {pairing.male_name}{showStatistics && <span className="text-gray-400 font-normal"> ({roundCounts.get(pairing.male_id) || 0})</span>}
                                     </div>
                                     {showStatistics && (
                                       <div className="text-xs text-gray-500">
@@ -431,7 +454,7 @@ export default function AdminAttendancePage() {
                                   {/* Person 2 */}
                                   <div className="flex-1 min-w-0">
                                     <div className="font-semibold text-gray-800 text-base leading-tight truncate">
-                                      {pairing.female_name}
+                                      {pairing.female_name}{showStatistics && <span className="text-gray-400 font-normal"> ({roundCounts.get(pairing.female_id) || 0})</span>}
                                     </div>
                                     {showStatistics && (
                                       <div className="text-xs text-gray-500">
@@ -473,7 +496,7 @@ export default function AdminAttendancePage() {
                                   Sitting Out
                                 </div>
                                 <div className="font-semibold text-yellow-800 text-sm leading-tight">
-                                  {bye.attendee_name}
+                                  {bye.attendee_name}{showStatistics && <span className="text-yellow-600 font-normal"> ({roundCounts.get(bye.attendee_id) || 0})</span>}
                                 </div>
                                 {showStatistics && (
                                   <div className="text-xs text-yellow-600 mt-1 pt-1 border-t border-yellow-200">
@@ -486,7 +509,9 @@ export default function AdminAttendancePage() {
                         </div>
                       )}
                     </div>
-                  ))}
+                      );
+                    });
+                  })()}
                 </div>
               </Card>
             </div>

@@ -11,9 +11,12 @@ import {
   Heart, 
   Users,
   Loader2,
-  UserPlus
+  UserPlus,
+  MessageSquare,
+  CheckCircle2
 } from "lucide-react"
 import { InviteDialog } from "./InviteDialog"
+import { FeedbackDialog } from "./FeedbackDialog"
 import MatchModal from "@/components/MatchModal"
 
 interface CheckoutData {
@@ -86,12 +89,37 @@ export function MyCheckoutsComponent({
   const [selectedEvent, setSelectedEvent] = useState<EnrolledEvent | null>(null)
   const [matchModalOpen, setMatchModalOpen] = useState(false)
   const [matchModalEvent, setMatchModalEvent] = useState<EnrolledEvent | null>(null)
+  const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false)
+  const [feedbackEvent, setFeedbackEvent] = useState<EnrolledEvent | null>(null)
+  // Set of "productId-productType" keys for which the user has already left feedback
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState<Set<string>>(new Set())
   const [now, setNow] = useState(new Date())
 
   // Update current time every 30 seconds so the Match button enables in real-time
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 30_000)
     return () => clearInterval(interval)
+  }, [])
+
+  // Fetch user's existing feedback to know which events already have feedback
+  useEffect(() => {
+    const fetchMyFeedback = async () => {
+      try {
+        const response = await fetch('/api/feedback?mine=true')
+        if (response.ok) {
+          const data = await response.json()
+          const keys = new Set<string>(
+            data
+              .filter((f: { product_id: number | null; product_type: string | null }) => f.product_id && f.product_type)
+              .map((f: { product_id: number; product_type: string }) => `${f.product_id}-${f.product_type}`)
+          )
+          setFeedbackSubmitted(keys)
+        }
+      } catch (error) {
+        console.error('Error fetching user feedback:', error)
+      }
+    }
+    fetchMyFeedback()
   }, [])
 
   const handleInviteClick = (event: EnrolledEvent) => {
@@ -102,6 +130,25 @@ export function MyCheckoutsComponent({
   const handleMatchClick = (event: EnrolledEvent) => {
     setMatchModalEvent(event)
     setMatchModalOpen(true)
+  }
+
+  const handleFeedbackClick = (event: EnrolledEvent) => {
+    setFeedbackEvent(event)
+    setFeedbackDialogOpen(true)
+  }
+
+  const handleFeedbackSubmitted = (productId: number, productType: string) => {
+    setFeedbackSubmitted(prev => new Set(prev).add(`${productId}-${productType}`))
+  }
+
+  const hasFeedback = (event: EnrolledEvent) => {
+    return feedbackSubmitted.has(`${event.productId}-${event.productType}`)
+  }
+
+  /** Returns true when the event start datetime has passed */
+  const hasEventStarted = (event: EnrolledEvent) => {
+    if (!event.gmtdatetime) return event.status === 'completed'
+    return now >= new Date(event.gmtdatetime)
   }
 
   /** Returns true if the Match button should be enabled (30 min after event start) */
@@ -213,17 +260,34 @@ export function MyCheckoutsComponent({
               </div>
 
               <div className="flex items-center gap-3">
-                {/* Invite button for upcoming onlineSpeedDating events */}
-                {event.status === "upcoming" && event.productType === 'onlineSpeedDating' && (
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    className="gap-2 border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
-                    onClick={() => handleInviteClick(event)}
-                  >
-                    <UserPlus className="w-4 h-4" />
-                    Invite
-                  </Button>
+                {/* Invite button (before event) / Leave Feedback (after event) / Tick (feedback done) */}
+                {event.productType === 'onlineSpeedDating' && (
+                  hasFeedback(event) ? (
+                    <span className="flex items-center gap-1.5 text-green-600 text-sm font-medium" title="Feedback submitted">
+                      <CheckCircle2 className="w-5 h-5" />
+                      Feedback Sent
+                    </span>
+                  ) : hasEventStarted(event) ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-2 border-amber-500 text-amber-600 hover:bg-amber-50 hover:text-amber-700"
+                      onClick={() => handleFeedbackClick(event)}
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      Leave Feedback
+                    </Button>
+                  ) : (
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      className="gap-2 border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
+                      onClick={() => handleInviteClick(event)}
+                    >
+                      <UserPlus className="w-4 h-4" />
+                      Invite
+                    </Button>
+                  )
                 )}
                 
                 {/* Join Event button for onlineSpeedDating with zoomInvite */}
@@ -292,6 +356,17 @@ export function MyCheckoutsComponent({
           productId={matchModalEvent.productId}
           productType={matchModalEvent.productType}
           eventTitle={`${matchModalEvent.title}${matchModalEvent.city ? ` — ${matchModalEvent.city}` : ''}`}
+        />
+      )}
+
+      {feedbackEvent && (
+        <FeedbackDialog
+          open={feedbackDialogOpen}
+          onOpenChange={setFeedbackDialogOpen}
+          eventTitle={feedbackEvent.title}
+          productId={feedbackEvent.productId}
+          productType={feedbackEvent.productType}
+          onFeedbackSubmitted={handleFeedbackSubmitted}
         />
       )}
     </Card>
