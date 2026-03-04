@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
-import { Heart, Loader2, MessageCircle, X, User, Calendar, Check } from "lucide-react"
+import { Heart, Loader2, X, User, Calendar, Check } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
@@ -36,6 +36,9 @@ interface Match {
     id: string
     name: string
     contactInfo: string
+    email: string
+    bio: string
+    avatarUrl: string
   }
   matchedAt: string
 }
@@ -222,28 +225,6 @@ export default function MatchModal({
     }
   }
 
-  const handleContact = (contactInfo: string, name: string) => {
-    if (contactInfo.includes("@") && !contactInfo.includes("instagram")) {
-      window.open(
-        `mailto:${contactInfo}?subject=Hello from speed dating!`,
-        "_blank"
-      )
-    } else if (contactInfo.includes("instagram.com") || contactInfo.startsWith("@")) {
-      window.open(
-        contactInfo.includes("http")
-          ? contactInfo
-          : `https://instagram.com/${contactInfo.replace("@", "")}`,
-        "_blank"
-      )
-    } else {
-      navigator.clipboard.writeText(contactInfo)
-      toast({
-        title: "Contact info copied!",
-        description: `${name}'s contact information has been copied to your clipboard.`,
-      })
-    }
-  }
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       month: "short",
@@ -405,6 +386,9 @@ export default function MatchModal({
                         >
                           <div className="flex items-start space-x-3">
                             <Avatar className="w-10 h-10">
+                              {match.otherProfile.avatarUrl ? (
+                                <AvatarImage src={match.otherProfile.avatarUrl} alt={match.otherProfile.name} />
+                              ) : null}
                               <AvatarFallback className="bg-green-600 text-white">
                                 {match.otherProfile.name.charAt(0)}
                               </AvatarFallback>
@@ -417,20 +401,29 @@ export default function MatchModal({
                                 <Calendar className="w-3 h-3 inline mr-1" />
                                 Matched {formatDate(match.matchedAt)}
                               </p>
+                              {match.otherProfile.bio && (
+                                <div className="mt-2 pt-2 border-t border-green-700/50">
+                                  <p className="text-xs font-medium text-gray-400 mb-1">Bio</p>
+                                  <p className="text-sm text-gray-300 whitespace-pre-line break-words">
+                                    {match.otherProfile.bio}
+                                  </p>
+                                </div>
+                              )}
+                              {match.otherProfile.email && (
+                                <div className="mt-2 pt-2 border-t border-green-700/50">
+                                  <p className="text-xs font-medium text-gray-400 mb-1">Email</p>
+                                  <a href={`mailto:${match.otherProfile.email}`} className="text-sm text-green-400 hover:underline break-all">
+                                    {match.otherProfile.email}
+                                  </a>
+                                </div>
+                              )}
                               {match.otherProfile.contactInfo && (
-                                <Button
-                                  size="sm"
-                                  className="text-xs bg-green-600 hover:bg-green-700"
-                                  onClick={() =>
-                                    handleContact(
-                                      match.otherProfile.contactInfo,
-                                      match.otherProfile.name
-                                    )
-                                  }
-                                >
-                                  <MessageCircle className="w-3 h-3 mr-1" />
-                                  Contact
-                                </Button>
+                                <div className="mt-2 pt-2 border-t border-green-700/50">
+                                  <p className="text-xs font-medium text-gray-400 mb-1">Contact</p>
+                                  <p className="text-sm text-gray-300 whitespace-pre-line break-words">
+                                    {match.otherProfile.contactInfo}
+                                  </p>
+                                </div>
                               )}
                             </div>
                           </div>

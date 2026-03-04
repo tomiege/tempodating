@@ -112,7 +112,24 @@ CREATE TABLE IF NOT EXISTS public.feedback (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Email campaigns tracking table
+CREATE TABLE IF NOT EXISTS public.email_campaigns (
+  id SERIAL PRIMARY KEY,
+  product_id INTEGER NOT NULL,
+  product_type TEXT NOT NULL,
+  template TEXT NOT NULL,
+  subject TEXT,
+  recipient_emails TEXT[] NOT NULL DEFAULT '{}',
+  recipient_count INTEGER NOT NULL DEFAULT 0,
+  audience TEXT,
+  sent_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Indexes
+CREATE INDEX IF NOT EXISTS idx_email_campaigns_product ON public.email_campaigns(product_id, product_type);
+CREATE INDEX IF NOT EXISTS idx_email_campaigns_template ON public.email_campaigns(template);
+CREATE INDEX IF NOT EXISTS idx_email_campaigns_sent_at ON public.email_campaigns(sent_at DESC);
 CREATE INDEX IF NOT EXISTS idx_feedback_user_id ON public.feedback(user_id);
 CREATE INDEX IF NOT EXISTS idx_feedback_created_at ON public.feedback(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_checkout_session_id ON public.checkout(checkout_session_id);

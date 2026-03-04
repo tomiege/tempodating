@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Mail, Send, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
+import { Mail, Send, AlertCircle, CheckCircle, Loader2, Clock, AlertTriangle } from 'lucide-react'
 
 interface SendZoomEmailButtonProps {
   productId: number
@@ -31,13 +31,24 @@ type SendStatus = {
   message: string
 }
 
-type TemplateId = 'pre-event' | 'post-event'
+type TemplateId = 'pre-event' | 'post-event' | 'leads-reminder' | 'next-event'
 
 interface EmailTemplate {
   id: TemplateId
   label: string
   subject: string
   previewBody: string
+}
+
+interface CampaignRecord {
+  id: number
+  product_id: number
+  product_type: string
+  template: string
+  subject: string
+  recipient_count: number
+  audience: string
+  sent_at: string
 }
 
 const DASHBOARD_URL = 'https://www.tempodating.com/dashboard'
@@ -74,6 +85,36 @@ Please make sure to fill in your profile including your profile picture, bio, an
 
 Good luck! 🤞`,
   },
+  {
+    id: 'leads-reminder',
+    label: '🎯 Leads Reminder (Unpaid)',
+    subject: "Don't miss out — spots are filling up! 💕",
+    previewBody: `Hi there,
+
+We noticed you were interested in our upcoming Speed Dating event — spots are filling up fast!
+
+Don't miss out on meeting amazing people. Secure your spot before it's too late!
+
+[Reserve My Spot]
+
+See you there! 💕`,
+  },
+  {
+    id: 'next-event',
+    label: '🔄 Next Event (Attendees)',
+    subject: 'Enjoyed the event? Our next one is coming up! 🎉',
+    previewBody: `Hi there,
+
+We hope you enjoyed your recent Speed Dating event! 🎉
+
+Great news — our next event in your area is coming up soon.
+
+If you had a great time, why not come back for another round? Meet even more amazing people!
+
+[Book Next Event]
+
+See you there! 💕`,
+  },
 ]
 
 interface CheckoutSession {
@@ -90,9 +131,16 @@ export function SendZoomEmailButton({ productId, maleEmails, femaleEmails }: Sen
   const [checkoutSessions, setCheckoutSessions] = useState<CheckoutSession[]>([])
   const [selectedSessionId, setSelectedSessionId] = useState<string>('')
   const [sessionsLoading, setSessionsLoading] = useState(false)
+  const [campaigns, setCampaigns] = useState<CampaignRecord[]>([])
+  const [campaignsLoading, setCampaignsLoading] = useState(false)
 
   const totalEmails = maleEmails.length + femaleEmails.length
   const currentTemplate = EMAIL_TEMPLATES.find((t) => t.id === selectedTemplate)!
+
+  // Get the last sent info for the currently selected template
+  const lastCampaignForTemplate = campaigns.find(
+    (c) => c.template === selectedTemplate && c.product_id === productId
+  )
 
   // Fetch checkout sessions when modal opens
   useEffect(() => {
@@ -111,7 +159,18 @@ export function SendZoomEmailButton({ productId, maleEmails, femaleEmails }: Sen
       .finally(() => setSessionsLoading(false))
   }, [open, productId]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function sendEmails(audience: 'males' | 'females' | 'all' | 'test') {
+  // Fetch campaign history when modal opens
+  useEffect(() => {
+    if (!open) return
+    setCampaignsLoading(true)
+    fetch(`/api/send-zoom-email/campaigns?productId=${productId}`)
+      .then((r) => r.json())
+      .then((data) => setCampaigns(data.campaigns || []))
+      .catch(() => setCampaigns([]))
+      .finally(() => setCampaignsLoading(false))
+  }, [open, productId])
+
+  async function sendEmails(audience: 'males' | 'females' | 'all' | 'test' | 'leads') {
     setStatus({ type: 'loading', message: 'Sending...' })
 
     try {
@@ -146,8 +205,13 @@ export function SendZoomEmailButton({ productId, maleEmails, femaleEmails }: Sen
       } else {
         setStatus({
           type: 'success',
-          message: `Sent ${data.sent}/${data.total} emails${data.failed ? ` (${data.failed} failed)` : ''}`,
+          message: `Sent ${data.sent}/${data.total} emails${data.failed ? ` (${data.failed} failed)` : ''}${data.nextEventProductId ? ` — Next event: #${data.nextEventProductId} (${data.nextEventCity})` : ''}`,
         })
+        // Refresh campaign history
+        fetch(`/api/send-zoom-email/campaigns?productId=${productId}`)
+          .then((r) => r.json())
+          .then((d) => setCampaigns(d.campaigns || []))
+          .catch(() => {})
       }
     } catch {
       setStatus({ type: 'error', message: 'Network error' })
@@ -192,6 +256,26 @@ export function SendZoomEmailButton({ productId, maleEmails, femaleEmails }: Sen
             ))}
           </div>
 
+          {/* Last sent info */}
+          {campaignsLoading ? (
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Loader2 className="h-3 w-3 animate-spin" /> Loading campaign history...
+            </div>
+          ) : lastCampaignForTemplate ? (
+            <div className="flex items-center gap-1.5 p-2 rounded-md bg-muted/50 text-xs">
+              <Clock className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+              <span className="text-muted-foreground">
+                Last sent: <span className="font-medium text-foreground">{new Date(lastCampaignForTemplate.sent_at).toLocaleString()}</span>
+                {' — '}{lastCampaignForTemplate.recipient_count} recipients ({lastCampaignForTemplate.audience})
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 p-2 rounded-md bg-amber-50 border border-amber-200 text-xs">
+              <AlertTriangle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
+              <span className="text-amber-700">This template has never been sent for this product</span>
+            </div>
+          )}
+
           {/* Email preview */}
           <div className="rounded-lg border bg-muted/30 overflow-hidden">
             <div className="px-3 py-2 border-b bg-muted/50">
@@ -204,34 +288,66 @@ export function SendZoomEmailButton({ productId, maleEmails, femaleEmails }: Sen
           </div>
 
           {/* Send to audience buttons */}
-          <div className="grid grid-cols-3 gap-2">
-            <Button
-              variant="outline"
-              onClick={() => sendEmails('males')}
-              disabled={status.type === 'loading' || maleEmails.length === 0}
-              className="text-blue-600 border-blue-200 hover:bg-blue-50"
-            >
-              <Send className="h-3.5 w-3.5 mr-1.5" />
-              Males ({maleEmails.length})
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => sendEmails('females')}
-              disabled={status.type === 'loading' || femaleEmails.length === 0}
-              className="text-pink-600 border-pink-200 hover:bg-pink-50"
-            >
-              <Send className="h-3.5 w-3.5 mr-1.5" />
-              Females ({femaleEmails.length})
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => sendEmails('all')}
-              disabled={status.type === 'loading' || totalEmails === 0}
-            >
-              <Send className="h-3.5 w-3.5 mr-1.5" />
-              ALL ({totalEmails})
-            </Button>
-          </div>
+          {selectedTemplate === 'leads-reminder' ? (
+            <div>
+              <Button
+                variant="outline"
+                onClick={() => sendEmails('leads')}
+                disabled={status.type === 'loading'}
+                className="w-full text-orange-600 border-orange-200 hover:bg-orange-50"
+              >
+                <Send className="h-3.5 w-3.5 mr-1.5" />
+                Send to Unpaid Leads
+              </Button>
+              <p className="text-xs text-muted-foreground mt-1.5">
+                Sends to leads who expressed interest but didn&apos;t complete their purchase.
+              </p>
+            </div>
+          ) : selectedTemplate === 'next-event' ? (
+            <div>
+              <Button
+                variant="outline"
+                onClick={() => sendEmails('all')}
+                disabled={status.type === 'loading' || totalEmails === 0}
+                className="w-full text-purple-600 border-purple-200 hover:bg-purple-50"
+              >
+                <Send className="h-3.5 w-3.5 mr-1.5" />
+                Send Next Event to All Attendees ({totalEmails})
+              </Button>
+              <p className="text-xs text-muted-foreground mt-1.5">
+                Sends to all paid attendees, inviting them to the next event in the same region.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-2">
+              <Button
+                variant="outline"
+                onClick={() => sendEmails('males')}
+                disabled={status.type === 'loading' || maleEmails.length === 0}
+                className="text-blue-600 border-blue-200 hover:bg-blue-50"
+              >
+                <Send className="h-3.5 w-3.5 mr-1.5" />
+                Males ({maleEmails.length})
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => sendEmails('females')}
+                disabled={status.type === 'loading' || femaleEmails.length === 0}
+                className="text-pink-600 border-pink-200 hover:bg-pink-50"
+              >
+                <Send className="h-3.5 w-3.5 mr-1.5" />
+                Females ({femaleEmails.length})
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => sendEmails('all')}
+                disabled={status.type === 'loading' || totalEmails === 0}
+              >
+                <Send className="h-3.5 w-3.5 mr-1.5" />
+                ALL ({totalEmails})
+              </Button>
+            </div>
+          )}
 
           {/* Divider */}
           <div className="relative">

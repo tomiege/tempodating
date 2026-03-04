@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
 
     const { data: profiles, error: profilesError } = await serviceSupabase
       .from('users')
-      .select('id, full_name, contact_info')
+      .select('id, full_name, contact_info, email, bio, avatar_url')
       .in('id', likedUserIds)
 
     if (profilesError) {
@@ -95,7 +95,10 @@ export async function GET(request: NextRequest) {
         otherProfile: {
           id: like.liked_user_id,
           name: profile?.full_name || 'Unknown',
-          contactInfo: isMutual ? (profile?.contact_info || '') : '', // Only show contact info for mutual matches
+          contactInfo: isMutual ? (profile?.contact_info || '') : '',
+          email: isMutual ? (profile?.email || '') : '',
+          bio: isMutual ? (profile?.bio || '') : '',
+          avatarUrl: isMutual ? (profile?.avatar_url || '') : '',
         },
         matchedAt: like.created_at,
       }

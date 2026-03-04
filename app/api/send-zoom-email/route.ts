@@ -14,13 +14,12 @@ interface OnlineSpeedDatingEvent {
   city: string
   gmtdatetime: string
   timezone: string
+  region_id: string
+  productType: string
 }
 
 function getZoomLinkForProduct(productId: number): OnlineSpeedDatingEvent | null {
-  const filePath = path.join(process.cwd(), 'public', 'products', 'onlineSpeedDating.json')
-  const fileContent = fs.readFileSync(filePath, 'utf-8')
-  const events: OnlineSpeedDatingEvent[] = JSON.parse(fileContent)
-  return events.find((e) => e.productId === productId) || null
+  return getEventForProduct(productId)
 }
 
 interface Recipient {
@@ -68,9 +67,113 @@ async function getRecipientsForProduct(productId: number): Promise<{ males: Reci
   return { males, females }
 }
 
+// ─── Leads fetching ────────────────────────────────────────────────
+
+async function getLeadsForProduct(productId: number, productType: string): Promise<{ email: string; name: string | null; city: string | null }[]> {
+  const supabase = createServiceSupabaseClient()
+
+  // Get leads for this product
+  const { data: leads, error: leadsError } = await supabase
+    .from('leads')
+    .select('email, name, city')
+    .eq('product_id', productId)
+    .eq('product_type', productType)
+
+  if (leadsError || !leads) {
+    console.error('Error fetching leads:', leadsError)
+    return []
+  }
+
+  // Get paid checkout emails for this product (people who actually paid)
+  const { data: paidCheckouts, error: checkoutError } = await supabase
+    .from('checkout')
+    .select('email')
+    .eq('product_id', productId)
+    .eq('confirmation_email_sent', true)
+
+  if (checkoutError) {
+    console.error('Error fetching paid checkouts:', checkoutError)
+    return []
+  }
+
+  const paidEmails = new Set((paidCheckouts || []).map((c) => c.email.toLowerCase()))
+
+  // Filter: leads whose email is NOT in paid checkouts
+  const seen = new Set<string>()
+  return leads.filter((lead) => {
+    const email = lead.email.toLowerCase()
+    if (paidEmails.has(email) || seen.has(email)) return false
+    seen.add(email)
+    return true
+  })
+}
+
+// ─── Next event helpers ────────────────────────────────────────────
+
+function findNextEventFromData(
+  events: OnlineSpeedDatingEvent[],
+  currentProductId: number,
+  regionId: string
+): OnlineSpeedDatingEvent | null {
+  const now = new Date()
+  const currentEvent = events.find((e) => e.productId === currentProductId)
+  const currentDatetime = currentEvent ? new Date(currentEvent.gmtdatetime) : now
+
+  const futureEvents = events
+    .filter(
+      (e) =>
+        e.region_id === regionId &&
+        e.productId !== currentProductId &&
+        new Date(e.gmtdatetime) > currentDatetime
+    )
+    .sort(
+      (a, b) =>
+        new Date(a.gmtdatetime).getTime() - new Date(b.gmtdatetime).getTime()
+    )
+
+  return futureEvents.length > 0 ? futureEvents[0] : null
+}
+
+function getEventsData(): OnlineSpeedDatingEvent[] {
+  const filePath = path.join(process.cwd(), 'public', 'products', 'onlineSpeedDating.json')
+  const fileContent = fs.readFileSync(filePath, 'utf-8')
+  return JSON.parse(fileContent)
+}
+
+function getEventForProduct(productId: number): OnlineSpeedDatingEvent | null {
+  const events = getEventsData()
+  return events.find((e) => e.productId === productId) || null
+}
+
+// ─── Campaign logging ──────────────────────────────────────────────
+
+async function logCampaign(
+  productId: number,
+  productType: string,
+  template: string,
+  subject: string,
+  recipientEmails: string[],
+  audience: string
+) {
+  const supabase = createServiceSupabaseClient()
+  const { error } = await supabase.from('email_campaigns').insert({
+    product_id: productId,
+    product_type: productType,
+    template,
+    subject,
+    recipient_emails: recipientEmails,
+    recipient_count: recipientEmails.length,
+    audience,
+    sent_at: new Date().toISOString(),
+  })
+  if (error) {
+    console.error('Error logging email campaign:', error)
+  }
+}
+
 // ─── Email Templates ───────────────────────────────────────────────
 
-export type TemplateId = 'pre-event' | 'post-event'
+export type TemplateId = 'pre-event' | 'post-event' | 'leads-reminder' | 'next-event'
 
 function buildPreEventHtml(zoomLink: string): string {
   return `
@@ -145,9 +248,86 @@ function buildCheckoutSuccessUrl(r: Recipient): string {
   return `${BASE_URL}/checkout-success/${r.product_type}?checkoutSessionId=${r.checkout_session_id}&email=${encodeURIComponent(r.email)}`
 }
 
+function buildLeadsReminderHtml(productId: number, productType: string, city: string): string {
+  const productUrl = `${BASE_URL}/product?productId=${productId}&productType=${productType}&src=emailCampaign&city=${encodeURIComponent(city)}`
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; padding: 0; margin: 0; background-color: #f9fafb;">
+      <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+        <div style="background-color: #ffffff; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 32px;">
+          <p style="color: #111827; font-size: 16px; line-height: 1.6; margin: 0 0 16px 0;">Hi there,</p>
+          <p style="color: #111827; font-size: 16px; line-height: 1.6; margin: 0 0 16px 0;">
+            We noticed you were interested in our upcoming Speed Dating event in <strong>${city}</strong> — spots are filling up fast!
+          </p>
+          <p style="color: #111827; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
+            Don't miss out on meeting amazing people. Secure your spot before it's too late!
+          </p>
+          <div style="text-align: center; margin-bottom: 24px;">
+            <a href="${productUrl}" style="display: inline-block; background-color: #ec4899; color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px;">Reserve My Spot</a>
+          </div>
+          <p style="color: #111827; font-size: 16px; line-height: 1.6; margin: 0;">
+            See you there! 💕
+          </p>
+        </div>
+        <div style="text-align: center; color: #9ca3af; font-size: 14px; margin-top: 24px;">
+          <p style="margin: 0;">© ${new Date().getFullYear()} Tempo Dating. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>`
+}
+
+function buildNextEventHtml(nextEvent: OnlineSpeedDatingEvent, city: string): string {
+  const eventDate = new Date(nextEvent.gmtdatetime)
+  const formattedDate = eventDate.toLocaleString('en-US', {
+    timeZone: nextEvent.timezone,
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  })
+  const productUrl = `${BASE_URL}/product?productId=${nextEvent.productId}&productType=${nextEvent.productType || 'onlineSpeedDating'}&src=emailCampaign&city=${encodeURIComponent(city)}`
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; padding: 0; margin: 0; background-color: #f9fafb;">
+      <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+        <div style="background-color: #ffffff; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 32px;">
+          <p style="color: #111827; font-size: 16px; line-height: 1.6; margin: 0 0 16px 0;">Hi there,</p>
+          <p style="color: #111827; font-size: 16px; line-height: 1.6; margin: 0 0 16px 0;">
+            We hope you enjoyed your recent Speed Dating event! 🎉
+          </p>
+          <p style="color: #111827; font-size: 16px; line-height: 1.6; margin: 0 0 16px 0;">
+            Great news — our next event in <strong>${nextEvent.city}</strong> is coming up on <strong>${formattedDate}</strong>.
+          </p>
+          <p style="color: #111827; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
+            If you had a great time, why not come back for another round? Meet even more amazing people!
+          </p>
+          <div style="text-align: center; margin-bottom: 24px;">
+            <a href="${productUrl}" style="display: inline-block; background-color: #ec4899; color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px;">Book Next Event</a>
+          </div>
+          <p style="color: #111827; font-size: 16px; line-height: 1.6; margin: 0;">
+            See you there! 💕
+          </p>
+        </div>
+        <div style="text-align: center; color: #9ca3af; font-size: 14px; margin-top: 24px;">
+          <p style="margin: 0;">© ${new Date().getFullYear()} Tempo Dating. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>`
+}
+
 const TEMPLATE_SUBJECTS: Record<TemplateId, string> = {
   'pre-event': 'Your online Speed Dating event is starting soon!',
   'post-event': 'Thank you for attending! Select your matches 💕',
+  'leads-reminder': 'Don\'t miss out — spots are filling up! 💕',
+  'next-event': 'Enjoyed the event? Our next one is coming up! 🎉',
 }
 
 export async function POST(req: NextRequest) {
@@ -155,7 +335,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { productId, audience, testEmail, template = 'pre-event' } = body as {
       productId: number
-      audience: 'males' | 'females' | 'all' | 'test'
+      audience: 'males' | 'females' | 'all' | 'test' | 'leads'
       testEmail?: string
       template?: TemplateId
     }
@@ -165,15 +345,33 @@ export async function POST(req: NextRequest) {
     }
 
     const subject = TEMPLATE_SUBJECTS[template]
+    const event = getEventForProduct(productId)
+    const productType = event?.productType || 'onlineSpeedDating'
+    const city = event?.city || ''
 
     // For pre-event, we need the zoom link
     let zoomLink: string | null = null
     if (template === 'pre-event') {
-      const event = getZoomLinkForProduct(productId)
       if (!event) {
         return NextResponse.json({ error: 'No zoom link found for this product' }, { status: 404 })
       }
       zoomLink = event.zoomInvite
+    }
+
+    // For next-event, find the next event in the same region
+    let nextEvent: OnlineSpeedDatingEvent | null = null
+    if (template === 'next-event') {
+      if (!event) {
+        return NextResponse.json({ error: 'Event not found for this product' }, { status: 404 })
+      }
+      const events = getEventsData()
+      nextEvent = findNextEventFromData(events, productId, event.region_id)
+      if (!nextEvent) {
+        return NextResponse.json(
+          { error: `No upcoming event found for region ${event.region_id} (${event.city}). Cannot send next-event email.` },
+          { status: 400 }
+        )
+      }
     }
 
     // Test send — single email
@@ -186,7 +384,6 @@ export async function POST(req: NextRequest) {
 
       let html: string
       if (template === 'post-event') {
-        // Look up the real checkout to build a working link
         if (!testCheckoutSessionId) {
           return NextResponse.json({ error: 'Please select a checkout session for post-event test' }, { status: 400 })
         }
@@ -202,6 +399,10 @@ export async function POST(req: NextRequest) {
         }
         const url = `${BASE_URL}/checkout-success/${checkout.product_type || 'onlineSpeedDating'}?checkoutSessionId=${checkout.checkout_session_id}&email=${encodeURIComponent(checkout.email)}`
         html = buildPostEventHtml(url)
+      } else if (template === 'leads-reminder') {
+        html = buildLeadsReminderHtml(productId, productType, city)
+      } else if (template === 'next-event') {
+        html = buildNextEventHtml(nextEvent!, city)
       } else {
         html = buildPreEventHtml(zoomLink!)
       }
@@ -221,7 +422,85 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, sent: 1, audience: 'test' })
     }
 
-    // Fetch recipients from DB server-side
+    // ── Leads audience (leads-reminder template) ──────────────
+    if (audience === 'leads' || template === 'leads-reminder') {
+      const leads = await getLeadsForProduct(productId, productType)
+
+      if (leads.length === 0) {
+        return NextResponse.json({ error: 'No unpaid leads found for this product' }, { status: 400 })
+      }
+
+      console.log(`Sending leads-reminder email to ${leads.length} leads for product ${productId}`)
+
+      const batchEmails = leads.map((lead) => ({
+        from: 'Tempo Dating <noreply@tempodating.com>' as const,
+        to: lead.email,
+        subject,
+        html: buildLeadsReminderHtml(productId, productType, lead.city || city),
+      }))
+
+      const result = await sendBatchEmails(batchEmails)
+
+      // Log the campaign
+      await logCampaign(
+        productId,
+        productType,
+        'leads-reminder',
+        subject,
+        leads.map((l) => l.email),
+        'leads'
+      )
+
+      return NextResponse.json({
+        success: true,
+        sent: result.totalSent,
+        failed: result.totalFailed,
+        total: leads.length,
+        audience: 'leads',
+      })
+    }
+
+    // ── Next-event audience (paid attendees) ──────────────────
+    if (template === 'next-event') {
+      const { males, females } = await getRecipientsForProduct(productId)
+      const recipients = [...males, ...females]
+
+      if (recipients.length === 0) {
+        return NextResponse.json({ error: 'No paid attendees found for this product' }, { status: 400 })
+      }
+
+      console.log(`Sending next-event email to ${recipients.length} attendees for product ${productId}`)
+
+      const batchEmails = recipients.map((r) => ({
+        from: 'Tempo Dating <noreply@tempodating.com>' as const,
+        to: r.email,
+        subject,
+        html: buildNextEventHtml(nextEvent!, city),
+      }))
+
+      const result = await sendBatchEmails(batchEmails)
+
+      await logCampaign(
+        productId,
+        productType,
+        'next-event',
+        subject,
+        recipients.map((r) => r.email),
+        audience
+      )
+
+      return NextResponse.json({
+        success: true,
+        sent: result.totalSent,
+        failed: result.totalFailed,
+        total: recipients.length,
+        audience,
+        nextEventProductId: nextEvent!.productId,
+        nextEventCity: nextEvent!.city,
+      })
+    }
+
+    // ── Standard pre-event / post-event audience ─────────────
     const { males, females } = await getRecipientsForProduct(productId)
 
     let recipients: Recipient[] = []
@@ -239,7 +518,6 @@ export async function POST(req: NextRequest) {
 
     console.log(`Sending ${template} email to ${recipients.length} recipients for product ${productId} (audience: ${audience})`)
 
-    // Build per-recipient emails (post-event gets personalized links)
     const batchEmails = recipients.map((r) => {
       let html: string
       if (template === 'post-event') {
@@ -248,35 +526,29 @@ export async function POST(req: NextRequest) {
         html = buildPreEventHtml(zoomLink!)
       }
       return {
-        from: 'Tempo Dating <noreply@tempodating.com>',
+        from: 'Tempo Dating <noreply@tempodating.com>' as const,
         to: r.email,
         subject,
         html,
       }
     })
 
-    // Resend batch supports up to 100 emails per call, chunk if needed
-    let totalSent = 0
-    let totalFailed = 0
-    const BATCH_SIZE = 100
+    const result = await sendBatchEmails(batchEmails)
 
-    for (let i = 0; i < batchEmails.length; i += BATCH_SIZE) {
-      const chunk = batchEmails.slice(i, i + BATCH_SIZE)
-      const { data, error } = await resend.batch.send(chunk)
-
-      if (error) {
-        console.error(`Batch send error (chunk ${i / BATCH_SIZE + 1}):`, error)
-        totalFailed += chunk.length
-      } else {
-        totalSent += data?.data?.length ?? chunk.length
-        console.log(`Batch chunk ${i / BATCH_SIZE + 1} sent:`, data?.data?.length ?? chunk.length)
-      }
-    }
+    // Log the campaign
+    await logCampaign(
+      productId,
+      productType,
+      template,
+      subject,
+      recipients.map((r) => r.email),
+      audience
+    )
 
     return NextResponse.json({
       success: true,
-      sent: totalSent,
-      failed: totalFailed,
+      sent: result.totalSent,
+      failed: result.totalFailed,
       total: recipients.length,
       audience,
     })
@@ -287,4 +559,29 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+// ─── Batch send helper ─────────────────────────────────────────────
+
+async function sendBatchEmails(
+  batchEmails: { from: string; to: string; subject: string; html: string }[]
+): Promise<{ totalSent: number; totalFailed: number }> {
+  let totalSent = 0
+  let totalFailed = 0
+  const BATCH_SIZE = 100
+
+  for (let i = 0; i < batchEmails.length; i += BATCH_SIZE) {
+    const chunk = batchEmails.slice(i, i + BATCH_SIZE)
+    const { data, error } = await resend.batch.send(chunk)
+
+    if (error) {
+      console.error(`Batch send error (chunk ${i / BATCH_SIZE + 1}):`, error)
+      totalFailed += chunk.length
+    } else {
+      totalSent += data?.data?.length ?? chunk.length
+      console.log(`Batch chunk ${i / BATCH_SIZE + 1} sent:`, data?.data?.length ?? chunk.length)
+    }
+  }
+
+  return { totalSent, totalFailed }
 }
