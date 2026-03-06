@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { HourlyCheckoutsChart, HourlyLeadsChart } from './charts'
+import { DailyCheckoutsChart, DailyLeadsChart } from './charts'
 import { CopyEmailsButton } from './copy-emails-button'
 import { SendZoomEmailButton } from './send-zoom-email-button'
 import { Star } from 'lucide-react'
@@ -37,8 +37,8 @@ interface SalesData {
   event_timezone: string | null
 }
 
-interface HourlyData {
-  hour: string
+interface DailyData {
+  day: string
   count: number
 }
 
@@ -151,7 +151,7 @@ async function getSalesData(): Promise<SalesData[]> {
   return salesData.sort((a, b) => a.product_id - b.product_id)
 }
 
-async function getHourlyCheckouts(): Promise<HourlyData[]> {
+async function getDailyCheckouts(): Promise<DailyData[]> {
   const supabase = createServiceSupabaseClient()
 
   const { data: checkouts, error } = await supabase
@@ -161,27 +161,26 @@ async function getHourlyCheckouts(): Promise<HourlyData[]> {
     .order('checkout_time', { ascending: true })
 
   if (error || !checkouts) {
-    console.error('Error fetching hourly checkouts:', error)
+    console.error('Error fetching daily checkouts:', error)
     return []
   }
 
-  // Group by hour
-  const hourlyMap = new Map<string, number>()
+  // Group by day
+  const dailyMap = new Map<string, number>()
 
   checkouts.forEach((checkout) => {
     if (checkout.checkout_time) {
-      const date = new Date(checkout.checkout_time)
-      const hour = `${date.toISOString().split('T')[0]} ${date.getHours().toString().padStart(2, '0')}:00`
-      hourlyMap.set(hour, (hourlyMap.get(hour) || 0) + 1)
+      const day = new Date(checkout.checkout_time).toISOString().split('T')[0]
+      dailyMap.set(day, (dailyMap.get(day) || 0) + 1)
     }
   })
 
-  return Array.from(hourlyMap.entries())
-    .map(([hour, count]) => ({ hour, count }))
-    .sort((a, b) => a.hour.localeCompare(b.hour))
+  return Array.from(dailyMap.entries())
+    .map(([day, count]) => ({ day, count }))
+    .sort((a, b) => a.day.localeCompare(b.day))
 }
 
-async function getHourlyLeads(): Promise<HourlyData[]> {
+async function getDailyLeads(): Promise<DailyData[]> {
   const supabase = createServiceSupabaseClient()
 
   const { data: leads, error } = await supabase
@@ -190,24 +189,23 @@ async function getHourlyLeads(): Promise<HourlyData[]> {
     .order('created_at', { ascending: true })
 
   if (error || !leads) {
-    console.error('Error fetching hourly leads:', error)
+    console.error('Error fetching daily leads:', error)
     return []
   }
 
-  // Group by hour
-  const hourlyMap = new Map<string, number>()
+  // Group by day
+  const dailyMap = new Map<string, number>()
 
   leads.forEach((lead) => {
     if (lead.created_at) {
-      const date = new Date(lead.created_at)
-      const hour = `${date.toISOString().split('T')[0]} ${date.getHours().toString().padStart(2, '0')}:00`
-      hourlyMap.set(hour, (hourlyMap.get(hour) || 0) + 1)
+      const day = new Date(lead.created_at).toISOString().split('T')[0]
+      dailyMap.set(day, (dailyMap.get(day) || 0) + 1)
     }
   })
 
-  return Array.from(hourlyMap.entries())
-    .map(([hour, count]) => ({ hour, count }))
-    .sort((a, b) => a.hour.localeCompare(b.hour))
+  return Array.from(dailyMap.entries())
+    .map(([day, count]) => ({ day, count }))
+    .sort((a, b) => a.day.localeCompare(b.day))
 }
 
 interface FeedbackData {
@@ -264,10 +262,10 @@ function timeAgo(dateString: string): string {
 }
 
 export default async function SalesPage() {
-  const [salesData, hourlyCheckouts, hourlyLeads, recentFeedback] = await Promise.all([
+  const [salesData, dailyCheckouts, dailyLeads, recentFeedback] = await Promise.all([
     getSalesData(),
-    getHourlyCheckouts(),
-    getHourlyLeads(),
+    getDailyCheckouts(),
+    getDailyLeads(),
     getRecentFeedback(),
   ])
 
@@ -352,8 +350,8 @@ export default async function SalesPage() {
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <HourlyCheckoutsChart data={hourlyCheckouts} />
-        <HourlyLeadsChart data={hourlyLeads} />
+        <DailyCheckoutsChart data={dailyCheckouts} />
+        <DailyLeadsChart data={dailyLeads} />
       </div>
 
       {/* Recent Feedback Feed */}

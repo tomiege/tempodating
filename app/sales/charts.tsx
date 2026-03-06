@@ -3,18 +3,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
-interface HourlyData {
-  hour: string
+interface DailyData {
+  day: string
   count: number
 }
 
-export function HourlyCheckoutsChart({ data }: { data: HourlyData[] }) {
+export function DailyCheckoutsChart({ data }: { data: DailyData[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Hourly Checkouts</CardTitle>
+        <CardTitle>Daily Checkouts</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Checkouts per hour over time
+          Checkouts per day over time
         </p>
       </CardHeader>
       <CardContent>
@@ -27,7 +27,7 @@ export function HourlyCheckoutsChart({ data }: { data: HourlyData[] }) {
             <LineChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
-                dataKey="hour" 
+                dataKey="day" 
                 angle={-45}
                 textAnchor="end"
                 height={80}
@@ -45,13 +45,13 @@ export function HourlyCheckoutsChart({ data }: { data: HourlyData[] }) {
   )
 }
 
-export function HourlyLeadsChart({ data }: { data: HourlyData[] }) {
+export function DailyLeadsChart({ data }: { data: DailyData[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Hourly Leads</CardTitle>
+        <CardTitle>Daily Leads</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Leads per hour over time
+          Leads per day over time
         </p>
       </CardHeader>
       <CardContent>
@@ -64,7 +64,7 @@ export function HourlyLeadsChart({ data }: { data: HourlyData[] }) {
             <LineChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
-                dataKey="hour" 
+                dataKey="day" 
                 angle={-45}
                 textAnchor="end"
                 height={80}

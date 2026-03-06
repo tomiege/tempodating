@@ -69,8 +69,14 @@ async function getTicketCounts(productId: number): Promise<TicketCounts> {
 // Calculate adjusted price based on tickets sold for that gender
 // Prices are in cents
 function calculateAdjustedPrice(basePrice: number, ticketsSold: number): { price: number; soldOut: boolean } {
-  if (ticketsSold > 50) {
+  if (ticketsSold > 60) {
     return { price: basePrice, soldOut: true }
+  }
+
+  if (ticketsSold >= 50) {
+    // 100% increase (double) on base price
+    const increased = Math.round(basePrice * 2)
+    return { price: increased, soldOut: false }
   }
 
   if (ticketsSold >= 40) {
