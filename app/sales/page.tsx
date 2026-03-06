@@ -78,14 +78,23 @@ async function getSalesData(): Promise<SalesData[]> {
   const eventsMap = await getEventsMap()
 
   // Get only PAID checkouts (confirmation_email_sent = true)
-  const { data: checkouts, error } = await supabase
-    .from('checkout')
-    .select('product_id, is_male, user_id, email, query_city')
-    .eq('confirmation_email_sent', true)
-
-  if (error) {
-    console.error('Error fetching checkouts:', error)
-    return []
+  // Supabase defaults to 1000 rows — fetch all by paginating
+  let checkouts: { product_id: number; is_male: boolean | null; user_id: string | null; email: string; query_city: string | null }[] = []
+  let from = 0
+  const PAGE_SIZE = 1000
+  while (true) {
+    const { data, error: pageError } = await supabase
+      .from('checkout')
+      .select('product_id, is_male, user_id, email, query_city')
+      .eq('confirmation_email_sent', true)
+      .range(from, from + PAGE_SIZE - 1)
+    if (pageError) {
+      console.error('Error fetching checkouts:', pageError)
+      return []
+    }
+    checkouts = checkouts.concat(data ?? [])
+    if (!data || data.length < PAGE_SIZE) break
+    from += PAGE_SIZE
   }
 
   // Group by product_id, deduplicate by user (user_id or email) within each product
