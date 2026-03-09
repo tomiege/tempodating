@@ -160,9 +160,15 @@ export function MyCheckoutsComponent({
   }
   
   // Transform checkouts into enrolled events format
-  // Include 'event' and 'onlineSpeedDating' product types
+  // Include 'event' and 'onlineSpeedDating' product types, deduplicated by productId
+  const seenProductIds = new Set<number>()
   const enrolledEvents: EnrolledEvent[] = checkouts
     .filter(checkout => checkout.productType === 'event' || checkout.productType === 'onlineSpeedDating')
+    .filter(checkout => {
+      if (seenProductIds.has(checkout.productId)) return false
+      seenProductIds.add(checkout.productId)
+      return true
+    })
     .map(checkout => {
       // For onlineSpeedDating, find the matching product to get event details
       const matchingProduct = checkout.productType === 'onlineSpeedDating'
@@ -259,7 +265,7 @@ export function MyCheckoutsComponent({
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 {/* Invite button (before event) / Leave Feedback (after event) / Tick (feedback done) */}
                 {event.productType === 'onlineSpeedDating' && (
                   hasFeedback(event) ? (

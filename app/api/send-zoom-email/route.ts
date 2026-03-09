@@ -4,6 +4,8 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { createServiceSupabaseClient } from '@/lib/supabase-server'
 
+export const maxDuration = 120
+
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 const BASE_URL = 'https://www.tempodating.com'
@@ -98,10 +100,12 @@ async function getLeadsForProduct(productId: number, productType: string): Promi
 
   const paidEmails = new Set((paidCheckouts || []).map((c) => c.email.toLowerCase()))
 
-  // Filter: leads whose email is NOT in paid checkouts
+  // Filter: leads whose email is NOT in paid checkouts, and has a valid email
   const seen = new Set<string>()
   return leads.filter((lead) => {
-    const email = lead.email.toLowerCase()
+    if (!lead.email || typeof lead.email !== 'string') return false
+    const email = lead.email.trim().toLowerCase()
+    if (!email || !email.includes('@')) return false
     if (paidEmails.has(email) || seen.has(email)) return false
     seen.add(email)
     return true
@@ -563,23 +567,77 @@ export async function POST(req: NextRequest) {
 
 // ─── Batch send helper ─────────────────────────────────────────────
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+function isValidEmail(email: string | null | undefined): boolean {
+  return typeof email === 'string' && EMAIL_REGEX.test(email.trim())
+}
+
 async function sendBatchEmails(
   batchEmails: { from: string; to: string; subject: string; html: string }[]
 ): Promise<{ totalSent: number; totalFailed: number }> {
-  let totalSent = 0
-  let totalFailed = 0
-  const BATCH_SIZE = 100
+  // Filter out invalid emails before sending
+  const validEmails = batchEmails.filter((e) => isValidEmail(e.to))
+  const skipped = batchEmails.length - validEmails.length
+  if (skipped > 0) {
+    console.warn(`Skipped ${skipped} emails with invalid/null addresses`)
+  }
 
-  for (let i = 0; i < batchEmails.length; i += BATCH_SIZE) {
-    const chunk = batchEmails.slice(i, i + BATCH_SIZE)
+  let totalSent = 0
+  let totalFailed = skipped
+  const BATCH_SIZE = 100
+  const totalChunks = Math.ceil(validEmails.length / BATCH_SIZE)
+
+  for (let i = 0; i < validEmails.length; i += BATCH_SIZE) {
+    const chunkIndex = i / BATCH_SIZE + 1
+    const chunk = validEmails.slice(i, i + BATCH_SIZE)
+
+    // Add delay between batches to avoid Resend rate limits
+    if (i > 0) {
+      await sleep(1500)
+    }
+
     const { data, error } = await resend.batch.send(chunk)
 
     if (error) {
-      console.error(`Batch send error (chunk ${i / BATCH_SIZE + 1}):`, error)
-      totalFailed += chunk.length
+      console.error(`Batch send error (chunk ${chunkIndex}/${totalChunks}):`, error)
+
+      // On validation error, fall back to sending individually
+      if (error.name === 'validation_error') {
+        console.log(`Falling back to individual sends for chunk ${chunkIndex}/${totalChunks}`)
+        for (const email of chunk) {
+          try {
+            const { error: singleError } = await resend.emails.send(email)
+            if (singleError) {
+              console.error(`Failed to send to ${email.to}:`, singleError.message)
+              totalFailed++
+            } else {
+              totalSent++
+            }
+          } catch (e) {
+            console.error(`Exception sending to ${email.to}:`, e)
+            totalFailed++
+          }
+        }
+      } else {
+        // Rate limit or transient error — wait and retry once
+        await sleep(3000)
+        const { data: retryData, error: retryError } = await resend.batch.send(chunk)
+        if (retryError) {
+          console.error(`Retry failed for chunk ${chunkIndex}/${totalChunks}:`, retryError)
+          totalFailed += chunk.length
+        } else {
+          const count = retryData?.data?.length ?? chunk.length
+          totalSent += count
+          console.log(`Batch chunk ${chunkIndex}/${totalChunks} sent on retry: ${count} emails`)
+        }
+      }
     } else {
-      totalSent += data?.data?.length ?? chunk.length
-      console.log(`Batch chunk ${i / BATCH_SIZE + 1} sent:`, data?.data?.length ?? chunk.length)
+      const count = data?.data?.length ?? chunk.length
+      totalSent += count
+      console.log(`Batch chunk ${chunkIndex}/${totalChunks} sent: ${count} emails`)
     }
   }
 

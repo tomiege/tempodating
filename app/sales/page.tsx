@@ -56,17 +56,17 @@ async function getEventsMap(): Promise<Map<number, EventEntry>> {
   }
 }
 
-function formatEventDatetime(gmtdatetime: string, timezone: string): string {
+function formatEventDatetime(gmtdatetime: string): string {
   const date = new Date(gmtdatetime)
   return date.toLocaleString('en-US', {
-    timeZone: timezone,
+    timeZone: 'UTC',
     weekday: 'short',
     month: 'short',
     day: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
-  })
+  }) + ' GMT'
 }
 
 function isEventFinished(gmtdatetime: string): boolean {
@@ -313,7 +313,7 @@ export default async function SalesPage() {
                             ? 'text-green-600'
                             : 'text-blue-600'
                         }`}>
-                          {formatEventDatetime(row.event_datetime, row.event_timezone || 'UTC')}
+                          {formatEventDatetime(row.event_datetime)}
                         </span>
                       ) : (
                         '—'

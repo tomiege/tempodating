@@ -14,6 +14,7 @@ import { signOut } from "@/lib/auth-utils"
 import DashboardProfileComponent from "./components/DashboardProfileComponent"
 import { MyCheckoutsComponent } from "./components/MyCheckoutsComponent"
 import MyMatchesComponent from "./components/MyMatchesComponent"
+import { UpsellNextEventComponent } from "./components/UpsellNextEventComponent"
 import { User } from "@/types/profile"
 
 interface CheckoutData {
@@ -213,7 +214,11 @@ export default function DashboardPage() {
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Events Section - Takes 2 columns */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 space-y-8">
+              <UpsellNextEventComponent
+                checkouts={checkouts}
+                onlineSpeedDatingProducts={onlineSpeedDatingProducts}
+              />
               <MyCheckoutsComponent 
                 checkouts={checkouts}
                 onlineSpeedDatingProducts={onlineSpeedDatingProducts}
