@@ -23,6 +23,7 @@ interface TicketModalProps {
   productId?: number
   productType?: string
   regionId?: string
+  redemptionId?: string | null
 }
 
 export default function TicketModal({ 
@@ -37,7 +38,8 @@ export default function TicketModal({
   currency = "£",
   productId,
   productType = "onlineSpeedDating",
-  regionId
+  regionId,
+  redemptionId
 }: TicketModalProps) {
   const [step, setStep] = useState(1)
   const [name, setName] = useState("")
@@ -46,9 +48,8 @@ export default function TicketModal({
   const [age, setAge] = useState<string>("")
   const [isLoading, setIsLoading] = useState(false)
   const [discountCode, setDiscountCode] = useState("")
-  const [discountApplied, setDiscountApplied] = useState(false)
-  const [discountAmount, setDiscountAmount] = useState(0)
   const [showDiscountInput, setShowDiscountInput] = useState(false)
+  const [discountError, setDiscountError] = useState<string | null>(null)
   const [registrationSuccess, setRegistrationSuccess] = useState(false)
   const [registrationError, setRegistrationError] = useState<string | null>(null)
   const [isNewUser, setIsNewUser] = useState(false)
@@ -65,6 +66,14 @@ export default function TicketModal({
     maleSoldOut: boolean
     femaleSoldOut: boolean
     nextEvent: { productId: number; city: string; gmtdatetime: string } | null
+  } | null>(null)
+  const [redemptionData, setRedemptionData] = useState<{
+    id: string
+    for_gender: 'male' | 'female' | 'both'
+    discount_percent: number
+    valid: boolean
+    expired: boolean
+    fullyUsed: boolean
   } | null>(null)
   const { user } = useAuth()
   
@@ -121,6 +130,38 @@ export default function TicketModal({
 
     fetchPricing()
   }, [isOpen, productId, price, femalePrice, regionId])
+
+  // Validate redemption code when modal opens
+  useEffect(() => {
+    if (!isOpen || !redemptionId) {
+      setRedemptionData(null)
+      return
+    }
+
+    const validateRedemption = async () => {
+      try {
+        const response = await fetch(`/api/redemptions/redeem?id=${encodeURIComponent(redemptionId)}&productId=${productId || ''}`)
+        if (response.ok) {
+          const data = await response.json()
+          setRedemptionData({
+            id: data.id,
+            for_gender: data.for_gender,
+            discount_percent: data.discount_percent ?? 100,
+            valid: data.valid,
+            expired: data.expired,
+            fullyUsed: data.fullyUsed,
+          })
+        } else {
+          setRedemptionData(null)
+        }
+      } catch (error) {
+        console.error('Error validating redemption:', error)
+        setRedemptionData(null)
+      }
+    }
+
+    validateRedemption()
+  }, [isOpen, redemptionId])
 
   // Check sold-out status when gender is selected and pricing is loaded
   // Also re-check when step changes (for logged-in users jumping to step 3)
@@ -388,14 +429,57 @@ export default function TicketModal({
         // Final price after discount
         finalPrice: getCurrentPrice(),
         currency: currency,
-        discountApplied: discountApplied,
-        discountAmount: discountAmount,
+        redemptionDiscountPercent: redemptionDiscountPercent,
         // Hours until event starts (negative = already started)
         hoursUntilEvent: hoursUntilEvent,
         daysUntilEvent: Math.round(hoursUntilEvent / 24)
       })
       
       try {
+        // If redemption applies (any discount), use the redemption endpoint
+        if (redemptionGenderMatch && redemptionData) {
+          const response = await fetch('/api/redemptions/redeem', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              redemptionId: redemptionData.id,
+              email: email.toLowerCase().trim(),
+              name,
+              queryCity: eventCity,
+              productId,
+              productType,
+              isMale: gender === 'male',
+              originalPrice: getOriginalPrice(),
+            }),
+          })
+
+          if (!response.ok) {
+            const errorData = await response.json()
+            throw new Error(errorData.error || 'Failed to redeem code')
+          }
+
+          const data = await response.json()
+
+          posthog.capture('redemption_checkout_completed', {
+            redemptionId: redemptionData.id,
+            discountPercent: redemptionData.discount_percent,
+            eventTitle,
+            eventCity,
+            productId,
+            productType,
+            gender,
+          })
+
+          if (data.isFree || redemptionData.discount_percent === 100) {
+            // Free ticket - redirect to success
+            window.location.href = data.redirectUrl
+          } else {
+            // Partial discount - redirect to success (checkout record already created with discounted price)
+            window.location.href = data.redirectUrl
+          }
+          return
+        }
+
         // Create checkout session
         const finalPrice = getCurrentPrice();
         const checkoutData = {
@@ -476,9 +560,8 @@ export default function TicketModal({
     setGender("")
     setAge("")
     setDiscountCode("")
-    setDiscountApplied(false)
-    setDiscountAmount(0)
     setShowDiscountInput(false)
+    setDiscountError(null)
     setRegistrationSuccess(false)
     setRegistrationError(null)
     setIsNewUser(false)
@@ -492,55 +575,94 @@ export default function TicketModal({
     setDynamicMalePrice(null)
     setDynamicFemalePrice(null)
     setPricingData(null)
+    setRedemptionData(null)
     onClose()
   }
 
-  const handleApplyDiscount = () => {
-    const lowerCaseCode = discountCode.toLowerCase()
-    switch (lowerCaseCode) {
-      case "valentinesinvite20":
-        setDiscountApplied(true)
-        setDiscountAmount(0.20)
-        posthog.capture('discount_code_applied', { 
-          code: lowerCaseCode,
-          discountAmount: 0.20,
-          eventTitle: eventTitle,
-          productId: productId,
-          gender: gender
-        })
-        break
-      case "tempo20":
-        setDiscountApplied(true)
-        setDiscountAmount(0.20)
-        posthog.capture('discount_code_applied', { 
-          code: lowerCaseCode,
-          discountAmount: 0.20,
-          eventTitle: eventTitle,
-          productId: productId,
-          gender: gender
-        })
-        break
-      default:
-        setDiscountApplied(false)
-        setDiscountAmount(0)
-        posthog.capture('discount_code_failed', { 
-          code: lowerCaseCode,
-          eventTitle: eventTitle,
-          productId: productId
-        })
-        alert("Invalid discount code")
+  const handleApplyDiscount = async () => {
+    const code = discountCode.trim()
+    if (!code) return
+
+    setDiscountError(null)
+
+    try {
+      const params = new URLSearchParams({ code })
+      if (productId) params.set('productId', productId.toString())
+
+      const response = await fetch(`/api/redemptions/redeem?${params}`)
+      if (!response.ok) {
+        setDiscountError('Invalid discount code')
+        posthog.capture('discount_code_failed', { code, eventTitle, productId })
+        return
+      }
+
+      const data = await response.json()
+
+      if (!data.valid) {
+        setDiscountError(data.expired ? 'This code has expired' : data.fullyUsed ? 'This code has been fully used' : 'This code is not valid for this event')
+        posthog.capture('discount_code_failed', { code, eventTitle, productId, reason: data.expired ? 'expired' : data.fullyUsed ? 'fullyUsed' : 'invalid' })
+        return
+      }
+
+      // Check gender match
+      const genderMatch = gender && (
+        data.for_gender === 'both' ||
+        gender === data.for_gender
+      )
+
+      setRedemptionData({
+        id: data.id,
+        for_gender: data.for_gender,
+        discount_percent: data.discount_percent ?? 100,
+        valid: data.valid,
+        expired: data.expired,
+        fullyUsed: data.fullyUsed,
+      })
+
+      posthog.capture('discount_code_applied', {
+        code,
+        discountPercent: data.discount_percent,
+        eventTitle,
+        productId,
+        gender,
+        genderMatch,
+      })
+    } catch {
+      setDiscountError('Failed to validate code')
     }
   }
 
   // Returns price in cents (prices from API are already in cents)
+  const redemptionGenderMatch = redemptionData?.valid && gender && (
+    redemptionData.for_gender === 'both' ||
+    gender === redemptionData.for_gender
+  )
+
+  const isRedemptionFree = redemptionGenderMatch && redemptionData?.discount_percent === 100
+
+  const isRedemptionGenderMismatch = redemptionData?.valid && gender && !redemptionGenderMatch
+
+  const redemptionDiscountPercent = redemptionGenderMatch ? (redemptionData?.discount_percent ?? 0) : 0
+
   const getCurrentPrice = () => {
+    if (isRedemptionFree) return 0
     let basePrice: number
     if (gender === 'male') {
       basePrice = dynamicMalePrice ?? price
     } else {
       basePrice = dynamicFemalePrice ?? femalePrice
     }
-    return Math.round(basePrice * (1 - discountAmount))
+    if (redemptionDiscountPercent > 0) {
+      return Math.round(basePrice * (1 - redemptionDiscountPercent / 100))
+    }
+    return basePrice
+  }
+
+  const getOriginalPrice = () => {
+    if (gender === 'male') {
+      return dynamicMalePrice ?? price
+    }
+    return dynamicFemalePrice ?? femalePrice
   }
 
   // Format cents to display currency (e.g., 1500 -> "15.00")
@@ -865,28 +987,49 @@ export default function TicketModal({
                     
                     {/* Pricing */}
                     <div className="flex flex-col items-center gap-2">
-                      <div className="flex items-center flex-wrap justify-center gap-2">
-                        {discountApplied ? (
-                          <>
-                            <span className="text-base text-muted-foreground line-through font-medium">
-                              {getCurrencySymbol()}{formatPrice(gender === 'male' ? price : femalePrice)}
-                            </span>
-                            <span className="text-2xl font-bold text-foreground">
-                              {getCurrencySymbol()}{formatPrice(getCurrentPrice())}
-                            </span>
-                            <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">
-                              {(discountAmount * 100).toFixed(0)}% OFF
-                            </span>
-                          </>
-                        ) : (
-                          <span className="text-2xl font-bold text-foreground">
-                            {getCurrencySymbol()}{formatPrice(getCurrentPrice())}
+                      {isRedemptionFree ? (
+                        <>
+                          <span className="text-2xl font-bold text-green-600">Free</span>
+                          <span className="text-green-600 text-sm font-bold">
+                            🎉 Thanks to your special redemption code!
                           </span>
-                        )}
-                      </div>
-                      <span className="text-red-600 text-sm font-bold">
-                        🔥 Last Ticket at this price!
-                      </span>
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex items-center flex-wrap justify-center gap-2">
+                            {redemptionDiscountPercent > 0 ? (
+                              <>
+                                <span className="text-base text-muted-foreground line-through font-medium">
+                                  {getCurrencySymbol()}{formatPrice(getOriginalPrice())}
+                                </span>
+                                <span className="text-2xl font-bold text-foreground">
+                                  {getCurrencySymbol()}{formatPrice(getCurrentPrice())}
+                                </span>
+                                <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">
+                                  {redemptionDiscountPercent}% OFF
+                                </span>
+                              </>
+                            ) : (
+                              <span className="text-2xl font-bold text-foreground">
+                                {getCurrencySymbol()}{formatPrice(getCurrentPrice())}
+                              </span>
+                            )}
+                          </div>
+                          {redemptionDiscountPercent > 0 ? (
+                            <span className="text-green-600 text-sm font-bold">
+                              Saving {getCurrencySymbol()}{formatPrice(getOriginalPrice() - getCurrentPrice())}!
+                            </span>
+                          ) : isRedemptionGenderMismatch ? (
+                            <span className="text-amber-600 text-sm font-medium">
+                              Your redemption code applies only to {redemptionData?.for_gender} tickets
+                            </span>
+                          ) : (
+                            <span className="text-red-600 text-sm font-bold">
+                              🔥 Last Ticket at this price!
+                            </span>
+                          )}
+                        </>
+                      )}
                     </div>
                     
                     {/* Important Notice */}
@@ -919,28 +1062,49 @@ export default function TicketModal({
                           <p className="text-sm text-muted-foreground">1× Admission</p>
                         </div>
                         <div className="flex flex-col items-end">
-                          <div className="flex items-center gap-2">
-                            {discountApplied ? (
-                              <>
-                                <span className="text-muted-foreground line-through font-medium">
-                                  {getCurrencySymbol()}{formatPrice(gender === 'male' ? price : femalePrice)}
-                                </span>
-                                <span className="text-2xl font-bold text-foreground">
-                                  {getCurrencySymbol()}{formatPrice(getCurrentPrice())}
-                                </span>
-                                <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">
-                                  {(discountAmount * 100).toFixed(0)}% OFF
-                                </span>
-                              </>
-                            ) : (
-                              <span className="text-2xl font-bold text-foreground">
-                                {getCurrencySymbol()}{formatPrice(getCurrentPrice())}
+                          {isRedemptionFree ? (
+                            <>
+                              <span className="text-2xl font-bold text-green-600">Free</span>
+                              <span className="text-green-600 text-sm font-bold mt-1">
+                                🎉 Thanks to your special redemption code!
                               </span>
-                            )}
-                          </div>
-                          <span className="text-red-600 text-sm font-bold mt-1">
-                            🔥 Last Ticket at this price!
-                          </span>
+                            </>
+                          ) : (
+                            <>
+                              <div className="flex items-center gap-2">
+                                {redemptionDiscountPercent > 0 ? (
+                                  <>
+                                    <span className="text-muted-foreground line-through font-medium">
+                                      {getCurrencySymbol()}{formatPrice(getOriginalPrice())}
+                                    </span>
+                                    <span className="text-2xl font-bold text-foreground">
+                                      {getCurrencySymbol()}{formatPrice(getCurrentPrice())}
+                                    </span>
+                                    <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">
+                                      {redemptionDiscountPercent}% OFF
+                                    </span>
+                                  </>
+                                ) : (
+                                  <span className="text-2xl font-bold text-foreground">
+                                    {getCurrencySymbol()}{formatPrice(getCurrentPrice())}
+                                  </span>
+                                )}
+                              </div>
+                              {redemptionDiscountPercent > 0 ? (
+                                <span className="text-green-600 text-sm font-bold mt-1">
+                                  Saving {getCurrencySymbol()}{formatPrice(getOriginalPrice() - getCurrentPrice())}!
+                                </span>
+                              ) : isRedemptionGenderMismatch ? (
+                                <span className="text-amber-600 text-sm font-medium mt-1">
+                                  Your redemption code applies only to {redemptionData?.for_gender} tickets
+                                </span>
+                              ) : (
+                                <span className="text-red-600 text-sm font-bold mt-1">
+                                  🔥 Last Ticket at this price!
+                                </span>
+                              )}
+                            </>
+                          )}
                         </div>
                       </div>
                       
@@ -962,28 +1126,49 @@ export default function TicketModal({
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-medium text-foreground">Speed Dating Ticket</span>
                     <div className="flex flex-col items-end">
-                      <div className="flex items-center space-x-2">
-                        {discountApplied ? (
-                          <>
-                            <span className="text-muted-foreground line-through font-medium">
-                              {getCurrencySymbol()}{formatPrice(gender === 'male' ? price : femalePrice)}
-                            </span>
-                            <span className="text-2xl font-bold text-foreground">
-                              {getCurrencySymbol()}{formatPrice(getCurrentPrice())}
-                            </span>
-                            <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">
-                              {(discountAmount * 100).toFixed(0)}% OFF
-                            </span>
-                          </>
-                        ) : (
-                          <span className="text-2xl font-bold text-foreground">
-                            {getCurrencySymbol()}{formatPrice(getCurrentPrice())}
+                      {isRedemptionFree ? (
+                        <>
+                          <span className="text-2xl font-bold text-green-600">Free</span>
+                          <span className="text-green-600 text-sm font-bold mt-1">
+                            🎉 Thanks to your special redemption code!
                           </span>
-                        )}
-                      </div>
-                      <span className="text-red-600 text-sm font-bold mt-1">
-                        🔥 Last Ticket at this price!
-                      </span>
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex items-center space-x-2">
+                            {redemptionDiscountPercent > 0 ? (
+                              <>
+                                <span className="text-muted-foreground line-through font-medium">
+                                  {getCurrencySymbol()}{formatPrice(getOriginalPrice())}
+                                </span>
+                                <span className="text-2xl font-bold text-foreground">
+                                  {getCurrencySymbol()}{formatPrice(getCurrentPrice())}
+                                </span>
+                                <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">
+                                  {redemptionDiscountPercent}% OFF
+                                </span>
+                              </>
+                            ) : (
+                              <span className="text-2xl font-bold text-foreground">
+                                {getCurrencySymbol()}{formatPrice(getCurrentPrice())}
+                              </span>
+                            )}
+                          </div>
+                          {redemptionDiscountPercent > 0 ? (
+                            <span className="text-green-600 text-sm font-bold mt-1">
+                              Saving {getCurrencySymbol()}{formatPrice(getOriginalPrice() - getCurrentPrice())}!
+                            </span>
+                          ) : isRedemptionGenderMismatch ? (
+                            <span className="text-amber-600 text-sm font-medium mt-1">
+                              Your redemption code applies only to {redemptionData?.for_gender} tickets
+                            </span>
+                          ) : (
+                            <span className="text-red-600 text-sm font-bold mt-1">
+                              🔥 Last Ticket at this price!
+                            </span>
+                          )}
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1031,6 +1216,10 @@ export default function TicketModal({
                 "Continue"
               ) : step === 2 ? (
                 "Continue to Payment"
+              ) : isRedemptionFree ? (
+                "Claim Free Ticket"
+              ) : redemptionGenderMatch ? (
+                "Claim Discounted Ticket"
               ) : (
                 "Complete Purchase"
               )}
@@ -1039,7 +1228,7 @@ export default function TicketModal({
           )}
 
           {/* Discount Code - Below Complete Purchase button */}
-          {step === 3 && pricingLoaded && !isSoldOut && !discountApplied && !registrationSuccess && (
+          {step === 3 && pricingLoaded && !isSoldOut && !registrationSuccess && !redemptionGenderMatch && (
             <div className="text-center mt-4">
               {!showDiscountInput ? (
                 <button
@@ -1050,28 +1239,33 @@ export default function TicketModal({
                   Have a discount code?
                 </button>
               ) : (
-                <div className="flex gap-2 max-w-xs mx-auto">
-                  <Input
-                    type="text"
-                    placeholder="Discount code"
-                    value={discountCode}
-                    onChange={(e) => setDiscountCode(e.target.value)}
-                    className="border-border focus:border-primary rounded-xl h-10 text-sm"
-                  />
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={handleApplyDiscount}
-                    className="rounded-xl h-10 px-4 bg-transparent text-sm"
-                  >
-                    Apply
-                  </Button>
+                <div className="space-y-2">
+                  <div className="flex gap-2 max-w-xs mx-auto">
+                    <Input
+                      type="text"
+                      placeholder="Enter code"
+                      value={discountCode}
+                      onChange={(e) => { setDiscountCode(e.target.value); setDiscountError(null) }}
+                      className="border-border focus:border-primary rounded-xl h-10 text-sm"
+                    />
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={handleApplyDiscount}
+                      className="rounded-xl h-10 px-4 bg-transparent text-sm"
+                    >
+                      Apply
+                    </Button>
+                  </div>
+                  {discountError && (
+                    <p className="text-red-500 text-xs">{discountError}</p>
+                  )}
                 </div>
               )}
             </div>
           )}
 
-          {step === 3 && pricingLoaded && !isSoldOut && !registrationSuccess && (
+          {step === 3 && pricingLoaded && !isSoldOut && !registrationSuccess && !redemptionGenderMatch && (
             <div className="mt-8 pt-8 border-t border-border">
               <div className="flex items-center justify-center space-x-3">
                 <Shield className="w-6 h-6 text-green-600" />

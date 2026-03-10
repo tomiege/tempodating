@@ -20,7 +20,7 @@ export function CTASection() {
         </p>
         
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Button 
+          {/* <Button 
             size="lg" 
             variant="secondary" 
             className="text-base px-8 bg-primary-foreground text-primary hover:bg-primary-foreground/90"
@@ -30,7 +30,7 @@ export function CTASection() {
               Find Your Event
               <ArrowRight className="w-4 h-4 ml-2" />
             </Link>
-          </Button>
+          </Button> */}
           {/* <Button 
             size="lg" 
             variant="outline" 

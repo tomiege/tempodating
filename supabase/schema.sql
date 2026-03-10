@@ -126,6 +126,38 @@ CREATE TABLE IF NOT EXISTS public.email_campaigns (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Redemptions table for makeup events, reschedulings, and free invites
+CREATE TABLE IF NOT EXISTS public.redemptions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  code TEXT UNIQUE,
+  product_id INTEGER,
+  product_type TEXT NOT NULL,
+  for_gender TEXT NOT NULL DEFAULT 'female' CHECK (for_gender IN ('male', 'female', 'both')),
+  discount_percent INTEGER NOT NULL DEFAULT 100 CHECK (discount_percent >= 1 AND discount_percent <= 100),
+  max_uses INTEGER NOT NULL DEFAULT 1,
+  used_count INTEGER NOT NULL DEFAULT 0,
+  expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  note TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Redemption uses tracking table
+CREATE TABLE IF NOT EXISTS public.redemption_uses (
+  id SERIAL PRIMARY KEY,
+  redemption_id UUID NOT NULL REFERENCES public.redemptions(id) ON DELETE CASCADE,
+  email TEXT NOT NULL,
+  name TEXT,
+  checkout_id INTEGER REFERENCES public.checkout(checkout_id) ON DELETE SET NULL,
+  redeemed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_redemptions_product ON public.redemptions(product_id, product_type);
+CREATE INDEX IF NOT EXISTS idx_redemptions_expires_at ON public.redemptions(expires_at);
+CREATE INDEX IF NOT EXISTS idx_redemption_uses_redemption_id ON public.redemption_uses(redemption_id);
+CREATE INDEX IF NOT EXISTS idx_redemption_uses_email ON public.redemption_uses(email);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_email_campaigns_product ON public.email_campaigns(product_id, product_type);
 CREATE INDEX IF NOT EXISTS idx_email_campaigns_template ON public.email_campaigns(template);
@@ -146,4 +178,22 @@ CREATE INDEX IF NOT EXISTS idx_event_invitations_from_user_id ON public.event_in
 CREATE INDEX IF NOT EXISTS idx_event_invitations_product ON public.event_invitations(product_id, product_type);
 CREATE INDEX IF NOT EXISTS idx_attendance_product_id ON public.attendance(product_id);
 CREATE INDEX IF NOT EXISTS idx_attendance_site_name ON public.attendance(site_name);
+
+-- Messages table for user-to-user messaging
+CREATE TABLE IF NOT EXISTS public.messages (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  from_user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  to_user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  message TEXT NOT NULL,
+  is_read BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_messages_to_user ON public.messages(to_user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_messages_from_user ON public.messages(from_user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_messages_conversation ON public.messages(
+  LEAST(from_user_id, to_user_id),
+  GREATEST(from_user_id, to_user_id),
+  created_at DESC
+);
 

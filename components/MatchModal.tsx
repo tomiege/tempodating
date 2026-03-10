@@ -12,9 +12,11 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
-import { Heart, Loader2, X, User, Calendar, Check } from "lucide-react"
+import { Heart, Loader2, X, User, Calendar, Check, MessageCircle, Send } from "lucide-react"
+import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import ProfileModal, { ProfileModalUser } from "@/components/ProfileModal"
 
 interface Participant {
   id: string
@@ -63,14 +65,32 @@ export default function MatchModal({
   const [loadingParticipants, setLoadingParticipants] = useState(true)
   const [loadingMatches, setLoadingMatches] = useState(true)
   const [likingUser, setLikingUser] = useState<string | null>(null)
+  const [messagingUser, setMessagingUser] = useState<string | null>(null)
+  const [messageText, setMessageText] = useState("")
+  const [sendingMessage, setSendingMessage] = useState(false)
+  const [existingChatPartners, setExistingChatPartners] = useState<Set<string>>(new Set())
+  const [profileModalUser, setProfileModalUser] = useState<ProfileModalUser | null>(null)
   const { toast } = useToast()
 
   useEffect(() => {
     if (isOpen && productId) {
       fetchParticipants()
       fetchMatches()
+      fetchExistingChats()
     }
   }, [isOpen, productId])
+
+  const fetchExistingChats = async () => {
+    try {
+      const response = await fetch("/api/messages/inbox")
+      if (response.ok) {
+        const data = await response.json()
+        setExistingChatPartners(new Set(data.map((c: { partnerId: string }) => c.partnerId)))
+      }
+    } catch (error) {
+      console.error("Error fetching existing chats:", error)
+    }
+  }
 
   const fetchParticipants = async () => {
     setLoadingParticipants(true)
@@ -225,6 +245,31 @@ export default function MatchModal({
     }
   }
 
+  const handleSendMessage = async (toUserId: string) => {
+    if (!messageText.trim() || sendingMessage) return
+    setSendingMessage(true)
+    try {
+      const response = await fetch("/api/messages/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ toUserId, message: messageText.trim() }),
+      })
+      if (response.ok) {
+        toast({ title: "Message sent!", description: "Check your Messages tab to continue the conversation." })
+        setMessageText("")
+        setMessagingUser(null)
+        setExistingChatPartners(prev => new Set([...prev, toUserId]))
+      } else {
+        const err = await response.json()
+        toast({ title: "Error", description: err.error || "Failed to send message", variant: "destructive" })
+      }
+    } catch {
+      toast({ title: "Error", description: "Failed to send message", variant: "destructive" })
+    } finally {
+      setSendingMessage(false)
+    }
+  }
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       month: "short",
@@ -282,19 +327,23 @@ export default function MatchModal({
                       className="p-4 bg-gray-800 rounded-lg border border-gray-700"
                     >
                       <div className="flex items-start space-x-4">
-                        <Avatar className="w-12 h-12">
-                          {participant.avatarUrl ? (
-                            <AvatarImage src={participant.avatarUrl} />
-                          ) : null}
-                          <AvatarFallback className="bg-gray-600 text-white">
-                            {participant.name.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
+                        <button type="button" onClick={() => setProfileModalUser({ id: participant.id, name: participant.name, avatarUrl: participant.avatarUrl, bio: participant.bio, age: participant.age, city: participant.city, isMale: participant.isMale })} className="flex-shrink-0">
+                          <Avatar className="w-12 h-12 cursor-pointer hover:ring-2 hover:ring-red-500 transition-all">
+                            {participant.avatarUrl ? (
+                              <AvatarImage src={participant.avatarUrl} />
+                            ) : null}
+                            <AvatarFallback className="bg-gray-600 text-white">
+                              {participant.name.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                        </button>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <h4 className="font-medium text-white truncate">
-                              {participant.name}
-                            </h4>
+                            <button type="button" onClick={() => setProfileModalUser({ id: participant.id, name: participant.name, avatarUrl: participant.avatarUrl, bio: participant.bio, age: participant.age, city: participant.city, isMale: participant.isMale })} className="text-left">
+                              <h4 className="font-medium text-white truncate hover:text-red-400 cursor-pointer transition-colors">
+                                {participant.name}
+                              </h4>
+                            </button>
                             <div className="flex items-center gap-2">
                               {participant.isMale !== undefined && (
                                 <Badge
@@ -315,7 +364,7 @@ export default function MatchModal({
                               {participant.bio}
                             </p>
                           )}
-                          <div className="mt-3">
+                          <div className="mt-3 flex items-center gap-2">
                             {participant.isLiked ? (
                               <Button
                                 size="sm"
@@ -346,7 +395,68 @@ export default function MatchModal({
                                 Like
                               </Button>
                             )}
+                            {existingChatPartners.has(participant.id) ? (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs border-gray-500 text-gray-400 cursor-default opacity-60"
+                                disabled
+                              >
+                                <Check className="w-3 h-3 mr-1" />
+                                Chatting
+                              </Button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs border-red-500 text-red-400 hover:bg-red-600 hover:text-white"
+                                onClick={() => setMessagingUser(messagingUser === participant.id ? null : participant.id)}
+                              >
+                                <MessageCircle className="w-3 h-3 mr-1" />
+                                Message
+                              </Button>
+                            )}
                           </div>
+                          {messagingUser === participant.id && !existingChatPartners.has(participant.id) && (
+                            <div className="mt-3 space-y-2">
+                              <Textarea
+                                placeholder={`Write a message to ${participant.name}...`}
+                                value={messageText}
+                                onChange={(e) => setMessageText(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault()
+                                    handleSendMessage(participant.id)
+                                  }
+                                }}
+                                className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 resize-none text-sm min-h-[60px]"
+                                rows={2}
+                              />
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="text-xs text-gray-400"
+                                  onClick={() => { setMessagingUser(null); setMessageText("") }}
+                                >
+                                  Cancel
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  className="text-xs bg-red-600 hover:bg-red-700"
+                                  onClick={() => handleSendMessage(participant.id)}
+                                  disabled={!messageText.trim() || sendingMessage}
+                                >
+                                  {sendingMessage ? (
+                                    <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                                  ) : (
+                                    <Send className="w-3 h-3 mr-1" />
+                                  )}
+                                  Send
+                                </Button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -385,18 +495,22 @@ export default function MatchModal({
                           className="p-3 bg-green-900 bg-opacity-30 rounded-lg border border-green-600 mb-3"
                         >
                           <div className="flex items-start space-x-3">
-                            <Avatar className="w-10 h-10">
-                              {match.otherProfile.avatarUrl ? (
-                                <AvatarImage src={match.otherProfile.avatarUrl} alt={match.otherProfile.name} />
-                              ) : null}
-                              <AvatarFallback className="bg-green-600 text-white">
-                                {match.otherProfile.name.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
+                            <button type="button" onClick={() => setProfileModalUser({ id: match.otherProfile.id, name: match.otherProfile.name, avatarUrl: match.otherProfile.avatarUrl, bio: match.otherProfile.bio })} className="flex-shrink-0">
+                              <Avatar className="w-10 h-10 cursor-pointer hover:ring-2 hover:ring-red-500 transition-all">
+                                {match.otherProfile.avatarUrl ? (
+                                  <AvatarImage src={match.otherProfile.avatarUrl} alt={match.otherProfile.name} />
+                                ) : null}
+                                <AvatarFallback className="bg-green-600 text-white">
+                                  {match.otherProfile.name.charAt(0)}
+                                </AvatarFallback>
+                              </Avatar>
+                            </button>
                             <div className="flex-1 min-w-0">
-                              <h5 className="font-medium text-white truncate">
-                                {match.otherProfile.name}
-                              </h5>
+                              <button type="button" onClick={() => setProfileModalUser({ id: match.otherProfile.id, name: match.otherProfile.name, avatarUrl: match.otherProfile.avatarUrl, bio: match.otherProfile.bio })} className="text-left">
+                                <h5 className="font-medium text-white truncate hover:text-red-400 cursor-pointer transition-colors">
+                                  {match.otherProfile.name}
+                                </h5>
+                              </button>
                               <p className="text-xs text-gray-400 mb-2">
                                 <Calendar className="w-3 h-3 inline mr-1" />
                                 Matched {formatDate(match.matchedAt)}
@@ -423,6 +537,69 @@ export default function MatchModal({
                                   <p className="text-sm text-gray-300 whitespace-pre-line break-words">
                                     {match.otherProfile.contactInfo}
                                   </p>
+                                </div>
+                              )}
+                              <div className="mt-2 pt-2 border-t border-green-700/50">
+                                {existingChatPartners.has(match.otherProfile.id) ? (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-xs border-gray-500 text-gray-400 cursor-default opacity-60"
+                                    disabled
+                                  >
+                                    <Check className="w-3 h-3 mr-1" />
+                                    Chatting
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-xs border-red-500 text-red-400 hover:bg-red-600 hover:text-white"
+                                    onClick={() => setMessagingUser(messagingUser === match.otherProfile.id ? null : match.otherProfile.id)}
+                                  >
+                                    <MessageCircle className="w-3 h-3 mr-1" />
+                                    Message
+                                  </Button>
+                                )}
+                              </div>
+                              {messagingUser === match.otherProfile.id && !existingChatPartners.has(match.otherProfile.id) && (
+                                <div className="mt-2 space-y-2">
+                                  <Textarea
+                                    placeholder={`Write a message to ${match.otherProfile.name}...`}
+                                    value={messageText}
+                                    onChange={(e) => setMessageText(e.target.value)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter" && !e.shiftKey) {
+                                        e.preventDefault()
+                                        handleSendMessage(match.otherProfile.id)
+                                      }
+                                    }}
+                                    className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 resize-none text-sm min-h-[60px]"
+                                    rows={2}
+                                  />
+                                  <div className="flex justify-end gap-2">
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="text-xs text-gray-400"
+                                      onClick={() => { setMessagingUser(null); setMessageText("") }}
+                                    >
+                                      Cancel
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                  className="text-xs bg-red-600 hover:bg-red-700"
+                                      onClick={() => handleSendMessage(match.otherProfile.id)}
+                                      disabled={!messageText.trim() || sendingMessage}
+                                    >
+                                      {sendingMessage ? (
+                                        <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                                      ) : (
+                                        <Send className="w-3 h-3 mr-1" />
+                                      )}
+                                      Send
+                                    </Button>
+                                  </div>
                                 </div>
                               )}
                             </div>
@@ -469,6 +646,11 @@ export default function MatchModal({
           </TabsContent>
         </Tabs>
       </DialogContent>
+      <ProfileModal
+        user={profileModalUser}
+        isOpen={!!profileModalUser}
+        onClose={() => setProfileModalUser(null)}
+      />
     </Dialog>
   )
 }

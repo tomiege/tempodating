@@ -28,12 +28,12 @@ export function HeroSection() {
             </p>
             
             <div className="flex flex-col sm:flex-row items-start gap-3 mb-8">
-              <Button size="lg" className="text-base px-6" asChild>
+              {/* <Button size="lg" className="text-base px-6" asChild>
                 <Link href="/products/onlineSpeedDating">
                   Find Events Near You
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Link>
-              </Button>
+              </Button> */}
               <Button variant="outline" size="lg" className="text-base px-6 bg-transparent" asChild>
                 <Link href="/#how-it-works">
                   How It Works

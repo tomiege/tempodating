@@ -14,6 +14,7 @@ import {
 import { DailyCheckoutsChart, DailyLeadsChart } from './charts'
 import { CopyEmailsButton } from './copy-emails-button'
 import { SendZoomEmailButton } from './send-zoom-email-button'
+import { SendInviteEmailButton } from './send-invite-email-button'
 import { Star } from 'lucide-react'
 
 interface EventEntry {
@@ -334,7 +335,12 @@ export default async function SalesPage() {
                     <TableCell className={`text-right font-semibold ${getDifferentialColor(row.differential)}`}>
                       {formatDifferential(row.differential)}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right flex items-center justify-end gap-1">
+                      <SendInviteEmailButton
+                        productId={row.product_id}
+                        maleEmails={row.male_emails}
+                        femaleEmails={row.female_emails}
+                      />
                       <SendZoomEmailButton
                         productId={row.product_id}
                         maleEmails={row.male_emails}

@@ -9,14 +9,15 @@ export const OnDemandProductSchema = z.object({
   productId: z.number().int().positive(),
   title: z.string().min(1),
   description: z.string().min(1),
-  productType: z.string().refine(val => val === 'onDemand'),
+  productType: z.enum(['datingEbook', 'styleConsultant', 'aiPhotos', 'colorPalette', 'soulmateSketching']),
   category: z.string().min(1),
   price: z.number().int().nonnegative(),
   currency: z.string().length(3),
   imageUrl: z.string(),
   available: z.boolean(),
   featured: z.boolean(),
-  downloadUrl: z.string(),
+  gender: z.enum(['male', 'female', 'both']),
+  downloadUrl: z.string().optional(),
 });
 
 export type OnDemandProduct = z.infer<typeof OnDemandProductSchema>;

@@ -14,7 +14,7 @@ export default function Home() {
       <Header />
       <HeroSection />
       <SpeedDatingSection />
-      <WorkshopsSection />
+      {/* <WorkshopsSection /> */}
       {/* <ProductsSection /> */}
       <HowItWorksSection />
       <TestimonialsSection />

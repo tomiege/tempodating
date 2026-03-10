@@ -5,7 +5,8 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { 
   LogOut,
-  Loader2
+  Loader2,
+  MessageCircle
 } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
@@ -15,6 +16,8 @@ import DashboardProfileComponent from "./components/DashboardProfileComponent"
 import { MyCheckoutsComponent } from "./components/MyCheckoutsComponent"
 import MyMatchesComponent from "./components/MyMatchesComponent"
 import { UpsellNextEventComponent } from "./components/UpsellNextEventComponent"
+import MessagesComponent from "./components/MessagesComponent"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { User } from "@/types/profile"
 
 interface CheckoutData {
@@ -67,6 +70,7 @@ export default function DashboardPage() {
   const [onlineSpeedDatingProducts, setOnlineSpeedDatingProducts] = useState<OnlineSpeedDatingProduct[]>([])
   const [userProfile, setUserProfile] = useState<User | null>(null)
   const [profileLoading, setProfileLoading] = useState(true)
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0)
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -149,6 +153,27 @@ export default function DashboardPage() {
     }
   }, [user])
 
+  // Fetch unread message count
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      if (!user) return
+      try {
+        const response = await fetch('/api/messages/inbox')
+        if (response.ok) {
+          const data = await response.json()
+          const unread = data.reduce((sum: number, c: { unreadCount: number }) => sum + c.unreadCount, 0)
+          setUnreadMessageCount(unread)
+        }
+      } catch (error) {
+        console.error('Error fetching unread count:', error)
+      }
+    }
+
+    if (user) {
+      fetchUnreadCount()
+    }
+  }, [user])
+
   // Handle profile update callback
   const handleProfileUpdate = (updatedUser: User) => {
     setUserProfile(updatedUser)
@@ -211,32 +236,58 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Events Section - Takes 2 columns */}
-            <div className="lg:col-span-2 space-y-8">
-              <UpsellNextEventComponent
-                checkouts={checkouts}
-                onlineSpeedDatingProducts={onlineSpeedDatingProducts}
-              />
-              <MyCheckoutsComponent 
-                checkouts={checkouts}
-                onlineSpeedDatingProducts={onlineSpeedDatingProducts}
-                loading={checkoutsLoading}
-              />
-            </div>
+          {/* Main Content with Tabs */}
+          <Tabs defaultValue="dashboard" className="w-full">
+            <TabsList className="mb-6">
+              <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+              <TabsTrigger value="messages" className="flex items-center gap-1.5">
+                <MessageCircle className="w-4 h-4" />
+                Messages
+                {unreadMessageCount > 0 && (
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                  </span>
+                )}
+              </TabsTrigger>
+            </TabsList>
 
-            {/* Profile Section - Takes 1 column */}
-            <div className="lg:col-span-1 space-y-8">
-              <DashboardProfileComponent 
-                user={userProfile} 
-                onUserUpdate={handleProfileUpdate}
-              />
+            <TabsContent value="dashboard">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Events Section - Takes 2 columns */}
+                <div className="lg:col-span-2 space-y-8">
+                  <UpsellNextEventComponent
+                    checkouts={checkouts}
+                    onlineSpeedDatingProducts={onlineSpeedDatingProducts}
+                  />
+                  <MyCheckoutsComponent 
+                    checkouts={checkouts}
+                    onlineSpeedDatingProducts={onlineSpeedDatingProducts}
+                    loading={checkoutsLoading}
+                  />
+                </div>
+
+                {/* Profile Section - Takes 1 column */}
+                <div className="lg:col-span-1 space-y-8">
+                  <DashboardProfileComponent 
+                    user={userProfile} 
+                    onUserUpdate={handleProfileUpdate}
+                  />
+                  {user && (
+                    <MyMatchesComponent userId={user.id} />
+                  )}
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="messages">
               {user && (
-                <MyMatchesComponent userId={user.id} />
+                <div className="max-w-2xl mx-auto">
+                  <MessagesComponent userId={user.id} onUnreadCountChange={setUnreadMessageCount} />
+                </div>
               )}
-            </div>
-          </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </section>
 

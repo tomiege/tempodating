@@ -64,6 +64,7 @@ function ProductContent() {
   const productId = searchParams.get('productId')
   const productType = searchParams.get('productType')
   const cityOverride = searchParams.get('city')
+  const redemptionId = searchParams.get('redemptionId')
   
   const [product, setProduct] = useState<OnlineSpeedDatingEvent | null>(null)
   const [onDemandProduct, setOnDemandProduct] = useState<OnDemandProduct | null>(null)
@@ -601,6 +602,7 @@ function ProductContent() {
           productId={product.productId}
           productType={product.productType}
           regionId={product.region_id}
+          redemptionId={redemptionId}
         />
       )}
     </main>

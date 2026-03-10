@@ -10,6 +10,7 @@
     "imageUrl": "/images/products/dating-guide.jpg",
     "available": true,
     "featured": true,
+    "gender": "both",
     "downloadUrl": "/downloads/complete-dating-guide.pdf"
   },
   {
@@ -23,6 +24,59 @@
     "imageUrl": "/images/products/conversation-cards.jpg",
     "available": true,
     "featured": false,
+    "gender": "both",
     "downloadUrl": "/downloads/conversation-starters.pdf"
+  },
+  {
+    "productId": 1003,
+    "title": "Personal Style Consultation",
+    "description": "Work one-on-one with a professional fashion graduate who will help you build a wardrobe that suits your body type, personality, and lifestyle. Get tailored outfit recommendations, colour palettes, and styling tips to look and feel your best on every date.",
+    "productType": "styleConsultant",
+    "category": "Service",
+    "price": 8000,
+    "currency": "USD",
+    "imageUrl": "/images/products/style-consultant.jpg",
+    "available": true,
+    "featured": true,
+    "gender": "both"
+  },
+  {
+    "productId": 1004,
+    "title": "AI Social Media Photos",
+    "description": "Get a set of 10 professionally crafted AI-generated social media photos designed to build social proof and elevate your online presence. Perfect for dating profiles, LinkedIn, and Instagram. Delivery in 5 working days.",
+    "productType": "aiPhotos",
+    "category": "Service",
+    "price": 4999,
+    "currency": "USD",
+    "imageUrl": "/images/products/ai-social-photos.jpg",
+    "available": true,
+    "featured": true,
+    "gender": "both"
+  },
+  {
+    "productId": 1005,
+    "title": "Color Palette Analysis",
+    "description": "A professional consultant analyzes your skin tone via photo and provides a custom digital swatch of colors that make you look most vibrant on camera. Perfect for video dates, social media, and profile photos.",
+    "productType": "colorPalette",
+    "category": "Service",
+    "price": 3999,
+    "currency": "USD",
+    "imageUrl": "/images/products/color-palette-analysis.jpg",
+    "available": true,
+    "featured": true,
+    "gender": "female"
+  },
+  {
+    "productId": 1006,
+    "title": "Soulmate Sketching",
+    "description": "A professional psychic artist creates a hand-drawn sketch of your soulmate based on your energy and personality profile. Receive a beautiful digital portrait along with a detailed description of your future partner's key traits. A fun, mystical experience perfect for the romantically curious.",
+    "productType": "soulmateSketching",
+    "category": "Service",
+    "price": 3999,
+    "currency": "USD",
+    "imageUrl": "/images/products/soulmate-sketch.jpg",
+    "available": true,
+    "featured": true,
+    "gender": "female"
   }
 ]

@@ -5,7 +5,8 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { BookOpen, Sparkles, Download, Loader2, ShoppingBag } from "lucide-react"
+import Link from "next/link"
+import { BookOpen, Sparkles, Download, Loader2, ShoppingBag, Shirt, Camera, Palette } from "lucide-react"
 
 interface OnDemandProduct {
   productId: number
@@ -21,7 +22,17 @@ interface OnDemandProduct {
   downloadUrl: string
 }
 
-const getCategoryIcon = (category: string) => {
+const getCategoryIcon = (category: string, productType?: string) => {
+  switch (productType) {
+    case 'styleConsultant':
+      return Shirt
+    case 'aiPhotos':
+      return Camera
+    case 'colorPalette':
+      return Palette
+    default:
+      break
+  }
   switch (category.toLowerCase()) {
     case 'ebook':
       return BookOpen
@@ -111,12 +122,16 @@ export default function OnDemandProductsPage() {
           {!loading && !error && products.length > 0 && (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {products.map((product) => {
-                const IconComponent = getCategoryIcon(product.category)
+                const IconComponent = getCategoryIcon(product.category, product.productType)
                 return (
-                  <Card 
-                    key={product.productId} 
-                    className={`overflow-hidden hover:shadow-lg transition-shadow ${!product.available ? 'opacity-75' : ''}`}
+                  <Link
+                    key={product.productId}
+                    href={`/product/${product.productType}`}
+                    className="block"
                   >
+                    <Card 
+                      className={`overflow-hidden hover:shadow-lg transition-shadow h-full ${!product.available ? 'opacity-75' : ''}`}
+                    >
                     <CardContent className="p-6">
                       <div className="w-14 h-14 rounded-xl bg-secondary flex items-center justify-center mb-6">
                         <IconComponent className="w-7 h-7 text-primary" />
@@ -162,6 +177,7 @@ export default function OnDemandProductsPage() {
                       </div>
                     </CardContent>
                   </Card>
+                  </Link>
                 )
               })}
             </div>

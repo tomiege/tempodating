@@ -79,15 +79,12 @@ const quizQuestions: QuizQuestion[] = [
     ],
   },
   {
-    id: "smoke",
-    question: "Do you smoke?",
+    id: "supernatural",
+    question: "Do you believe in the supernatural? (e.g. astrology, star signs)",
     type: "radio",
     options: [
-      { value: "never", label: "Never" },
-      { value: "rare", label: "Occasionally" },
-      { value: "often", label: "Regularly" },
-      { value: "quit", label: "Trying to quit" },
-      { value: "skip", label: "Prefer not to say" },
+      { value: "yes", label: "Yes" },
+      { value: "no", label: "No" },
     ],
   },
   {

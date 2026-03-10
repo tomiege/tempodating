@@ -52,12 +52,12 @@ export function SpeedDatingSection() {
               </div>
             </div>
 
-            <Button size="lg" asChild>
+            {/* <Button size="lg" asChild>
               <Link href="/products/onlineSpeedDating">
                 Browse Events
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
-            </Button>
+            </Button> */}
           </div>
 
           <div className="relative rounded-2xl overflow-hidden shadow-xl border border-border">
