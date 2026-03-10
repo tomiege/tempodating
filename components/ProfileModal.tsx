@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import {
   Dialog,
   DialogContent,
@@ -8,7 +9,8 @@ import {
 } from "@/components/ui/dialog"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { MapPin, User } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { X } from "lucide-react"
 
 export interface ProfileModalUser {
   id: string
@@ -27,23 +29,32 @@ interface ProfileModalProps {
 }
 
 export default function ProfileModal({ user, isOpen, onClose }: ProfileModalProps) {
+  const [fullscreenImage, setFullscreenImage] = useState(false)
+
   if (!user) return null
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) { setFullscreenImage(false) } onClose() }}>
       <DialogContent className="max-w-sm bg-card border-border">
         <DialogHeader>
           <DialogTitle className="sr-only">Profile</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center text-center pt-2">
-          <Avatar className="w-24 h-24 mb-4">
-            {user.avatarUrl ? (
-              <AvatarImage src={user.avatarUrl} alt={user.name} />
-            ) : null}
-            <AvatarFallback className="bg-red-600 text-white text-2xl">
-              {user.name.charAt(0)}
-            </AvatarFallback>
-          </Avatar>
+          <button
+            type="button"
+            onClick={() => user.avatarUrl && setFullscreenImage(true)}
+            className={user.avatarUrl ? "cursor-pointer" : "cursor-default"}
+          >
+            <Avatar className="w-36 h-36 mb-4">
+              {user.avatarUrl ? (
+                <AvatarImage src={user.avatarUrl} alt={user.name} className="object-cover" />
+              ) : null}
+              <AvatarFallback className="bg-red-600 text-white text-4xl">
+                {user.name.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+          </button>
 
           <h2 className="text-xl font-semibold text-foreground">{user.name}</h2>
 
@@ -87,5 +98,28 @@ export default function ProfileModal({ user, isOpen, onClose }: ProfileModalProp
         </div>
       </DialogContent>
     </Dialog>
+
+    {fullscreenImage && user.avatarUrl && (
+      <div
+        className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center"
+        onClick={() => setFullscreenImage(false)}
+      >
+        <Button
+          size="icon"
+          variant="ghost"
+          className="absolute top-4 right-4 text-white hover:bg-white/20 z-[201]"
+          onClick={() => setFullscreenImage(false)}
+        >
+          <X className="w-6 h-6" />
+        </Button>
+        <img
+          src={user.avatarUrl}
+          alt={user.name}
+          className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg"
+          onClick={(e) => e.stopPropagation()}
+        />
+      </div>
+    )}
+    </>
   )
 }

@@ -70,6 +70,7 @@ export default function MatchModal({
   const [sendingMessage, setSendingMessage] = useState(false)
   const [existingChatPartners, setExistingChatPartners] = useState<Set<string>>(new Set())
   const [profileModalUser, setProfileModalUser] = useState<ProfileModalUser | null>(null)
+  const [postLikeMessageUser, setPostLikeMessageUser] = useState<string | null>(null)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -180,6 +181,12 @@ export default function MatchModal({
             description: "If they like you back, you'll be able to see their contact info.",
           })
         }
+
+        // Show optional message prompt after liking (unless already chatting)
+        if (!existingChatPartners.has(participantId)) {
+          setPostLikeMessageUser(participantId)
+          setMessageText("")
+        }
       } else {
         const error = await response.json()
         toast({
@@ -258,6 +265,7 @@ export default function MatchModal({
         toast({ title: "Message sent!", description: "Check your Messages tab to continue the conversation." })
         setMessageText("")
         setMessagingUser(null)
+        setPostLikeMessageUser(null)
         setExistingChatPartners(prev => new Set([...prev, toUserId]))
       } else {
         const err = await response.json()
@@ -370,7 +378,7 @@ export default function MatchModal({
                                 size="sm"
                                 variant="outline"
                                 className="text-xs border-pink-600 text-pink-400 hover:bg-pink-600 hover:text-white"
-                                onClick={() => handleUnlike(participant.id)}
+                                onClick={() => { handleUnlike(participant.id); setPostLikeMessageUser(null); setMessageText("") }}
                                 disabled={likingUser === participant.id}
                               >
                                 {likingUser === participant.id ? (
@@ -395,30 +403,19 @@ export default function MatchModal({
                                 Like
                               </Button>
                             )}
-                            {existingChatPartners.has(participant.id) ? (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-xs border-gray-500 text-gray-400 cursor-default opacity-60"
-                                disabled
-                              >
+                            {existingChatPartners.has(participant.id) && (
+                              <span className="text-xs text-gray-400 flex items-center">
                                 <Check className="w-3 h-3 mr-1" />
-                                Chatting
-                              </Button>
-                            ) : (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-xs border-red-500 text-red-400 hover:bg-red-600 hover:text-white"
-                                onClick={() => setMessagingUser(messagingUser === participant.id ? null : participant.id)}
-                              >
-                                <MessageCircle className="w-3 h-3 mr-1" />
-                                Message
-                              </Button>
+                                Message sent
+                              </span>
                             )}
                           </div>
-                          {messagingUser === participant.id && !existingChatPartners.has(participant.id) && (
-                            <div className="mt-3 space-y-2">
+                          {postLikeMessageUser === participant.id && !existingChatPartners.has(participant.id) && (
+                            <div className="mt-3 space-y-2 bg-gray-700/50 rounded-lg p-3">
+                              <p className="text-xs text-gray-300">
+                                <MessageCircle className="w-3 h-3 inline mr-1" />
+                                Want to leave {participant.name} a message?
+                              </p>
                               <Textarea
                                 placeholder={`Write a message to ${participant.name}...`}
                                 value={messageText}
@@ -437,9 +434,9 @@ export default function MatchModal({
                                   size="sm"
                                   variant="ghost"
                                   className="text-xs text-gray-400"
-                                  onClick={() => { setMessagingUser(null); setMessageText("") }}
+                                  onClick={() => { setPostLikeMessageUser(null); setMessageText("") }}
                                 >
-                                  Cancel
+                                  Skip
                                 </Button>
                                 <Button
                                   size="sm"
