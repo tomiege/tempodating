@@ -528,6 +528,17 @@ export default function TicketModal({
 
         // Redirect to Stripe checkout or success page
         if (url) {
+          posthog.capture('payment_link_clicked', {
+            checkoutId: checkoutId,
+            eventTitle: eventTitle,
+            eventCity: eventCity,
+            productId: productId,
+            productType: productType,
+            gender: gender,
+            finalPrice: getCurrentPrice(),
+            currency: currency,
+            isFree: isFree,
+          })
           window.location.href = url;
         } else {
           throw new Error('No checkout URL received');

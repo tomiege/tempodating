@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Heart, Instagram, Twitter, Facebook, Youtube, Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { useLastProduct } from "@/hooks/use-last-product"
 
 export function Footer() {
   const [email, setEmail] = useState("")
@@ -37,6 +38,8 @@ export function Footer() {
       setIsLoading(false)
     }
   }
+
+  const lastProduct = useLastProduct()
 
   return (
     <footer className="bg-foreground text-background pt-16 pb-8">
@@ -72,6 +75,9 @@ export function Footer() {
             <h3 className="font-semibold text-background mb-4">Speed Dating</h3>
             <ul className="space-y-3 text-sm">
               <li><Link href="/products/onlineSpeedDating" className="text-background/60 hover:text-background transition-colors">Find Events</Link></li>
+              {lastProduct && (
+                <li><Link href={lastProduct.url} className="text-background/60 hover:text-background transition-colors">Next Event</Link></li>
+              )}
               <li><Link href="#" className="text-background/60 hover:text-background transition-colors">How It Works</Link></li>
             </ul>
           </div>
