@@ -34,6 +34,13 @@ function ProductContent() {
         face_v: faceV ? parseFloat(faceV) : null,
       })
     }
+
+    // Save productId and full query string to cookie for 30 days
+    if (productId) {
+      const queryString = searchParams.toString()
+      const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toUTCString()
+      document.cookie = `last_product=${encodeURIComponent(queryString)}; expires=${expires}; path=/`
+    }
   }, [searchParams])
   // Render the test variant (old product page from Luv2)
   if (variant === 'test') {

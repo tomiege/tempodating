@@ -1,9 +1,22 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Sparkles, Heart, Star, Users } from "lucide-react"
 
 export function HeroSection() {
+  const [lastProductUrl, setLastProductUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    const cookie = document.cookie.split('; ').find(row => row.startsWith('last_product='))
+    if (cookie) {
+      const queryString = decodeURIComponent(cookie.split('=').slice(1).join('='))
+      setLastProductUrl(`/product?${queryString}`)
+    }
+  }, [])
+
   return (
     <section className="relative pt-24 pb-12 md:pt-32 md:pb-20 overflow-hidden">
       {/* Pink gradient background */}
@@ -28,12 +41,14 @@ export function HeroSection() {
             </p>
             
             <div className="flex flex-col sm:flex-row items-start gap-3 mb-8">
-              {/* <Button size="lg" className="text-base px-6" asChild>
-                <Link href="/products/onlineSpeedDating">
-                  Find Events Near You
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Link>
-              </Button> */}
+              {lastProductUrl && (
+                <Button size="lg" className="text-base px-6" asChild>
+                  <Link href={lastProductUrl}>
+                    See Next Event
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Link>
+                </Button>
+              )}
               <Button variant="outline" size="lg" className="text-base px-6 bg-transparent" asChild>
                 <Link href="/#how-it-works">
                   How It Works
