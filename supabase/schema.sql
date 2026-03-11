@@ -197,3 +197,15 @@ CREATE INDEX IF NOT EXISTS idx_messages_conversation ON public.messages(
   created_at DESC
 );
 
+-- Analytics events table (redundancy for PostHog)
+CREATE TABLE IF NOT EXISTS public.analytics_events (
+  id SERIAL PRIMARY KEY,
+  event_name TEXT NOT NULL,
+  url TEXT,
+  properties JSONB NOT NULL DEFAULT '{}',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_analytics_events_name ON public.analytics_events(event_name);
+CREATE INDEX IF NOT EXISTS idx_analytics_events_created_at ON public.analytics_events(created_at DESC);
+

@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth"
 import posthog from 'posthog-js'
 import { useFeatureFlagVariantKey } from 'posthog-js/react'
 import * as Sentry from '@sentry/nextjs'
+import { capture } from '@/components/analytics'
 
 interface TicketModalProps {
   isOpen: boolean
@@ -182,6 +183,14 @@ export default function TicketModal({
         gender: gender,
         hasNextEvent: !!pricingData.nextEvent,
       })
+      capture('event_sold_out', {
+        event_title: eventTitle,
+        event_city: eventCity,
+        product_id: productId,
+        product_type: productType,
+        gender: gender,
+        hasNextEvent: !!pricingData.nextEvent,
+      })
       if (pricingData.nextEvent) {
         setSoldOutNextEvent(pricingData.nextEvent)
       } else {
@@ -276,6 +285,14 @@ export default function TicketModal({
             productId: productId,
             productType: productType
           })
+          capture('lead_created', {
+            lead_id: leadData.id,
+            email: email,
+            event_title: eventTitle,
+            event_city: eventCity,
+            product_id: productId,
+            product_type: productType,
+          })
         } else {
           console.error('Failed to create lead, continuing anyway...')
         }
@@ -291,6 +308,13 @@ export default function TicketModal({
           eventCity: eventCity,
           productId: productId,
           productType: productType
+        })
+        capture('ticket_modal_new_user', {
+          email: email,
+          event_title: eventTitle,
+          event_city: eventCity,
+          product_id: productId,
+          product_type: productType,
         })
       } catch (error) {
         console.error('Error in step 1:', error)
@@ -329,6 +353,14 @@ export default function TicketModal({
             productId: productId,
             productType: productType
           })
+          capture('lead_created_existing_account', {
+            lead_id: leadData.id,
+            email: email,
+            event_title: eventTitle,
+            event_city: eventCity,
+            product_id: productId,
+            product_type: productType,
+          })
         } else {
           console.error('Failed to create lead, continuing anyway...')
         }
@@ -343,6 +375,13 @@ export default function TicketModal({
           eventCity: eventCity,
           productId: productId,
           productType: productType
+        })
+        capture('ticket_modal_existing_account_email_entered', {
+          email: email,
+          event_title: eventTitle,
+          event_city: eventCity,
+          product_id: productId,
+          product_type: productType,
         })
       } catch (error) {
         console.error('Error in step 1.5:', error)
@@ -363,6 +402,16 @@ export default function TicketModal({
         eventCity: eventCity,
         productId: productId,
         productType: productType
+      })
+      capture('ticket_modal_user_details_completed', {
+        lead_id: leadId,
+        name: name,
+        age: age,
+        gender: gender,
+        event_title: eventTitle,
+        event_city: eventCity,
+        product_id: productId,
+        product_type: productType,
       })
       
       try {
@@ -390,6 +439,14 @@ export default function TicketModal({
               gender: gender,
               productId: productId,
               productType: productType
+            })
+            capture('lead_updated', {
+              lead_id: leadId,
+              name: name,
+              age: age,
+              gender: gender,
+              product_id: productId,
+              product_type: productType,
             })
           } else {
             console.error('Failed to update lead, continuing anyway...')
@@ -434,6 +491,20 @@ export default function TicketModal({
         hoursUntilEvent: hoursUntilEvent,
         daysUntilEvent: Math.round(hoursUntilEvent / 24)
       })
+      capture('checkout_initiated', {
+        event_title: eventTitle,
+        event_city: eventCity,
+        product_id: productId,
+        product_type: productType,
+        gender: gender,
+        base_price: gender === 'male' ? price : femalePrice,
+        dynamic_price: gender === 'male' ? (dynamicMalePrice ?? price) : (dynamicFemalePrice ?? femalePrice),
+        final_price: getCurrentPrice(),
+        currency: currency,
+        redemption_discount_percent: redemptionDiscountPercent,
+        hours_until_event: hoursUntilEvent,
+        days_until_event: Math.round(hoursUntilEvent / 24),
+      })
       
       try {
         // If redemption applies (any discount), use the redemption endpoint
@@ -467,6 +538,15 @@ export default function TicketModal({
             eventCity,
             productId,
             productType,
+            gender,
+          })
+          capture('redemption_checkout_completed', {
+            redemption_id: redemptionData.id,
+            discount_percent: redemptionData.discount_percent,
+            event_title: eventTitle,
+            event_city: eventCity,
+            product_id: productId,
+            product_type: productType,
             gender,
           })
 
@@ -525,6 +605,17 @@ export default function TicketModal({
           currency: currency,
           isFree: isFree 
         })
+        capture('checkout_session_created', {
+          checkout_id: checkoutId,
+          event_title: eventTitle,
+          event_city: eventCity,
+          product_id: productId,
+          product_type: productType,
+          gender: gender,
+          final_price: getCurrentPrice(),
+          currency: currency,
+          isFree: isFree,
+        })
 
         // Redirect to Stripe checkout or success page
         if (url) {
@@ -536,6 +627,17 @@ export default function TicketModal({
             productType: productType,
             gender: gender,
             finalPrice: getCurrentPrice(),
+            currency: currency,
+            isFree: isFree,
+          })
+          capture('payment_link_clicked', {
+            checkout_id: checkoutId,
+            event_title: eventTitle,
+            event_city: eventCity,
+            product_id: productId,
+            product_type: productType,
+            gender: gender,
+            final_price: getCurrentPrice(),
             currency: currency,
             isFree: isFree,
           })
@@ -553,6 +655,14 @@ export default function TicketModal({
           productId: productId,
           productType: productType,
           gender: gender
+        })
+        capture('checkout_error', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          event_title: eventTitle,
+          event_city: eventCity,
+          product_id: productId,
+          product_type: productType,
+          gender: gender,
         })
         setRegistrationError(
           error instanceof Error 
@@ -604,6 +714,7 @@ export default function TicketModal({
       if (!response.ok) {
         setDiscountError('Invalid discount code')
         posthog.capture('discount_code_failed', { code, eventTitle, productId })
+        capture('discount_code_failed', { code, event_title: eventTitle, product_id: productId })
         return
       }
 
@@ -612,6 +723,7 @@ export default function TicketModal({
       if (!data.valid) {
         setDiscountError(data.expired ? 'This code has expired' : data.fullyUsed ? 'This code has been fully used' : 'This code is not valid for this event')
         posthog.capture('discount_code_failed', { code, eventTitle, productId, reason: data.expired ? 'expired' : data.fullyUsed ? 'fullyUsed' : 'invalid' })
+        capture('discount_code_failed', { code, event_title: eventTitle, product_id: productId, reason: data.expired ? 'expired' : data.fullyUsed ? 'fullyUsed' : 'invalid' })
         return
       }
 
@@ -635,6 +747,14 @@ export default function TicketModal({
         discountPercent: data.discount_percent,
         eventTitle,
         productId,
+        gender,
+        genderMatch,
+      })
+      capture('discount_code_applied', {
+        code,
+        discount_percent: data.discount_percent,
+        event_title: eventTitle,
+        product_id: productId,
         gender,
         genderMatch,
       })

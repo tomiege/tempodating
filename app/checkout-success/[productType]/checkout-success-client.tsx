@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { CheckCircle2, Mail, Loader2, Video } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { capture } from '@/components/analytics'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/hooks/use-auth'
@@ -105,6 +106,12 @@ export default function CheckoutSuccessClient({
           email: checkoutData.email,
           total_order: checkoutData.total_order,
           product_description: checkoutData.product_description,
+        })
+        capture('checkout_success', {
+          product_type: productType,
+          checkout_session_id: checkoutSessionId,
+          email: checkoutData.email,
+          total_order: checkoutData.total_order,
         })
         
         // If user is already logged in, mark as complete

@@ -4,6 +4,7 @@ import { Suspense, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import { useFeatureFlagVariantKey } from 'posthog-js/react'
 import posthog from 'posthog-js'
+import { capture } from '@/components/analytics'
 import { Loader2 } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
@@ -32,6 +33,12 @@ function ProductContent() {
         visitor_age_range: ageRange,
         product_type: productType,
         face_v: faceV ? parseFloat(faceV) : null,
+      })
+      capture('viewed_product', {
+        product_id: Number(productId),
+        product_type: productType,
+        affiliate_id: affiliate,
+        visitor_age_range: ageRange,
       })
     }
 
