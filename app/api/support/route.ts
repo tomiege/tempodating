@@ -4,12 +4,6 @@ import { NextRequest, NextResponse } from 'next/server'
 // GET /api/support - Get tickets (user gets their own, admin gets all)
 export async function GET(request: NextRequest) {
   try {
-    const authSupabase = await createServerSupabaseClient()
-    const { data: { user }, error: authError } = await authSupabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const serviceSupabase = createServiceSupabaseClient()
     const { searchParams } = new URL(request.url)
     const all = searchParams.get('all') === 'true'
@@ -21,7 +15,12 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false })
 
     if (!all) {
-      query = query.eq('user_id', user.id)
+      // If not requesting all, try to get user context to filter
+      const authSupabase = await createServerSupabaseClient()
+      const { data: { user } } = await authSupabase.auth.getUser()
+      if (user) {
+        query = query.eq('user_id', user.id)
+      }
     }
 
     if (status && status !== 'all') {
