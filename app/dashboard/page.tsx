@@ -107,14 +107,46 @@ export default function DashboardPage() {
   // Fetch online speed dating products when checkouts are loaded
   useEffect(() => {
     const fetchOnlineSpeedDatingProducts = async () => {
-      const hasOnlineSpeedDating = checkouts.some(c => c.productType === 'onlineSpeedDating')
+      const onlineSpeedDatingTypes = [
+        'onlineSpeedDating',
+        'onlineSpeedDatingGay',
+        'onlineSpeedDatingJewish',
+        'onlineSpeedDatingIndian',
+        'onlineSpeedDatingMuslim',
+      ]
+      const hasOnlineSpeedDating = checkouts.some(c => onlineSpeedDatingTypes.includes(c.productType))
       if (!hasOnlineSpeedDating) return
       
       try {
+        // Fetch all events and filter client-side to get all variants
         const response = await fetch('/api/products/onlineSpeedDating')
         if (response.ok) {
           const data = await response.json()
-          setOnlineSpeedDatingProducts(data)
+          // Also fetch from the variant-specific endpoints for complete data
+          const variantTypes = checkouts
+            .filter(c => c.productType !== 'onlineSpeedDating' && onlineSpeedDatingTypes.includes(c.productType))
+            .map(c => c.productType)
+          const uniqueVariants = [...new Set(variantTypes)]
+          
+          const variantResults = await Promise.all(
+            uniqueVariants.map(async (variant) => {
+              try {
+                const res = await fetch(`/api/products/${variant}`)
+                if (res.ok) return await res.json()
+              } catch { /* ignore individual failures */ }
+              return []
+            })
+          )
+          
+          const allProducts = [...data, ...variantResults.flat()]
+          // Deduplicate by productId
+          const seen = new Set<number>()
+          const deduped = allProducts.filter((p: OnlineSpeedDatingProduct) => {
+            if (seen.has(p.productId)) return false
+            seen.add(p.productId)
+            return true
+          })
+          setOnlineSpeedDatingProducts(deduped)
         } else {
           console.error('Failed to fetch online speed dating products')
         }

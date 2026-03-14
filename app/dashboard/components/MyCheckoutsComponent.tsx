@@ -160,18 +160,18 @@ export function MyCheckoutsComponent({
   }
   
   // Transform checkouts into enrolled events format
-  // Include 'event' and 'onlineSpeedDating' product types, deduplicated by productId
+  // Include 'event' and all onlineSpeedDating variant product types, deduplicated by productId
   const seenProductIds = new Set<number>()
   const enrolledEvents: EnrolledEvent[] = checkouts
-    .filter(checkout => checkout.productType === 'event' || checkout.productType === 'onlineSpeedDating')
+    .filter(checkout => checkout.productType === 'event' || checkout.productType.startsWith('onlineSpeedDating'))
     .filter(checkout => {
       if (seenProductIds.has(checkout.productId)) return false
       seenProductIds.add(checkout.productId)
       return true
     })
     .map(checkout => {
-      // For onlineSpeedDating, find the matching product to get event details
-      const matchingProduct = checkout.productType === 'onlineSpeedDating'
+      // For onlineSpeedDating variants, find the matching product to get event details
+      const matchingProduct = checkout.productType.startsWith('onlineSpeedDating')
         ? onlineSpeedDatingProducts.find(p => p.productId === checkout.productId)
         : null
 
@@ -238,6 +238,18 @@ export function MyCheckoutsComponent({
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
                   <h3 className="font-medium text-foreground">{event.title}</h3>
+                  {event.productType === 'onlineSpeedDatingGay' && (
+                    <Badge variant="outline" className="text-xs">Gay</Badge>
+                  )}
+                  {event.productType === 'onlineSpeedDatingJewish' && (
+                    <Badge variant="outline" className="text-xs">Jewish</Badge>
+                  )}
+                  {event.productType === 'onlineSpeedDatingIndian' && (
+                    <Badge variant="outline" className="text-xs">Indian</Badge>
+                  )}
+                  {event.productType === 'onlineSpeedDatingMuslim' && (
+                    <Badge variant="outline" className="text-xs">Muslim</Badge>
+                  )}
                   {event.status === "upcoming" ? (
                     <Badge variant="secondary" className="bg-primary/10 text-primary">
                       Upcoming
@@ -267,7 +279,7 @@ export function MyCheckoutsComponent({
 
               <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 {/* Invite button (before event) / Leave Feedback (after event) / Tick (feedback done) */}
-                {event.productType === 'onlineSpeedDating' && (
+                {event.productType.startsWith('onlineSpeedDating') && (
                   hasFeedback(event) ? (
                     <span className="flex items-center gap-1.5 text-green-600 text-sm font-medium" title="Feedback submitted">
                       <CheckCircle2 className="w-5 h-5" />
@@ -297,7 +309,7 @@ export function MyCheckoutsComponent({
                 )}
                 
                 {/* Join Event button for onlineSpeedDating with zoomInvite */}
-                {event.productType === 'onlineSpeedDating' && event.zoomInvite && (
+                {event.productType.startsWith('onlineSpeedDating') && event.zoomInvite && (
                   <Button 
                     size="sm" 
                     className="gap-2"
@@ -309,7 +321,7 @@ export function MyCheckoutsComponent({
                 )}
                 
                 {/* Match button — enabled 30 min after event start */}
-                {event.productType === 'onlineSpeedDating' && (
+                {event.productType.startsWith('onlineSpeedDating') && (
                   <Button
                     size="sm"
                     className="gap-2"

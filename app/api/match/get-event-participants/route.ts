@@ -71,16 +71,27 @@ export async function GET(request: NextRequest) {
       return NextResponse.json([])
     }
 
-    // Get profile information for participants — only show the opposite gender
+    // Get profile information for participants
+    // For gay speed dating, show same-gender participants; otherwise show opposite gender
     let profilesQuery = serviceSupabase
       .from('users')
       .select('id, full_name, bio, age, city, avatar_url, is_male')
       .in('id', participantIds)
 
-    if (currentUserProfile?.is_male === true) {
-      profilesQuery = profilesQuery.eq('is_male', false)
-    } else if (currentUserProfile?.is_male === false) {
-      profilesQuery = profilesQuery.eq('is_male', true)
+    if (productType === 'onlineSpeedDatingGay') {
+      // Same-gender matching for gay speed dating
+      if (currentUserProfile?.is_male === true) {
+        profilesQuery = profilesQuery.eq('is_male', true)
+      } else if (currentUserProfile?.is_male === false) {
+        profilesQuery = profilesQuery.eq('is_male', false)
+      }
+    } else {
+      // Opposite-gender matching for all other event types
+      if (currentUserProfile?.is_male === true) {
+        profilesQuery = profilesQuery.eq('is_male', false)
+      } else if (currentUserProfile?.is_male === false) {
+        profilesQuery = profilesQuery.eq('is_male', true)
+      }
     }
     // If is_male is null (not set), show all participants as fallback
 

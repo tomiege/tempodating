@@ -74,7 +74,7 @@ export function Footer() {
           <div>
             <h3 className="font-semibold text-background mb-4">Speed Dating</h3>
             <ul className="space-y-3 text-sm">
-              <li><Link href="/products/onlineSpeedDating" className="text-background/60 hover:text-background transition-colors">Find Events</Link></li>
+              {/* <li><Link href="/products/onlineSpeedDating" className="text-background/60 hover:text-background transition-colors">Find Events</Link></li> */}
               {lastProduct && (
                 <li><Link href={lastProduct.url} className="text-background/60 hover:text-background transition-colors">Next Event</Link></li>
               )}
