@@ -6,12 +6,22 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { sendOTP, verifyOTP } from "@/lib/auth-utils"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginContent />
+    </Suspense>
+  )
+}
+
+function LoginContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('redirect') || '/dashboard'
   const [email, setEmail] = useState("")
   const [otpCode, setOtpCode] = useState("")
   const [step, setStep] = useState<'email' | 'otp'>('email')
@@ -45,7 +55,7 @@ export default function LoginPage() {
       setError(error.message)
       setLoading(false)
     } else if (data?.user) {
-      router.push("/dashboard")
+      router.push(redirectTo)
     }
   }
 

@@ -2,21 +2,22 @@
 
 import { Suspense, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
-import { useFeatureFlagVariantKey } from 'posthog-js/react'
 import posthog from 'posthog-js'
 import { capture } from '@/components/analytics'
 import { Loader2 } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
-import ProductControlPage from "./experiments/product-control"
-import ProductTestPage from "./experiments/product-test"
+import OnlineSpeedDatingProductPage from "./products/online-speed-dating"
+import OnlineSpeedDatingGayProductPage from "./products/online-speed-dating-gay"
+import OnlineSpeedDatingJewishProductPage from "./products/online-speed-dating-jewish"
+import OnlineSpeedDatingIndianProductPage from "./products/online-speed-dating-indian"
+import OnlineSpeedDatingMuslimProductPage from "./products/online-speed-dating-muslim"
+import GeoMaxingProductPage from "./products/geo-maxing"
+import SocialMediaMaxingProductPage from "./products/social-media-maxing"
 
 function ProductContent() {
   const searchParams = useSearchParams()
-  
-  // Get the feature flag variant
-  const variant = useFeatureFlagVariantKey('product-page-test')
-  console.log('Product Page Variant:', variant)
+  const productType = searchParams.get('productType')
   
   // Capture PostHog event for product view with affiliate and age range data
   useEffect(() => {
@@ -49,13 +50,26 @@ function ProductContent() {
       document.cookie = `last_product=${encodeURIComponent(queryString)}; expires=${expires}; path=/`
     }
   }, [searchParams])
-  // Render the test variant (old product page from Luv2)
-  if (variant === 'test') {
-    return <ProductTestPage />
-  }
 
-  // Render the control variant (current product page) by default
-  return <ProductControlPage />
+  switch (productType) {
+    case 'onlineSpeedDating':
+    case 'workshop':
+      return <OnlineSpeedDatingProductPage />
+    case 'onlineSpeedDatingGay':
+      return <OnlineSpeedDatingGayProductPage />
+    case 'onlineSpeedDatingJewish':
+      return <OnlineSpeedDatingJewishProductPage />
+    case 'onlineSpeedDatingIndian':
+      return <OnlineSpeedDatingIndianProductPage />
+    case 'onlineSpeedDatingMuslim':
+      return <OnlineSpeedDatingMuslimProductPage />
+    case 'geoMaxing':
+      return <GeoMaxingProductPage />
+    case 'socialMediaMaxing':
+      return <SocialMediaMaxingProductPage />
+    default:
+      return <OnlineSpeedDatingProductPage />
+  }
 }
 
 export default function ProductPage() {

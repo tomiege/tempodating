@@ -215,7 +215,7 @@ export default function TicketModal({
     if (redirectCountdown === null) return
 
     if (redirectCountdown <= 0 && soldOutNextEvent) {
-      window.location.href = `/product?productId=${soldOutNextEvent.productId}&productType=onlineSpeedDating`
+      window.location.href = `/product?productId=${soldOutNextEvent.productId}&productType=${productType}`
       return
     }
 
@@ -251,6 +251,13 @@ export default function TicketModal({
       fetchUserData()
     }
   }, [isOpen, user])
+
+  // Auto-set gender for gay speed dating
+  useEffect(() => {
+    if (isOpen && productType === 'onlineSpeedDatingGay') {
+      setGender('male')
+    }
+  }, [isOpen, productType])
 
   const handleNext = async () => {
     if (step === 1) {
@@ -994,7 +1001,7 @@ export default function TicketModal({
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className={`grid grid-cols-1 ${productType !== 'onlineSpeedDatingGay' ? 'md:grid-cols-2' : ''} gap-6`}>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-foreground">
                       Age
@@ -1009,6 +1016,7 @@ export default function TicketModal({
                       className="border-border focus:border-primary focus:ring-primary/20 rounded-xl h-12 font-medium"
                     />
                   </div>
+                  {productType !== 'onlineSpeedDatingGay' && (
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-foreground">
                       Gender
@@ -1023,6 +1031,7 @@ export default function TicketModal({
                       </SelectContent>
                     </Select>
                   </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -1112,7 +1121,7 @@ export default function TicketModal({
                     
                     {/* Ticket Title */}
                     <div className="text-center">
-                      <h4 className="text-lg font-semibold text-foreground">Online Speed Dating</h4>
+                      <h4 className="text-lg font-semibold text-foreground">{eventTitle}</h4>
                       <p className="text-sm text-muted-foreground">1× Admission</p>
                     </div>
                     
@@ -1189,7 +1198,7 @@ export default function TicketModal({
                     <div className="flex-grow">
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <h4 className="text-lg font-semibold text-foreground">Online Speed Dating Admission</h4>
+                          <h4 className="text-lg font-semibold text-foreground">{eventTitle} Admission</h4>
                           <p className="text-sm text-muted-foreground">1× Admission</p>
                         </div>
                         <div className="flex flex-col items-end">
@@ -1255,7 +1264,7 @@ export default function TicketModal({
                 // Control variant - original simple version
                 <div className="bg-card border border-border p-6 rounded-2xl shadow-sm">
                   <div className="flex justify-between items-center">
-                    <span className="text-lg font-medium text-foreground">Speed Dating Ticket</span>
+                    <span className="text-lg font-medium text-foreground">{eventTitle} Ticket</span>
                     <div className="flex flex-col items-end">
                       {isRedemptionFree ? (
                         <>

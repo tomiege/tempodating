@@ -11,21 +11,17 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import TicketModal from "../components/ticket-modal"
 import { 
-  MapPin, 
   Calendar, 
   Clock, 
   Users, 
-  Video, 
-  Heart, 
   ArrowLeft,
   Loader2,
-  CheckCircle2,
-  Download,
-  BookOpen,
-  ShoppingBag
+  Plane,
+  Globe,
+  MapPin,
 } from "lucide-react"
 
-interface OnlineSpeedDatingEvent {
+interface GeoMaxingEvent {
   productId: number
   gmtdatetime: string
   title: string
@@ -44,42 +40,25 @@ interface OnlineSpeedDatingEvent {
   region_id: string
 }
 
-interface OnDemandProduct {
-  productId: number
-  title: string
-  description: string
-  productType: string
-  category: string
-  price: number
-  currency: string
-  imageUrl: string
-  available: boolean
-  featured: boolean
-  downloadUrl: string
-}
-
 function ProductContent() {
   const searchParams = useSearchParams()
   const productId = searchParams.get('productId')
   const productType = searchParams.get('productType')
-  const cityOverride = searchParams.get('city')
   const redemptionId = searchParams.get('redemptionId')
   
-  const [product, setProduct] = useState<OnlineSpeedDatingEvent | null>(null)
-  const [onDemandProduct, setOnDemandProduct] = useState<OnDemandProduct | null>(null)
+  const [product, setProduct] = useState<GeoMaxingEvent | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   const galleryImages = [
-    "/onlineSpeedDating/gallery/1.jpg",
-    "/onlineSpeedDating/gallery/2.jpg",
-    "/onlineSpeedDating/gallery/3.jpg",
-    "/onlineSpeedDating/gallery/4.jpg"
+    "/geoMaxing/gallery/1.jpg",
+    "/geoMaxing/gallery/2.jpg",
+    "/geoMaxing/gallery/3.jpg",
+    "/geoMaxing/gallery/4.jpg"
   ]
 
-  // Cycle through images every 4 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % galleryImages.length)
@@ -96,46 +75,23 @@ function ProductContent() {
       }
 
       try {
-        let apiUrl = ''
+        // geoMaxing events are in events.json
+        const eventsRes = await fetch('/products/events.json')
+        if (!eventsRes.ok) throw new Error('Failed to fetch events')
+        const allEvents = await eventsRes.json()
         
-        // Map productType to API endpoint
-        if (productType === 'onlineSpeedDating') {
-          apiUrl = '/api/products/onlineSpeedDating'
-        } else if (productType === 'workshop') {
-          apiUrl = '/api/products/workshop'
-        } else if (productType === 'onDemand' || productType === 'datingEbook') {
-          apiUrl = '/api/products/onDemand'
-        } else {
-          setError(`Unknown product type: ${productType}`)
-          setLoading(false)
-          return
-        }
-
-        const response = await fetch(apiUrl)
-        
-        if (!response.ok) {
-          throw new Error(`Failed to fetch products: ${response.statusText}`)
-        }
-
-        const products = await response.json()
-        
-        // Filter for the specific product by productId
-        const foundProduct = products.find(
-          (p: OnlineSpeedDatingEvent | OnDemandProduct) => p.productId === parseInt(productId)
+        const foundProduct = allEvents.find(
+          (p: GeoMaxingEvent) => p.productId === parseInt(productId) && p.productType === 'geoMaxing'
         )
 
         if (!foundProduct) {
           setError(`Product with ID ${productId} not found`)
         } else {
-          if (productType === 'onDemand' || productType === 'datingEbook') {
-            setOnDemandProduct(foundProduct as OnDemandProduct)
-          } else {
-            setProduct(foundProduct as OnlineSpeedDatingEvent)
-          }
+          setProduct(foundProduct)
         }
       } catch (err) {
         Sentry.captureException(err, {
-          tags: { source: 'product-page-test', productId: productId ?? undefined, productType: productType ?? undefined },
+          tags: { source: 'product-page-geomaxing', productId: productId ?? undefined, productType: productType ?? undefined },
         })
         setError(err instanceof Error ? err.message : 'Failed to load product')
       } finally {
@@ -162,7 +118,7 @@ function ProductContent() {
     )
   }
 
-  if (error || (!product && !onDemandProduct)) {
+  if (error || !product) {
     return (
       <main className="min-h-screen">
         <Header />
@@ -189,126 +145,6 @@ function ProductContent() {
     )
   }
 
-  // Format price helper
-  const formatPrice = (price: number, currency: string) => {
-    const formatter = new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency,
-    })
-    return formatter.format(price / 100)
-  }
-
-  // OnDemand Product Display
-  if (onDemandProduct) {
-    return (
-      <main className="min-h-screen">
-        <Header />
-        
-        <section className="pt-24 pb-16">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            {/* Back link */}
-            <Link 
-              href="/" 
-              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Home
-            </Link>
-
-            <div className="grid lg:grid-cols-2 gap-12 items-start">
-              {/* Product Image */}
-              <div className="relative rounded-2xl overflow-hidden shadow-xl border border-border">
-                <div className="aspect-square bg-gradient-to-br from-pink-100 to-pink-50 flex items-center justify-center">
-                  <BookOpen className="w-32 h-32 text-primary/30" />
-                </div>
-              </div>
-
-              {/* Product Details */}
-              <div>
-                <div className="inline-flex items-center gap-2 text-primary text-sm font-medium mb-4">
-                  <ShoppingBag className="w-4 h-4" />
-                  <span>{onDemandProduct.category}</span>
-                </div>
-
-                <h1 className="font-serif text-3xl sm:text-4xl font-semibold text-foreground mb-4">
-                  {onDemandProduct.title}
-                </h1>
-
-                <p className="text-lg text-muted-foreground mb-8">
-                  {onDemandProduct.description}
-                </p>
-
-                {/* Price Card */}
-                <Card className="mb-8">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-1">Price</p>
-                        <p className="text-3xl font-bold text-foreground">
-                          {formatPrice(onDemandProduct.price, onDemandProduct.currency)}
-                        </p>
-                      </div>
-                      {onDemandProduct.featured && (
-                        <span className="text-xs font-medium px-3 py-1 rounded-full bg-primary/10 text-primary">
-                          Featured
-                        </span>
-                      )}
-                    </div>
-
-                    <Button 
-                      size="lg" 
-                      className="w-full text-lg py-6 cursor-pointer"
-                      disabled={!onDemandProduct.available}
-                    >
-                      <ShoppingBag className="w-5 h-5 mr-2" />
-                      Buy Now · {formatPrice(onDemandProduct.price, onDemandProduct.currency)}
-                    </Button>
-
-                    <p className="text-xs text-center text-muted-foreground mt-4">
-                      Instant digital delivery. Secure payment.
-                    </p>
-                  </CardContent>
-                </Card>
-
-                {/* What's Included */}
-                <Card>
-                  <CardContent className="p-6">
-                    <h2 className="font-serif text-xl font-semibold text-foreground mb-4">What&apos;s Included</h2>
-                    <div className="space-y-3">
-                      <div className="flex items-start gap-3">
-                        <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-muted-foreground">Instant digital download</p>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-muted-foreground">Lifetime access to content</p>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-muted-foreground">Works on all devices</p>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-muted-foreground">30-day money-back guarantee</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <Footer />
-      </main>
-    )
-  }
-
-  // Original OnlineSpeedDating/Workshop Display
-  if (!product) {
-    return null
-  }
-
   const eventDate = new Date(product.gmtdatetime)
   const formattedDate = eventDate.toLocaleDateString('en-US', {
     weekday: 'long',
@@ -328,7 +164,6 @@ function ProductContent() {
       
       <section className="pt-24 pb-16">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Back link */}
           <Link 
             href="/" 
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
@@ -340,8 +175,8 @@ function ProductContent() {
           {/* Banner Image */}
           <div className="relative rounded-2xl overflow-hidden mb-8 aspect-video">
             <Image
-              src={`/${productType}/banner.jpg`}
-              alt={product.title}
+              src="/geoMaxing/banner.jpg"
+              alt="GeoMaxing - Travel to Find Love"
               fill
               className="object-contain"
               priority
@@ -351,11 +186,14 @@ function ProductContent() {
           {/* Event Title */}
           <div className="mb-6 text-center">
             <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-3">
-              Online Speed Dating | <span className="text-primary">{cityOverride || product.city}</span>
+              GeoMaxing | <span className="text-primary">Travel to Find Love</span>
             </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              A live workshop on how to leverage international travel to expand your dating pool and find meaningful connections abroad.
+            </p>
           </div>
 
-          {/* Event Details - Simple List */}
+          {/* Event Details */}
           <Card className="mb-6 max-w-2xl mx-auto bg-white">
             <CardContent className="p-6">
               <div className="space-y-3">
@@ -368,14 +206,14 @@ function ProductContent() {
                   <p className="text-foreground font-medium">Start Time: {formattedTime}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Users className="w-5 h-5 text-primary flex-shrink-0" />
-                  <p className="text-foreground font-medium">Matched to your age</p>
+                  <Globe className="w-5 h-5 text-primary flex-shrink-0" />
+                  <p className="text-foreground font-medium">Open to all — join from anywhere</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Register Button - Centered and Prominent */}
+          {/* Register Button */}
           {!product.soldOut ? (
             <div className="mb-8 max-w-md mx-auto">
               <Button 
@@ -386,7 +224,7 @@ function ProductContent() {
                 Register Now
               </Button>
               <p className="text-xs text-center text-muted-foreground mt-3">
-                Spots are limited. Secure your place today!
+                Limited spots available. Secure your place today!
               </p>
             </div>
           ) : (
@@ -399,22 +237,23 @@ function ProductContent() {
           )}
 
           {/* Promotional Section */}
-          <Card className="mb-8 max-w-3xl mx-auto bg-gradient-to-br from-pink-50 to-purple-50 border-primary/20">
+          <Card className="mb-8 max-w-3xl mx-auto bg-gradient-to-br from-amber-50 to-orange-50 border-primary/20">
             <CardContent className="p-6 sm:p-8">
               <div className="grid md:grid-cols-2 gap-6 items-center">
                 <div>
                   <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3 flex items-start gap-2">
-                    <span className="text-3xl">🏠</span>
-                    <span>Virtual Speed Dating in {cityOverride || product.city}</span>
+                    <span className="text-3xl">✈️</span>
+                    <span>Find Love Across Borders</span>
                   </h2>
                   <p className="text-lg font-semibold text-primary mb-4">
-                    Unforgettable Encounters await! ✨
+                    Expand Your Dating Horizons
                   </p>
                   <p className="text-muted-foreground mb-3">
-                    Connect with real {cityOverride || product.city} locals. 60 minutes, 8 first dates. <span className="text-primary font-semibold">Join from anywhere in {cityOverride || product.city}!</span>
+                    Discover the best destinations for dating — Thailand, South America, Eastern Europe, Japan — and learn 
+                    how to make <span className="text-primary font-semibold">genuine connections</span> while travelling.
                   </p>
                   <p className="text-muted-foreground mb-4">
-                    Register, take a quick quiz, and meet your best matches!
+                    Join our live session with fellow travellers and dating coaches who&apos;ve been there.
                   </p>
                   <div className="flex flex-wrap items-center gap-3">
                     {!product.soldOut && (
@@ -436,7 +275,7 @@ function ProductContent() {
                     <Image
                       key={image}
                       src={image}
-                      alt="Happy participant"
+                      alt="Travel dating destination"
                       fill
                       className={`object-cover transition-opacity duration-1000 absolute inset-0 ${
                         index === currentImageIndex ? 'opacity-100' : 'opacity-0'
@@ -450,45 +289,43 @@ function ProductContent() {
           </Card>
 
           <div className="space-y-8">
-            {/* Main Content */}
             <div className="space-y-8">
-              {/* How It Works */}
+              {/* What You'll Learn */}
               <Card>
                 <CardContent className="p-6">
-                  <h2 className="font-serif text-xl font-semibold text-foreground mb-6">Virtual Speed Dating Process</h2>
+                  <h2 className="font-serif text-xl font-semibold text-foreground mb-6">What You&apos;ll Learn</h2>
                   
                   <div className="space-y-6">
                     <div>
                       <h3 className="font-medium text-foreground mb-2 flex items-center gap-2">
-                        <span className="text-xl">🎯</span> Join & Set Up (5 mins)
+                        <Plane className="w-5 h-5 text-primary" /> Top Destinations for Dating Abroad
                       </h3>
                       <p className="text-sm text-muted-foreground leading-relaxed">
-                        Get your exclusive Zoom link → Join the private {cityOverride || product.city} event → Quick personality survey & interests. Done!
+                        Learn which countries and cities offer the best opportunities — Thailand, Colombia, Poland, Japan — and why location matters more than you think.
                       </p>
                     </div>
 
                     <div>
                       <h3 className="font-medium text-foreground mb-2 flex items-center gap-2">
-                        <span className="text-xl">💬</span> Speed Date {cityOverride || product.city} Locals (50 mins)
+                        <MapPin className="w-5 h-5 text-primary" /> Cultural Dating Tips & Etiquette
                       </h3>
                       <p className="text-sm text-muted-foreground leading-relaxed">
-                        Meet 8 hand-picked {cityOverride || product.city} locals in fun 4-minute chats. Our AI matching + icebreaker questions = no awkward silences!
+                        Understand cultural differences, communication styles, and social norms. Stand out as a respectful, interesting person — not just another tourist.
                       </p>
                     </div>
 
                     <div>
                       <h3 className="font-medium text-foreground mb-2 flex items-center gap-2">
-                        <span className="text-xl">❤️</span> Match & Meet IRL in {cityOverride || product.city} (After event)
+                        <Users className="w-5 h-5 text-primary" /> Building Real Connections Abroad
                       </h3>
                       <p className="text-sm text-muted-foreground leading-relaxed">
-                        Pick your favorites, see who picked you, and when it's mutual - meet up for coffee somewhere in {cityOverride || product.city}!
+                        How to set up dates before you arrive, which apps work best by region, and how to turn a holiday fling into a meaningful relationship.
                       </p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Register CTA before social proof */}
               {!product.soldOut && (
                 <div className="text-center">
                   <Button 
@@ -507,24 +344,24 @@ function ProductContent() {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
                     <div>
                       <div className="flex items-center justify-center gap-2 mb-2">
+                        <span className="text-3xl">🌍</span>
+                        <p className="text-3xl font-bold text-foreground">20+</p>
+                      </div>
+                      <p className="text-sm text-muted-foreground font-medium">Countries Covered</p>
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <span className="text-3xl">💍</span>
+                        <p className="text-3xl font-bold text-foreground">500+</p>
+                      </div>
+                      <p className="text-sm text-muted-foreground font-medium">Success Stories</p>
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-center gap-2 mb-2">
                         <span className="text-3xl">⭐</span>
-                        <p className="text-3xl font-bold text-foreground">4.9/5</p>
+                        <p className="text-3xl font-bold text-foreground">4.8/5</p>
                       </div>
                       <p className="text-sm text-muted-foreground font-medium">Rating</p>
-                    </div>
-                    <div>
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <span className="text-3xl">👥</span>
-                        <p className="text-3xl font-bold text-foreground">1,000+</p>
-                      </div>
-                      <p className="text-sm text-muted-foreground font-medium">Matches</p>
-                    </div>
-                    <div>
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <span className="text-3xl">💕</span>
-                        <p className="text-3xl font-bold text-foreground">85%</p>
-                      </div>
-                      <p className="text-sm text-muted-foreground font-medium">Match Rate</p>
                     </div>
                   </div>
                 </CardContent>
@@ -536,24 +373,14 @@ function ProductContent() {
 
       <Footer />
 
-      {/* Ticket Modal */}
       {product && (
         <TicketModal 
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          eventTitle={product.title}
-          eventDate={new Date(product.gmtdatetime).toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          })}
-          eventTime={new Date(product.gmtdatetime).toLocaleTimeString('en-US', {
-            hour: 'numeric',
-            minute: '2-digit',
-            timeZoneName: 'short'
-          })}
-          eventCity={cityOverride || product.city}
+          eventTitle="GeoMaxing: Travel to Find Love"
+          eventDate={formattedDate}
+          eventTime={formattedTime}
+          eventCity="Global"
           price={product.male_price}
           femalePrice={product.female_price}
           currency={product.currency}
@@ -567,7 +394,7 @@ function ProductContent() {
   )
 }
 
-export default function ProductTestPage() {
+export default function GeoMaxingProductPage() {
   return (
     <Suspense fallback={
       <main className="min-h-screen">

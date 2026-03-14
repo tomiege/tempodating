@@ -5,7 +5,9 @@ export async function GET() {
     message: 'Products API',
     endpoints: [
       '/api/products/onlineSpeedDating',
-      '/api/products/workshop'
+      '/api/products/onlineSpeedDatingGay',
+      '/api/products/workshop',
+      '/api/products/onDemand'
     ]
   })
 }

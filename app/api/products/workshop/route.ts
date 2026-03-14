@@ -4,64 +4,54 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { z } from 'zod';
 
-// Schema Definition for Workshop Product
-export const WorkshopProductSchema = z.object({
+// Shared event schema — reads from events.json and filters by productType
+const EventSchema = z.object({
   productId: z.number().int().positive(),
-  title: z.string().min(1),
-  description: z.string().min(1),
-  productType: z.string().refine(val => val === 'workshop'),
   gmtdatetime: z.string().datetime(),
+  title: z.string().min(1),
+  country: z.string().min(1),
+  city: z.string().min(1),
+  latitude: z.number().nullable(),
+  longitude: z.number().nullable(),
   timezone: z.string().min(1),
-  duration_in_minutes: z.number().int().positive(),
-  price: z.number().int().nonnegative(),
+  male_price: z.number().int().nonnegative(),
+  female_price: z.number().int().nonnegative(),
   currency: z.string().length(3),
-  maxAttendees: z.number().int().positive(),
-  currentAttendees: z.number().int().nonnegative(),
-  instructor: z.string().min(1),
-  instructorBio: z.string().min(1),
-  rating: z.number().min(0).max(5),
+  duration_in_minutes: z.number().int().positive(),
   soldOut: z.boolean(),
-  location: z.string().min(1),
+  productType: z.string(),
   zoomInvite: z.string(),
+  region_id: z.string().min(1),
 });
 
-export type WorkshopProduct = z.infer<typeof WorkshopProductSchema>;
-
-const WorkshopProductsArraySchema = z.array(WorkshopProductSchema);
-
-export type WorkshopProducts = z.infer<typeof WorkshopProductsArraySchema>;
+const EventsArraySchema = z.array(EventSchema);
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
   try {
-    // Construct the path to the JSON file
     const filePath = path.join(
       process.cwd(),
       'public',
       'products',
-      'workshops.json'
+      'events.json'
     );
 
-    // Read the file
     const fileContent = fs.readFileSync(filePath, 'utf-8');
     const rawData = JSON.parse(fileContent);
 
-    // Validate against schema
-    const validatedData = WorkshopProductsArraySchema.parse(rawData);
+    const allEvents = EventsArraySchema.parse(rawData);
+    const filtered = allEvents.filter(e => e.productType === 'workshop');
 
-    // Return the validated data
-    return NextResponse.json(validatedData, {
+    return NextResponse.json(filtered, {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
       },
     });
   } catch (error) {
-    // Report all product API errors to Sentry
     Sentry.captureException(error, {
       tags: { source: 'api-products-workshop' },
     });
 
-    // Handle validation errors
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         {
@@ -72,7 +62,6 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Handle file not found or parsing errors
     if (error instanceof SyntaxError) {
       return NextResponse.json(
         {
@@ -87,13 +76,12 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         {
           error: 'File not found',
-          message: 'workshops.json not found',
+          message: 'events.json not found',
         },
         { status: 404 }
       );
     }
 
-    // Generic error handling
     return NextResponse.json(
       {
         error: 'Internal server error',

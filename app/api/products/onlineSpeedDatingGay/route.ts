@@ -4,8 +4,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { z } from 'zod';
 
-// Schema Definition for Event (shared across event types)
-export const EventSchema = z.object({
+// Shared event schema — reads from events.json
+const EventSchema = z.object({
   productId: z.number().int().positive(),
   gmtdatetime: z.string().datetime(),
   title: z.string().min(1),
@@ -24,8 +24,6 @@ export const EventSchema = z.object({
   region_id: z.string().min(1),
 });
 
-export type OnlineSpeedDatingEvent = z.infer<typeof EventSchema>;
-
 const EventsArraySchema = z.array(EventSchema);
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
@@ -41,7 +39,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const rawData = JSON.parse(fileContent);
 
     const allEvents = EventsArraySchema.parse(rawData);
-    const filtered = allEvents.filter(e => e.productType === 'onlineSpeedDating');
+    const filtered = allEvents.filter(e => e.productType === 'onlineSpeedDatingGay');
 
     return NextResponse.json(filtered, {
       status: 200,
@@ -51,7 +49,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     });
   } catch (error) {
     Sentry.captureException(error, {
-      tags: { source: 'api-products-onlineSpeedDating' },
+      tags: { source: 'api-products-onlineSpeedDatingGay' },
     });
 
     if (error instanceof z.ZodError) {

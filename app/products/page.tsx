@@ -15,6 +15,12 @@ const productCategories = [
     icon: Video,
   },
   {
+    title: "Online Speed Dating for Gay Men",
+    description: "Virtual speed dating events designed exclusively for gay men. Meet like-minded singles in a welcoming, inclusive environment.",
+    href: "/products/onlineSpeedDatingGay",
+    icon: Video,
+  },
+  {
     title: "Workshops",
     description: "Interactive workshops designed to help you improve your dating skills and build confidence.",
     href: "/products/workshop",
@@ -42,7 +48,7 @@ export default function ProductsPage() {
               </p>
             </div>
             
-            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
               {productCategories.map((category) => (
                 <Card key={category.href} className="hover:shadow-lg transition-shadow">
                   <CardHeader className="text-center">

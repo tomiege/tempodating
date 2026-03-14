@@ -139,7 +139,7 @@ function findNextEventFromData(
 }
 
 function getEventsData(): OnlineSpeedDatingEvent[] {
-  const filePath = path.join(process.cwd(), 'public', 'products', 'onlineSpeedDating.json')
+  const filePath = path.join(process.cwd(), 'public', 'products', 'events.json')
   const fileContent = fs.readFileSync(filePath, 'utf-8')
   return JSON.parse(fileContent)
 }

@@ -101,39 +101,36 @@ async function findNextEvent(
   regionId: string
 ): Promise<PricingResult['nextEvent']> {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/products/onlineSpeedDating.json`
-    )
+    let allEvents: Array<{ productId: number; gmtdatetime: string; city: string; region_id: string }> = []
 
-    if (!response.ok) {
-      // Fallback: read from filesystem
-      const fs = await import('fs')
-      const path = await import('path')
-      const filePath = path.join(process.cwd(), 'public', 'products', 'onlineSpeedDating.json')
-      const fileData = fs.readFileSync(filePath, 'utf-8')
-      const events = JSON.parse(fileData)
-      return findNextEventFromData(events, productId, regionId)
-    }
-
-    const events = await response.json()
-    return findNextEventFromData(events, productId, regionId)
-  } catch (error) {
-    // Fallback: read from filesystem directly
     try {
-      const fs = await import('fs')
-      const path = await import('path')
-      const filePath = path.join(process.cwd(), 'public', 'products', 'onlineSpeedDating.json')
-      const fileData = fs.readFileSync(filePath, 'utf-8')
-      const events = JSON.parse(fileData)
-      return findNextEventFromData(events, productId, regionId)
-    } catch (fsError) {
-      Sentry.captureException(fsError, {
-        tags: { feature: 'dynamic-ticket-pricing' },
-        extra: { productId, regionId },
-      })
-      console.error('Error reading events data:', fsError)
-      return null
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/products/events.json`
+      )
+      if (response.ok) {
+        allEvents = await response.json()
+      }
+    } catch {
+      // Fallback: read from filesystem
+      try {
+        const fs = await import('fs')
+        const path = await import('path')
+        const filePath = path.join(process.cwd(), 'public', 'products', 'events.json')
+        const fileData = fs.readFileSync(filePath, 'utf-8')
+        allEvents = JSON.parse(fileData)
+      } catch {
+        // Skip if file doesn't exist
+      }
     }
+
+    return findNextEventFromData(allEvents, productId, regionId)
+  } catch (error) {
+    Sentry.captureException(error, {
+      tags: { feature: 'dynamic-ticket-pricing' },
+      extra: { productId, regionId },
+    })
+    console.error('Error reading events data:', error)
+    return null
   }
 }
 
