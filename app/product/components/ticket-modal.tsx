@@ -1355,7 +1355,7 @@ export default function TicketModal({
               ) : step === 1.5 ? (
                 "Continue"
               ) : step === 2 ? (
-                "Continue to Payment"
+                "Continue"
               ) : isRedemptionFree ? (
                 "Claim Free Ticket"
               ) : redemptionGenderMatch ? (

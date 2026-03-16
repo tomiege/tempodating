@@ -27,6 +27,7 @@ interface EventEntry {
 
 interface SalesData {
   product_id: number
+  product_type: string
   male_tickets: number
   female_tickets: number
   total: number
@@ -36,6 +37,7 @@ interface SalesData {
   female_emails: string[]
   event_datetime: string | null
   event_timezone: string | null
+  visitors: number
 }
 
 interface DailyData {
@@ -45,7 +47,7 @@ interface DailyData {
 
 async function getEventsMap(): Promise<Map<number, EventEntry>> {
   try {
-    const filePath = path.join(process.cwd(), 'public', 'events.json')
+    const filePath = path.join(process.cwd(), 'public', 'products', 'events.json')
     const raw = await readFile(filePath, 'utf-8')
     const events: EventEntry[] = JSON.parse(raw)
     const map = new Map<number, EventEntry>()
@@ -74,19 +76,58 @@ function isEventFinished(gmtdatetime: string): boolean {
   return new Date(gmtdatetime) < new Date()
 }
 
+interface VisitorInfo {
+  count: number
+  product_type: string | null
+}
+
+async function getVisitorCounts(): Promise<Map<number, VisitorInfo>> {
+  const supabase = createServiceSupabaseClient()
+  const visitorMap = new Map<number, VisitorInfo>()
+  let from = 0
+  const PAGE_SIZE = 1000
+  while (true) {
+    const { data, error } = await supabase
+      .from('analytics_events')
+      .select('properties')
+      .eq('event_name', 'viewed_product')
+      .range(from, from + PAGE_SIZE - 1)
+    if (error) {
+      console.error('Error fetching visitor counts:', error)
+      return visitorMap
+    }
+    (data ?? []).forEach((row) => {
+      const productId = row.properties?.product_id
+      if (typeof productId === 'number') {
+        const existing = visitorMap.get(productId)
+        if (existing) {
+          existing.count++
+        } else {
+          visitorMap.set(productId, { count: 1, product_type: row.properties?.product_type ?? null })
+        }
+      }
+    })
+    if (!data || data.length < PAGE_SIZE) break
+    from += PAGE_SIZE
+  }
+  return visitorMap
+}
+
+const ON_DEMAND_PRODUCT_TYPES = ['geoMaxing', 'socialMediaMaxing']
+
 async function getSalesData(): Promise<SalesData[]> {
   const supabase = createServiceSupabaseClient()
-  const eventsMap = await getEventsMap()
+  const [eventsMap, visitorCounts] = await Promise.all([getEventsMap(), getVisitorCounts()])
 
   // Get only PAID checkouts (confirmation_email_sent = true)
   // Supabase defaults to 1000 rows — fetch all by paginating
-  let checkouts: { product_id: number; is_male: boolean | null; user_id: string | null; email: string; query_city: string | null }[] = []
+  let checkouts: { product_id: number; product_type: string; is_male: boolean | null; user_id: string | null; email: string; query_city: string | null }[] = []
   let from = 0
   const PAGE_SIZE = 1000
   while (true) {
     const { data, error: pageError } = await supabase
       .from('checkout')
-      .select('product_id, is_male, user_id, email, query_city')
+      .select('product_id, product_type, is_male, user_id, email, query_city')
       .eq('confirmation_email_sent', true)
       .range(from, from + PAGE_SIZE - 1)
     if (pageError) {
@@ -101,13 +142,13 @@ async function getSalesData(): Promise<SalesData[]> {
   // Group by product_id, deduplicate by user (user_id or email) within each product
   const productMap = new Map<
     number,
-    { seenUsers: Set<string>; male: number; female: number; city: string; male_emails: string[]; female_emails: string[] }
+    { seenUsers: Set<string>; male: number; female: number; city: string; male_emails: string[]; female_emails: string[]; product_type: string }
   >()
 
   checkouts?.forEach((checkout) => {
     const productId = checkout.product_id
     if (!productMap.has(productId)) {
-      productMap.set(productId, { seenUsers: new Set(), male: 0, female: 0, city: checkout.query_city || '', male_emails: [], female_emails: [] })
+      productMap.set(productId, { seenUsers: new Set(), male: 0, female: 0, city: checkout.query_city || '', male_emails: [], female_emails: [], product_type: checkout.product_type })
     }
 
     const current = productMap.get(productId)!
@@ -136,6 +177,7 @@ async function getSalesData(): Promise<SalesData[]> {
     const event = eventsMap.get(productId)
     return {
       product_id: productId,
+      product_type: counts.product_type,
       male_tickets: counts.male,
       female_tickets: counts.female,
       total: counts.male + counts.female,
@@ -145,8 +187,49 @@ async function getSalesData(): Promise<SalesData[]> {
       female_emails: counts.female_emails,
       event_datetime: event?.gmtdatetime ?? null,
       event_timezone: event?.timezone ?? null,
+      visitors: visitorCounts.get(productId)?.count || 0,
     }
   })
+
+  // Add event products from events.json that have 0 sales
+  for (const [productId, event] of eventsMap.entries()) {
+    if (!productMap.has(productId)) {
+      salesData.push({
+        product_id: productId,
+        product_type: 'onlineSpeedDating',
+        male_tickets: 0,
+        female_tickets: 0,
+        total: 0,
+        differential: 0,
+        city: event.city || '',
+        male_emails: [],
+        female_emails: [],
+        event_datetime: event.gmtdatetime ?? null,
+        event_timezone: event.timezone ?? null,
+        visitors: visitorCounts.get(productId)?.count || 0,
+      })
+    }
+  }
+
+  // Add on-demand products from visitor data that have 0 sales
+  for (const [productId, info] of visitorCounts.entries()) {
+    if (!productMap.has(productId) && !eventsMap.has(productId) && info.product_type && ON_DEMAND_PRODUCT_TYPES.includes(info.product_type)) {
+      salesData.push({
+        product_id: productId,
+        product_type: info.product_type,
+        male_tickets: 0,
+        female_tickets: 0,
+        total: 0,
+        differential: 0,
+        city: '',
+        male_emails: [],
+        female_emails: [],
+        event_datetime: null,
+        event_timezone: null,
+        visitors: info.count,
+      })
+    }
+  }
 
   // Sort by product_id
   return salesData.sort((a, b) => a.product_id - b.product_id)
@@ -155,21 +238,29 @@ async function getSalesData(): Promise<SalesData[]> {
 async function getDailyCheckouts(): Promise<DailyData[]> {
   const supabase = createServiceSupabaseClient()
 
-  const { data: checkouts, error } = await supabase
-    .from('checkout')
-    .select('checkout_time')
-    .not('user_id', 'is', null)
-    .order('checkout_time', { ascending: true })
-
-  if (error || !checkouts) {
-    console.error('Error fetching daily checkouts:', error)
-    return []
+  let allCheckouts: { checkout_time: string | null }[] = []
+  let from = 0
+  const PAGE_SIZE = 1000
+  while (true) {
+    const { data, error } = await supabase
+      .from('checkout')
+      .select('checkout_time')
+      .not('user_id', 'is', null)
+      .order('checkout_time', { ascending: true })
+      .range(from, from + PAGE_SIZE - 1)
+    if (error) {
+      console.error('Error fetching daily checkouts:', error)
+      return []
+    }
+    allCheckouts = allCheckouts.concat(data ?? [])
+    if (!data || data.length < PAGE_SIZE) break
+    from += PAGE_SIZE
   }
 
   // Group by day
   const dailyMap = new Map<string, number>()
 
-  checkouts.forEach((checkout) => {
+  allCheckouts.forEach((checkout) => {
     if (checkout.checkout_time) {
       const day = new Date(checkout.checkout_time).toISOString().split('T')[0]
       dailyMap.set(day, (dailyMap.get(day) || 0) + 1)
@@ -184,20 +275,28 @@ async function getDailyCheckouts(): Promise<DailyData[]> {
 async function getDailyLeads(): Promise<DailyData[]> {
   const supabase = createServiceSupabaseClient()
 
-  const { data: leads, error } = await supabase
-    .from('leads')
-    .select('created_at')
-    .order('created_at', { ascending: true })
-
-  if (error || !leads) {
-    console.error('Error fetching daily leads:', error)
-    return []
+  let allLeads: { created_at: string | null }[] = []
+  let from = 0
+  const PAGE_SIZE = 1000
+  while (true) {
+    const { data, error } = await supabase
+      .from('leads')
+      .select('created_at')
+      .order('created_at', { ascending: true })
+      .range(from, from + PAGE_SIZE - 1)
+    if (error) {
+      console.error('Error fetching daily leads:', error)
+      return []
+    }
+    allLeads = allLeads.concat(data ?? [])
+    if (!data || data.length < PAGE_SIZE) break
+    from += PAGE_SIZE
   }
 
   // Group by day
   const dailyMap = new Map<string, number>()
 
-  leads.forEach((lead) => {
+  allLeads.forEach((lead) => {
     if (lead.created_at) {
       const day = new Date(lead.created_at).toISOString().split('T')[0]
       dailyMap.set(day, (dailyMap.get(day) || 0) + 1)
@@ -270,19 +369,22 @@ export default async function SalesPage() {
     getRecentFeedback(),
   ])
 
+  const eventSales = salesData.filter((row) => !ON_DEMAND_PRODUCT_TYPES.includes(row.product_type))
+  const onDemandSales = salesData.filter((row) => ON_DEMAND_PRODUCT_TYPES.includes(row.product_type))
+
   return (
     <div className="container mx-auto py-10 space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Sales Report</CardTitle>
+          <CardTitle>Event Sales</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Paid checkouts grouped by Product ID (deduplicated by user)
+            Paid event checkouts grouped by Product ID (deduplicated by user)
           </p>
         </CardHeader>
         <CardContent>
-          {salesData.length === 0 ? (
+          {eventSales.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
-              No sales data available
+              No event sales data available
             </p>
           ) : (
             <Table>
@@ -291,6 +393,7 @@ export default async function SalesPage() {
                   <TableHead>Product ID</TableHead>
                   <TableHead>City</TableHead>
                   <TableHead>Event Date</TableHead>
+                  <TableHead className="text-right">Visitors</TableHead>
                   <TableHead className="text-right">Male Tickets</TableHead>
                   <TableHead className="text-right">Female Tickets</TableHead>
                   <TableHead className="text-right">Total</TableHead>
@@ -299,7 +402,7 @@ export default async function SalesPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {salesData.map((row) => (
+                {eventSales.map((row) => (
                   <TableRow key={row.product_id}>
                     <TableCell className="font-medium">
                       <Link href={`/sales/customers?product_id=${row.product_id}`} className="text-blue-600 hover:underline">
@@ -320,6 +423,7 @@ export default async function SalesPage() {
                         '—'
                       )}
                     </TableCell>
+                    <TableCell className="text-right text-muted-foreground">{row.visitors}</TableCell>
                     <TableCell className="text-right">
                       {row.male_tickets}
                       <CopyEmailsButton emails={row.male_emails} />
@@ -330,6 +434,11 @@ export default async function SalesPage() {
                     </TableCell>
                     <TableCell className="text-right font-semibold">
                       {row.total}
+                      {row.visitors > 0 && (
+                        <span className="text-xs text-muted-foreground ml-1">
+                          ({((row.total / row.visitors) * 100).toFixed(1)}%)
+                        </span>
+                      )}
                       <CopyEmailsButton emails={[...row.male_emails, ...row.female_emails]} />
                     </TableCell>
                     <TableCell className={`text-right font-semibold ${getDifferentialColor(row.differential)}`}>
@@ -346,6 +455,58 @@ export default async function SalesPage() {
                         maleEmails={row.male_emails}
                         femaleEmails={row.female_emails}
                       />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>On-Demand Product Sales</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            GeoMaxing &amp; Social Media Maxing purchases (deduplicated by user)
+          </p>
+        </CardHeader>
+        <CardContent>
+          {onDemandSales.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">
+              No on-demand sales data available
+            </p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Product ID</TableHead>
+                  <TableHead>Product Type</TableHead>
+                  <TableHead className="text-right">Visitors</TableHead>
+                  <TableHead className="text-right">Total Purchases</TableHead>
+                  <TableHead className="text-right">Emails</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {onDemandSales.map((row) => (
+                  <TableRow key={row.product_id}>
+                    <TableCell className="font-medium">
+                      <Link href={`/sales/customers?product_id=${row.product_id}`} className="text-blue-600 hover:underline">
+                        {row.product_id}
+                      </Link>
+                    </TableCell>
+                    <TableCell>{row.product_type}</TableCell>
+                    <TableCell className="text-right text-muted-foreground">{row.visitors}</TableCell>
+                    <TableCell className="text-right font-semibold">
+                      {row.total}
+                      {row.visitors > 0 && (
+                        <span className="text-xs text-muted-foreground ml-1">
+                          ({((row.total / row.visitors) * 100).toFixed(1)}%)
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <CopyEmailsButton emails={[...row.male_emails, ...row.female_emails]} />
                     </TableCell>
                   </TableRow>
                 ))}
