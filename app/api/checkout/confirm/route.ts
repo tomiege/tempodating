@@ -151,10 +151,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                       <span style="color: #6b7280; font-size: 14px;">Ticket Type</span>
                       <span style="color: #111827; font-size: 14px; font-weight: 500;">${checkout.is_male ? 'Male' : 'Female'} Ticket</span>
                     </div>
-                    <div style="display: flex; justify-content: space-between; padding: 12px 0;">
-                      <span style="color: #6b7280; font-size: 14px;">Total</span>
-                      <span style="color: #16a34a; font-size: 18px; font-weight: 700;">£${formatPrice(checkout.total_order)}</span>
-                    </div>
+
                   </div>
                 </div>
 

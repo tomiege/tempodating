@@ -269,7 +269,7 @@ function ProductContent() {
                     </div>
                   </div>
                 </div>
-                <div className="relative aspect-square rounded-lg overflow-hidden shadow-lg">
+                {/* <div className="relative aspect-square rounded-lg overflow-hidden shadow-lg">
                   {galleryImages.map((image, index) => (
                     <Image
                       key={image}
@@ -282,7 +282,7 @@ function ProductContent() {
                       priority={index === 0}
                     />
                   ))}
-                </div>
+                </div> */}
               </div>
             </CardContent>
           </Card>

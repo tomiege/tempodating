@@ -40,6 +40,7 @@ export async function GET() {
       productType: checkout.product_type,
       productId: checkout.product_id,
       confirmationEmailSent: checkout.confirmation_email_sent,
+      currency: checkout.currency || null,
       productDescription: checkout.product_description,
       experiment: checkout.experiment,
       checkoutTime: checkout.checkout_time,

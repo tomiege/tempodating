@@ -9,6 +9,7 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import TicketModal from "../components/ticket-modal"
+import AiPhotosProductPage from "./pages/ai-photos"
 import {
   ArrowLeft,
   Loader2,
@@ -115,6 +116,15 @@ export default function ProductTypePage() {
   const params = useParams<{ productType: string }>()
   const productType = params.productType
 
+  // Route to dedicated product pages
+  if (productType === "aiPhotos") {
+    return <AiPhotosProductPage />
+  }
+
+  return <GenericProductPage productType={productType} />
+}
+
+function GenericProductPage({ productType }: { productType: string }) {
   const [products, setProducts] = useState<OnDemandProduct[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

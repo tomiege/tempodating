@@ -1,6 +1,6 @@
 [
   {
-    "productId": 1001,
+    "productId": 1000001,
     "title": "The Complete Online Dating Guide",
     "description": "A comprehensive guide to mastering online dating in the modern age. Learn profile optimization, messaging strategies, and how to make genuine connections.",
     "productType": "datingEbook",
@@ -14,7 +14,7 @@
     "downloadUrl": "/downloads/complete-dating-guide.pdf"
   },
   {
-    "productId": 1002,
+    "productId": 1000002,
     "title": "Conversation Starters Deck",
     "description": "50 thoughtful conversation starters designed to spark meaningful connections on your next video date. Break the ice and keep the conversation flowing.",
     "productType": "datingEbook",
@@ -28,7 +28,7 @@
     "downloadUrl": "/downloads/conversation-starters.pdf"
   },
   {
-    "productId": 1003,
+    "productId": 1000003,
     "title": "Personal Style Consultation",
     "description": "Work one-on-one with a professional fashion graduate who will help you build a wardrobe that suits your body type, personality, and lifestyle. Get tailored outfit recommendations, colour palettes, and styling tips to look and feel your best on every date.",
     "productType": "styleConsultant",
@@ -41,7 +41,7 @@
     "gender": "both"
   },
   {
-    "productId": 1004,
+    "productId": 1000004,
     "title": "AI Social Media Photos",
     "description": "Get a set of 10 professionally crafted AI-generated social media photos designed to build social proof and elevate your online presence. Perfect for dating profiles, LinkedIn, and Instagram. Delivery in 5 working days.",
     "productType": "aiPhotos",
@@ -54,7 +54,7 @@
     "gender": "both"
   },
   {
-    "productId": 1005,
+    "productId": 1000005,
     "title": "Color Palette Analysis",
     "description": "A professional consultant analyzes your skin tone via photo and provides a custom digital swatch of colors that make you look most vibrant on camera. Perfect for video dates, social media, and profile photos.",
     "productType": "colorPalette",
@@ -67,7 +67,7 @@
     "gender": "female"
   },
   {
-    "productId": 1006,
+    "productId": 1000006,
     "title": "Soulmate Sketching",
     "description": "A professional psychic artist creates a hand-drawn sketch of your soulmate based on your energy and personality profile. Receive a beautiful digital portrait along with a detailed description of your future partner's key traits. A fun, mystical experience perfect for the romantically curious.",
     "productType": "soulmateSketching",

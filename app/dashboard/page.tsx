@@ -17,6 +17,7 @@ import { MyCheckoutsComponent } from "./components/MyCheckoutsComponent"
 import MyMatchesComponent from "./components/MyMatchesComponent"
 import { UpsellNextEventComponent } from "./components/UpsellNextEventComponent"
 import MessagesComponent from "./components/MessagesComponent"
+import { MyPurchasesComponent } from "./components/MyPurchasesComponent"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { User } from "@/types/profile"
 
@@ -31,6 +32,7 @@ interface CheckoutData {
   productType: string
   productId: number
   confirmationEmailSent: boolean
+  currency: string | null
   productDescription: string | null
   experiment: string | null
   checkoutTime: string
@@ -88,7 +90,7 @@ export default function DashboardPage() {
         const response = await fetch('/api/user/checkouts')
         if (response.ok) {
           const data = await response.json()
-          setCheckouts(data)
+          setCheckouts(data.filter((c: CheckoutData) => c.confirmationEmailSent))
         } else {
           console.error('Failed to fetch checkouts')
         }
@@ -297,6 +299,10 @@ export default function DashboardPage() {
                     onlineSpeedDatingProducts={onlineSpeedDatingProducts}
                     loading={checkoutsLoading}
                   />
+                  <MyPurchasesComponent
+                    checkouts={checkouts}
+                    loading={checkoutsLoading}
+                  />
                 </div>
 
                 {/* Profile Section - Takes 1 column */}
@@ -304,6 +310,7 @@ export default function DashboardPage() {
                   <DashboardProfileComponent 
                     user={userProfile} 
                     onUserUpdate={handleProfileUpdate}
+                    hasAiPhotosPurchase={checkouts.some(c => c.productType === 'aiPhotos')}
                   />
                   {user && (
                     <MyMatchesComponent userId={user.id} />

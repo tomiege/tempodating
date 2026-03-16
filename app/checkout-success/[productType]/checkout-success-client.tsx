@@ -25,6 +25,7 @@ interface CheckoutData {
   is_male: boolean | null
   query_city: string | null
   confirmation_email_sent: boolean
+  currency: string | null
   checkout_time: string
 }
 

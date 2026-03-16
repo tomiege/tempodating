@@ -30,6 +30,7 @@ interface CheckoutData {
   productType: string
   productId: number
   confirmationEmailSent: boolean
+  currency: string | null
   productDescription: string | null
   experiment: string | null
   checkoutTime: string

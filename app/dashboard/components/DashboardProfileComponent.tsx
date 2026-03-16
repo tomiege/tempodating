@@ -9,18 +9,20 @@ import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
-import { User, Camera, Save, Loader2, AlertCircle, ClipboardList, CheckCircle2 } from "lucide-react"
+import { User, Camera, Save, Loader2, AlertCircle, ClipboardList, CheckCircle2, Sparkles } from "lucide-react"
 import { User as UserType } from "@/types/profile"
 import { downscaleImage } from "@/lib/image-utils"
+import { formatLocalPrice } from "@/lib/utils"
 import Link from "next/link"
 
 interface DashboardProfileComponentProps {
   user: UserType | null
   onUserUpdate?: (updatedUser: UserType) => void
   validationErrors?: string[]
+  hasAiPhotosPurchase?: boolean
 }
 
-export default function DashboardProfileComponent({ user, onUserUpdate, validationErrors = [] }: DashboardProfileComponentProps) {
+export default function DashboardProfileComponent({ user, onUserUpdate, validationErrors = [], hasAiPhotosPurchase = false }: DashboardProfileComponentProps) {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [compressing, setCompressing] = useState(false)
@@ -297,6 +299,19 @@ export default function DashboardProfileComponent({ user, onUserUpdate, validati
               </>
             )}
           </Button>
+          {!hasAiPhotosPurchase && isMale === true && (
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
+            >
+              <Link href="/product/aiPhotos">
+                <Sparkles className="mr-2 h-4 w-4" />
+                Get AI Photos 
+              </Link>
+            </Button>
+          )}
           <input
             ref={fileInputRef}
             type="file"

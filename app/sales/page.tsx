@@ -23,6 +23,7 @@ interface EventEntry {
   timezone: string
   title: string
   city: string
+  productType?: string
 }
 
 interface SalesData {
@@ -113,7 +114,7 @@ async function getVisitorCounts(): Promise<Map<number, VisitorInfo>> {
   return visitorMap
 }
 
-const ON_DEMAND_PRODUCT_TYPES = ['geoMaxing', 'socialMediaMaxing']
+const ON_DEMAND_PRODUCT_TYPES = ['aiPhotos', 'styleConsultant', 'colorPalette', 'soulmateSketching', 'datingEbook']
 
 async function getSalesData(): Promise<SalesData[]> {
   const supabase = createServiceSupabaseClient()
@@ -196,7 +197,7 @@ async function getSalesData(): Promise<SalesData[]> {
     if (!productMap.has(productId)) {
       salesData.push({
         product_id: productId,
-        product_type: 'onlineSpeedDating',
+        product_type: event.productType || 'onlineSpeedDating',
         male_tickets: 0,
         female_tickets: 0,
         total: 0,
@@ -211,23 +212,53 @@ async function getSalesData(): Promise<SalesData[]> {
     }
   }
 
-  // Add on-demand products from visitor data that have 0 sales
+  // Add on-demand products from onDemand.json that have 0 sales
+  try {
+    const onDemandPath = path.join(process.cwd(), 'public', 'products', 'onDemand.json')
+    const onDemandRaw = await readFile(onDemandPath, 'utf-8')
+    const onDemandProducts: { productId: number; productType: string; title: string }[] = JSON.parse(onDemandRaw)
+    for (const product of onDemandProducts) {
+      if (!productMap.has(product.productId)) {
+        salesData.push({
+          product_id: product.productId,
+          product_type: product.productType,
+          male_tickets: 0,
+          female_tickets: 0,
+          total: 0,
+          differential: 0,
+          city: '',
+          male_emails: [],
+          female_emails: [],
+          event_datetime: null,
+          event_timezone: null,
+          visitors: visitorCounts.get(product.productId)?.count || 0,
+        })
+      }
+    }
+  } catch {
+    console.error('Error loading onDemand.json for 0-sale products')
+  }
+
+  // Add on-demand products from visitor data that have 0 sales (not in onDemand.json or events.json)
   for (const [productId, info] of visitorCounts.entries()) {
     if (!productMap.has(productId) && !eventsMap.has(productId) && info.product_type && ON_DEMAND_PRODUCT_TYPES.includes(info.product_type)) {
-      salesData.push({
-        product_id: productId,
-        product_type: info.product_type,
-        male_tickets: 0,
-        female_tickets: 0,
-        total: 0,
-        differential: 0,
-        city: '',
-        male_emails: [],
-        female_emails: [],
-        event_datetime: null,
-        event_timezone: null,
-        visitors: info.count,
-      })
+      // Check if already added from onDemand.json
+      if (!salesData.some(s => s.product_id === productId)) {
+        salesData.push({
+          product_id: productId,
+          product_type: info.product_type,
+          male_tickets: 0,
+          female_tickets: 0,
+          total: 0,
+          differential: 0,
+          city: '',
+          male_emails: [],
+          female_emails: [],
+          event_datetime: null,
+          event_timezone: null,
+          visitors: info.count,
+        })
+      }
     }
   }
 
@@ -378,7 +409,7 @@ export default async function SalesPage() {
         <CardHeader>
           <CardTitle>Event Sales</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Paid event checkouts grouped by Product ID (deduplicated by user)
+            Paid event checkouts grouped by Product ID (deduplicated by user) — includes speed dating, geoMaxing, socialMediaMaxing
           </p>
         </CardHeader>
         <CardContent>
@@ -391,6 +422,7 @@ export default async function SalesPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Product ID</TableHead>
+                  <TableHead>Product Type</TableHead>
                   <TableHead>City</TableHead>
                   <TableHead>Event Date</TableHead>
                   <TableHead className="text-right">Visitors</TableHead>
@@ -409,6 +441,7 @@ export default async function SalesPage() {
                         {row.product_id}
                       </Link>
                     </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{row.product_type}</TableCell>
                     <TableCell>{row.city || '—'}</TableCell>
                     <TableCell>
                       {row.event_datetime ? (
@@ -468,7 +501,7 @@ export default async function SalesPage() {
         <CardHeader>
           <CardTitle>On-Demand Product Sales</CardTitle>
           <p className="text-sm text-muted-foreground">
-            GeoMaxing &amp; Social Media Maxing purchases (deduplicated by user)
+            AI Photos, Style Consultant, Color Palette, Soulmate Sketching &amp; eBook purchases (deduplicated by user)
           </p>
         </CardHeader>
         <CardContent>

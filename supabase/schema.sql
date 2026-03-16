@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS public.checkout (
   product_type TEXT NOT NULL,
   product_id INTEGER NOT NULL,
   confirmation_email_sent BOOLEAN DEFAULT false,
+  currency TEXT DEFAULT NULL,
   product_description TEXT,
   experiment TEXT,
   checkout_time TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -235,4 +236,18 @@ CREATE TABLE IF NOT EXISTS public.support_messages (
 );
 
 CREATE INDEX IF NOT EXISTS idx_support_messages_ticket ON public.support_messages(ticket_id, created_at ASC);
+
+-- AI photo submissions table (user uploads training photos for AI photo generation)
+CREATE TABLE IF NOT EXISTS public.ai_photo_submissions (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  checkout_id INTEGER REFERENCES public.checkout(checkout_id) ON DELETE SET NULL,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'completed')),
+  photos JSONB NOT NULL DEFAULT '[]',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_photo_submissions_user ON public.ai_photo_submissions(user_id);
+CREATE INDEX IF NOT EXISTS idx_ai_photo_submissions_status ON public.ai_photo_submissions(status);
 
