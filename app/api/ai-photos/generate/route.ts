@@ -6,6 +6,36 @@ fal.config({
   credentials: process.env.FAL_AI_API_KEY,
 })
 
+// GET: Check if user already has a free generation
+export async function GET() {
+  try {
+    const supabase = await createServerSupabaseClient()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const serviceSupabase = createServiceSupabaseClient()
+    const { data: existing } = await serviceSupabase
+      .from('ai_photo_generations')
+      .select('output_url, created_at')
+      .eq('user_id', user.id)
+      .eq('is_free', true)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    return NextResponse.json({
+      hasGenerated: !!existing,
+      outputUrl: existing?.output_url || null,
+    })
+  } catch (error) {
+    console.error('AI photo status check error:', error)
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServerSupabaseClient()
@@ -13,6 +43,23 @@ export async function POST(request: NextRequest) {
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Server-side check: only 1 free generation per user (check ai_photo_generations table)
+    const serviceSupabase = createServiceSupabaseClient()
+    const { data: existingGeneration } = await serviceSupabase
+      .from('ai_photo_generations')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('is_free', true)
+      .limit(1)
+      .single()
+
+    if (existingGeneration) {
+      return NextResponse.json(
+        { error: 'You have already used your free AI photo generation. Purchase the 30-pack for more.' },
+        { status: 403 }
+      )
     }
 
     const body = await request.json()
@@ -53,20 +100,31 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Store the result in Supabase
-    const serviceSupabase = createServiceSupabaseClient()
-    await serviceSupabase
+    // Extract the output image URL
+    const outputUrl = result.data?.images?.[0]?.url || null
+
+    // Store the generation record (marks free generation as used)
+    const { error: insertError } = await serviceSupabase
       .from('ai_photo_generations')
       .insert({
         user_id: user.id,
         input_image_urls: imageUrls,
+        prompt: prompt.trim(),
+        reference_image_url: referenceImageUrl,
+        output_url: outputUrl,
         result: result.data,
+        is_free: true,
         created_at: new Date().toISOString(),
       })
+
+    if (insertError) {
+      console.error('Failed to save generation record:', insertError)
+    }
 
     return NextResponse.json({
       success: true,
       result: result.data,
+      outputUrl,
       requestId: result.requestId,
     })
   } catch (error) {

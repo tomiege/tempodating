@@ -137,33 +137,57 @@ export default function CheckoutSuccessClient({
   // =========================================================
   // ASSIGN CHECKOUT TO USER
   // This runs every time a logged-in user is on this page
-  // It does 2 things:
-  // 1. Assigns the checkout to the user (sets user_id)
-  // 2. Transfers checkout data to user profile (name, is_male, city)
+  // For speed dating events: assigns checkout + transfers profile data
+  // For other products (aiPhotos, etc): only assigns checkout (no profile transfer)
   // =========================================================
+  const SPEED_DATING_TYPES = ['onlineSpeedDating', 'gaySpeedDating', 'jewishSpeedDating', 'indianSpeedDating']
+  const isSpeedDating = SPEED_DATING_TYPES.includes(productType)
+
   useEffect(() => {
     if (user?.id && checkout) {
       const assignCheckoutToUser = async () => {
         try {
-          console.log('🚀 Calling assign-checkout-to-user API...')
-          
-          const response = await fetch('/api/checkout/assign-to-user', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              checkoutSessionId,
-              userId: user.id,
-            }),
-          })
+          if (isSpeedDating) {
+            // Speed dating: assign checkout + transfer profile data (name, gender, city)
+            console.log('🚀 Calling assign-checkout-to-user API (speed dating)...')
+            const response = await fetch('/api/checkout/assign-to-user', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                checkoutSessionId,
+                userId: user.id,
+              }),
+            })
 
-          if (response.ok) {
-            const { checkout: updatedCheckout, fieldsUpdated } = await response.json()
-            console.log('✅ Checkout assigned to user. Fields updated:', fieldsUpdated)
-            setCheckout(updatedCheckout)
-            setStep('complete')
+            if (response.ok) {
+              const { checkout: updatedCheckout, fieldsUpdated } = await response.json()
+              console.log('✅ Checkout assigned to user. Fields updated:', fieldsUpdated)
+              setCheckout(updatedCheckout)
+            } else {
+              console.error('❌ Failed to assign checkout to user')
+            }
           } else {
-            console.error('❌ Failed to assign checkout to user')
+            // Non-event products: only link checkout to user (no profile transfer)
+            console.log('🚀 Linking checkout to user (non-event product)...')
+            const response = await fetch('/api/checkout/assign-to-user', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                checkoutSessionId,
+                userId: user.id,
+                skipProfileTransfer: true,
+              }),
+            })
+
+            if (response.ok) {
+              const { checkout: updatedCheckout } = await response.json()
+              console.log('✅ Checkout linked to user (no profile transfer)')
+              setCheckout(updatedCheckout)
+            } else {
+              console.error('❌ Failed to link checkout to user')
+            }
           }
+          setStep('complete')
         } catch (err) {
           console.error('❌ Error assigning checkout to user:', err)
         }
@@ -311,13 +335,40 @@ export default function CheckoutSuccessClient({
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {/* Order Summary - Always visible, minimal info */}
+          {/* Order Details - Always visible */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+            <h3 className="font-semibold text-sm text-gray-900 dark:text-gray-100 mb-3">Order Details</h3>
             <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
               <span className="text-sm text-gray-600 dark:text-gray-300">Reference</span>
               <span className="font-mono text-xs text-gray-500">{checkout?.checkout_session_id}</span>
             </div>
-            {checkout?.is_male !== null && checkout?.is_male !== undefined && (
+            {checkout?.product_description && (
+              <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                <span className="text-sm text-gray-600 dark:text-gray-300">{isSpeedDating ? 'Event' : 'Product'}</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{checkout.product_description}</span>
+              </div>
+            )}
+            {checkout?.email && (
+              <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                <span className="text-sm text-gray-600 dark:text-gray-300">Email</span>
+                <span className="text-sm text-gray-900 dark:text-gray-100">{checkout.email}</span>
+              </div>
+            )}
+            {checkout?.name && (
+              <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                <span className="text-sm text-gray-600 dark:text-gray-300">Name</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{checkout.name}</span>
+              </div>
+            )}
+            {checkout?.total_order != null && (
+              <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                <span className="text-sm text-gray-600 dark:text-gray-300">Total</span>
+                <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  {(checkout.total_order / 100).toLocaleString('en-US', { style: 'currency', currency: checkout.currency || 'USD' })}
+                </span>
+              </div>
+            )}
+            {checkout?.is_male !== null && checkout?.is_male !== undefined && isSpeedDating && (
               <div className="flex justify-between items-center py-2">
                 <span className="text-sm text-gray-600 dark:text-gray-300">Ticket Type</span>
                 <span className={`font-medium px-3 py-1 rounded-full text-sm ${
@@ -369,7 +420,9 @@ export default function CheckoutSuccessClient({
               <div className="text-center mb-6">
                 <h3 className="font-bold text-2xl mb-3">Verify Your Email</h3>
                 <p className="text-muted-foreground">
-                  Confirm your email to access your tickets
+                  {isSpeedDating
+                    ? 'Confirm your email to access your tickets'
+                    : 'Confirm your email to access your purchase'}
                 </p>
               </div>
 
@@ -464,7 +517,9 @@ export default function CheckoutSuccessClient({
               <div className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                 <CheckCircle2 className="w-5 h-5 text-blue-600" />
                 <p className="text-sm text-blue-800 dark:text-blue-200">
-                  Your account is set up and this order is linked. You can access your tickets from your dashboard.
+                  {isSpeedDating
+                    ? 'Your account is set up and this order is linked. You can access your tickets from your dashboard.'
+                    : 'Your account is set up and this order is linked. You can access your purchase from your dashboard.'}
                 </p>
               </div>
               <div className="pt-2">

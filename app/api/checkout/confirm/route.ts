@@ -138,7 +138,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                       <span style="color: #111827; font-size: 14px; font-weight: 500;">${checkout.checkout_id}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f3f4f6;">
-                      <span style="color: #6b7280; font-size: 14px;">Event</span>
+                      <span style="color: #6b7280; font-size: 14px;">${['onlineSpeedDating', 'gaySpeedDating', 'jewishSpeedDating', 'indianSpeedDating'].includes(checkout.product_type) ? 'Event' : 'Product'}</span>
                       <span style="color: #111827; font-size: 14px; font-weight: 500;">${checkout.product_description || checkout.product_type}</span>
                     </div>
                     ${checkout.name ? `
@@ -147,10 +147,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                       <span style="color: #111827; font-size: 14px; font-weight: 500;">${checkout.name}</span>
                     </div>
                     ` : ''}
+                    ${['onlineSpeedDating', 'gaySpeedDating', 'jewishSpeedDating', 'indianSpeedDating'].includes(checkout.product_type) ? `
                     <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f3f4f6;">
                       <span style="color: #6b7280; font-size: 14px;">Ticket Type</span>
                       <span style="color: #111827; font-size: 14px; font-weight: 500;">${checkout.is_male ? 'Male' : 'Female'} Ticket</span>
                     </div>
+                    ` : ''}
 
                   </div>
                 </div>

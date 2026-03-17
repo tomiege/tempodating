@@ -22,9 +22,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   console.log('========================================');
 
   try {
-    const { checkoutSessionId, userId } = await request.json();
+    const { checkoutSessionId, userId, skipProfileTransfer } = await request.json();
 
-    console.log('📥 Received request:', { checkoutSessionId, userId });
+    console.log('📥 Received request:', { checkoutSessionId, userId, skipProfileTransfer });
 
     if (!checkoutSessionId) {
       console.log('❌ Error: Missing checkoutSessionId');
@@ -87,7 +87,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // =========================================================
     // STEP 3: Transfer checkout data to user profile
+    // Only for speed dating / event products — skip for aiPhotos etc.
     // =========================================================
+    let fieldsUpdated: string[] = [];
+
+    if (!skipProfileTransfer) {
     console.log('');
     console.log('👤 STEP 3: Transferring checkout data to user profile...');
 
@@ -189,17 +193,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       console.log('ℹ️ No fields to update - user profile already has all data');
     }
 
-    // Fetch the updated checkout and user profile
+    fieldsUpdated = Object.keys(updateData).filter(k => k !== 'updated_at');
+    } else {
+      console.log('');
+      console.log('⏭️ STEP 3: Skipping profile transfer (skipProfileTransfer=true)');
+    }
+
+    // Fetch the updated checkout
     const { data: updatedCheckout } = await supabase
       .from('checkout')
       .select('*')
       .eq('checkout_session_id', checkoutSessionId)
-      .single();
-
-    const { data: updatedUser } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
       .single();
 
     console.log('');
@@ -210,20 +214,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       checkout_id: updatedCheckout?.checkout_id,
       user_id: updatedCheckout?.user_id,
     });
-    console.log('Final user profile:', {
-      id: updatedUser?.id,
-      full_name: updatedUser?.full_name,
-      is_male: updatedUser?.is_male,
-      city: updatedUser?.city,
-      country: updatedUser?.country,
-    });
     console.log('');
 
     return NextResponse.json({
       success: true,
       checkout: updatedCheckout,
-      userProfile: updatedUser,
-      fieldsUpdated: Object.keys(updateData).filter(k => k !== 'updated_at'),
+      fieldsUpdated,
     });
 
   } catch (error: any) {

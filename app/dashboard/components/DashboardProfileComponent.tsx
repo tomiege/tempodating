@@ -299,16 +299,27 @@ export default function DashboardProfileComponent({ user, onUserUpdate, validati
               </>
             )}
           </Button>
-          {!hasAiPhotosPurchase && isMale === true && (
+          {!hasAiPhotosPurchase ? (
             <Button
               asChild
               variant="outline"
               size="sm"
               className="border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
             >
-              <Link href="/product/aiPhotos">
+              <Link href="/dashboard/ai-photos">
                 <Sparkles className="mr-2 h-4 w-4" />
-                Get AI Photos 
+                Get My Free Match-Ready Photo
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              asChild
+              variant="default"
+              size="sm"
+            >
+              <Link href="/dashboard/ai-photos">
+                <Sparkles className="mr-2 h-4 w-4" />
+                View My AI Photos
               </Link>
             </Button>
           )}

@@ -241,7 +241,6 @@ CREATE INDEX IF NOT EXISTS idx_support_messages_ticket ON public.support_message
 CREATE TABLE IF NOT EXISTS public.ai_photo_submissions (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-  checkout_id INTEGER REFERENCES public.checkout(checkout_id) ON DELETE SET NULL,
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'completed')),
   photos JSONB NOT NULL DEFAULT '[]',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -250,4 +249,19 @@ CREATE TABLE IF NOT EXISTS public.ai_photo_submissions (
 
 CREATE INDEX IF NOT EXISTS idx_ai_photo_submissions_user ON public.ai_photo_submissions(user_id);
 CREATE INDEX IF NOT EXISTS idx_ai_photo_submissions_status ON public.ai_photo_submissions(status);
+
+-- AI photo generations table (stores every generated photo output)
+CREATE TABLE IF NOT EXISTS public.ai_photo_generations (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  input_image_urls JSONB NOT NULL DEFAULT '[]',
+  prompt TEXT,
+  reference_image_url TEXT,
+  output_url TEXT,
+  result JSONB,
+  is_free BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_photo_generations_user ON public.ai_photo_generations(user_id);
 
