@@ -5,7 +5,7 @@ import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Upload, X, Loader2, Sparkles, ArrowRight, Check, Camera, Download, ShoppingBag, Star } from 'lucide-react'
+import { Upload, X, Loader2, Sparkles, Check, Camera, Download, ShoppingBag, Star } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/use-auth'
 import { useRouter } from 'next/navigation'
@@ -21,6 +21,23 @@ const EXAMPLE_STYLES = [
   { src: "https://photolike.s3.us-east-2.amazonaws.com/assets/dating/landing/st2.jpg", label: "Travel Shot" },
   { src: "https://photolike.s3.us-east-2.amazonaws.com/assets/dating/landing/st8.jpg", label: "Artistic Depth" },
 ]
+
+const BEFORE_AFTER_EXAMPLES = [
+  {
+    before: "https://photolike.s3.us-east-2.amazonaws.com/assets/dating/landing/before1.jpg",
+    after: "https://photolike.s3.us-east-2.amazonaws.com/assets/dating/landing/after1.jpg",
+  },
+  {
+    before: "https://photolike.s3.us-east-2.amazonaws.com/assets/dating/landing/before2.jpg",
+    after: "https://photolike.s3.us-east-2.amazonaws.com/assets/dating/landing/after2.jpg",
+  },
+  {
+    before: "https://photolike.s3.us-east-2.amazonaws.com/assets/dating/landing/before3.jpg",
+    after: "https://photolike.s3.us-east-2.amazonaws.com/assets/dating/landing/after3.jpg",
+  },
+]
+
+
 
 const LOADING_MESSAGES = [
   "Analyzing your facial features...",
@@ -73,6 +90,7 @@ export default function AiPhotosPage() {
   const [dragging, setDragging] = useState(false)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [isMale, setIsMale] = useState<boolean | null>(null)
+  const [styleImages, setStyleImages] = useState<{ src: string; label: string }[]>(EXAMPLE_STYLES)
   const { toast } = useToast()
   const { user, loading } = useAuth()
   const router = useRouter()
@@ -122,8 +140,10 @@ export default function AiPhotosPage() {
   }
 
   // Check for existing free AI photo generation and paid purchase on load
+  // Only run when the component first mounts (step === 'loading') to avoid
+  // resetting the user back to 'landing' if the effect re-fires.
   useEffect(() => {
-    if (loading || !user) return
+    if (loading || !user || step !== 'loading') return
     const checkExisting = async () => {
       try {
         // Fetch user profile for gender
@@ -166,7 +186,27 @@ export default function AiPhotosPage() {
       setStep('landing')
     }
     checkExisting()
-  }, [user, loading])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, loading, step])
+
+  // Fetch gender-specific style images from bucket
+  useEffect(() => {
+    if (isMale === null) return
+    const folder = isMale ? 'male' : 'female'
+    fetch(`/api/ai-photos/references?folder=${folder}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.images?.length > 0) {
+          setStyleImages(
+            data.images.slice(0, 8).map((img: { name: string; url: string }) => ({
+              src: img.url,
+              label: img.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' '),
+            }))
+          )
+        }
+      })
+      .catch(() => {})
+  }, [isMale])
 
   if (!loading && !user) {
     router.push('/login')
@@ -324,7 +364,7 @@ export default function AiPhotosPage() {
       <main className="min-h-screen bg-background">
         <Header />
         <section className="pt-24 pb-16">
-          <div className="max-w-3xl mx-auto px-4">
+          <div className="max-w-4xl mx-auto px-4">
             {/* Hero */}
             <div className="text-center mb-12">
               <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-medium mb-4">
@@ -339,25 +379,52 @@ export default function AiPhotosPage() {
               </p>
             </div>
 
-            {/* Example Before → After */}
-            <Card className="p-6 mb-8">
-              <h3 className="font-semibold text-foreground mb-4 text-center">See the Transformation</h3>
-              <div className="flex flex-col sm:flex-row items-center gap-4">
-                <div className="flex-1">
-                  <p className="text-xs text-muted-foreground text-center mb-2">Your selfies</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {exampleInputs.map((src, i) => (
-                      <img key={i} src={src} alt={`Example input ${i + 1}`} className="rounded-lg w-full aspect-square object-cover" />
-                    ))}
+            {/* Before → After side-by-side */}
+            <div className="mb-12">
+              <div className="grid grid-cols-2 gap-4 max-w-2xl mx-auto">
+                {/* Before */}
+                <div>
+                  <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-lg">
+                    <img src={BEFORE_AFTER_EXAMPLES[0].before} alt="Before" className="w-full h-full object-cover" />
+                    <span className="absolute top-3 left-3 text-xs font-semibold bg-red-500/80 text-white px-2.5 py-1 rounded-full flex items-center gap-1">
+                      <X className="w-3 h-3" /> Before
+                    </span>
                   </div>
+                  <p className="text-xs text-red-500 font-medium text-center mt-2">Unflattering angle • Harsh sunlight • Flat expression</p>
                 </div>
-                <ArrowRight className="w-8 h-8 text-primary shrink-0 rotate-90 sm:rotate-0" />
-                <div className="flex-1">
-                  <p className="text-xs text-muted-foreground text-center mb-2">AI Match-Ready Photo</p>
-                  <img src={exampleOutput} alt="Example result" className="rounded-lg w-full aspect-[3/4] object-cover" />
+                {/* After */}
+                <div>
+                  <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-lg">
+                    <img src={BEFORE_AFTER_EXAMPLES[0].after} alt="After" className="w-full h-full object-cover" />
+                    <span className="absolute top-3 right-3 text-xs font-semibold bg-green-500/80 text-white px-2.5 py-1 rounded-full flex items-center gap-1">
+                      <Check className="w-3 h-3" /> After
+                    </span>
+                  </div>
+                  <p className="text-xs text-green-600 font-medium text-center mt-2">Confident and composed • Sharp presence • Instant attraction</p>
                 </div>
               </div>
-            </Card>
+
+              <div className="text-center mt-8">
+                <p className="font-serif text-lg font-semibold text-foreground">Your photos do the talking before you do.</p>
+                <p className="text-sm text-muted-foreground">Make sure they&apos;re saying the right thing.</p>
+              </div>
+            </div>
+
+            {/* Style showcase */}
+            <div className="mb-10">
+              <h3 className="font-serif text-xl font-semibold text-foreground text-center mb-2">Every Style You Need</h3>
+              <p className="text-sm text-muted-foreground text-center mb-4">From professional headshots to adventure shots</p>
+              <div className="grid grid-cols-4 gap-3">
+                {styleImages.map((style, i) => (
+                  <div key={i} className="text-center group">
+                    <div className="aspect-[3/4] rounded-lg overflow-hidden shadow-sm mb-1">
+                      <img src={style.src} alt={style.label} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">{style.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
 
             {/* CTA */}
             <div className="text-center">
@@ -367,28 +434,18 @@ export default function AiPhotosPage() {
                 onClick={() => setStep('upload')}
               >
                 <Sparkles className="w-5 h-5 mr-2" />
-                Get My Free Match-Ready Photo
+                Get My Free AI Profile Photo
               </Button>
               <p className="text-muted-foreground text-sm mt-3">
                 1 free match-ready photo for your profile • unlock 30 for $29.99 only if you love it
               </p>
             </div>
 
-            {/* How it works */}
-            <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-6">
-              {[
-                { icon: Camera, title: 'Upload 6 Selfies', desc: 'Any casual photos of yourself — the more variety, the better.' },
-                { icon: Sparkles, title: 'AI Enhancement', desc: 'Our AI creates a professional match-ready photo in ~2 minutes.' },
-                { icon: Check, title: 'Use It Anywhere', desc: 'Download and use on your dating profile, social media, or anywhere.' },
-              ].map((item, i) => (
-                <div key={i} className="text-center">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 text-primary mb-3">
-                    <item.icon className="w-6 h-6" />
-                  </div>
-                  <h4 className="font-semibold text-foreground mb-1">{item.title}</h4>
-                  <p className="text-sm text-muted-foreground">{item.desc}</p>
-                </div>
-              ))}
+            {/* Trust signals */}
+            <div className="mt-10 flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">
+              <span className="flex items-center gap-1.5"><Camera className="w-4 h-4" /> Photo-realistic</span>
+              <span className="flex items-center gap-1.5"><Sparkles className="w-4 h-4" /> 3,500+ happy users</span>
+              <span className="flex items-center gap-1.5"><Star className="w-4 h-4 fill-primary text-primary" /> 4.9/5 rating</span>
             </div>
           </div>
         </section>
@@ -409,6 +466,28 @@ export default function AiPhotosPage() {
             <p className="text-muted-foreground mb-6">
               Use clear, well-lit photos of yourself. Different angles and expressions work best.
             </p>
+
+            {/* Photo guidelines */}
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              <div className="space-y-1.5">
+                <p className="text-xs font-semibold text-green-600">✓ Do</p>
+                {['Clear shot of your face', 'Good lighting', 'Different angles & expressions', 'Just you in the photo'].map((item, i) => (
+                  <p key={i} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Check className="w-3.5 h-3.5 text-green-500 shrink-0" />
+                    {item}
+                  </p>
+                ))}
+              </div>
+              <div className="space-y-1.5">
+                <p className="text-xs font-semibold text-red-500">✗ Don&apos;t</p>
+                {['Group photos', 'Blurry or dark images', 'Sunglasses or face covered', 'Heavy filters or edits'].map((item, i) => (
+                  <p key={i} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <X className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                    {item}
+                  </p>
+                ))}
+              </div>
+            </div>
 
             {/* Example good inputs */}
             <div className="mb-6">
@@ -525,7 +604,7 @@ export default function AiPhotosPage() {
                   Love your free photo? Unlock 30 photos in styles like these:
                 </p>
                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                  {EXAMPLE_STYLES.map((style, i) => (
+                  {styleImages.map((style, i) => (
                     <div key={i} className="text-center">
                       <img
                         src={style.src}
@@ -746,7 +825,7 @@ export default function AiPhotosPage() {
               Styles included in your pack
             </h3>
             <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-              {EXAMPLE_STYLES.map((style, i) => (
+              {styleImages.map((style, i) => (
                 <div key={i} className="text-center">
                   <img
                     src={style.src}

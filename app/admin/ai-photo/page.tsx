@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Upload, X, Loader2, ImageIcon } from 'lucide-react'
@@ -29,7 +29,31 @@ export default function AdminAiPhotoPage() {
   const [prompt, setPrompt] = useState(PRESETS[0].prompt)
   const [referenceImage, setReferenceImage] = useState(PRESETS[0].referenceImage)
   const [dragging, setDragging] = useState(false)
+  const [bucketFolder, setBucketFolder] = useState<'male' | 'female'>('male')
+  const [bucketImages, setBucketImages] = useState<{ name: string; url: string }[]>([])
+  const [loadingBucket, setLoadingBucket] = useState(false)
   const { toast } = useToast()
+
+  const fetchBucketImages = useCallback(async (folder: 'male' | 'female') => {
+    setLoadingBucket(true)
+    try {
+      const res = await fetch(`/api/ai-photos/references?folder=${folder}`)
+      const data = await res.json()
+      if (res.ok) {
+        setBucketImages(data.images ?? [])
+      } else {
+        toast({ title: 'Error loading bucket images', description: data.error, variant: 'destructive' })
+      }
+    } catch {
+      toast({ title: 'Error', description: 'Failed to load bucket images', variant: 'destructive' })
+    } finally {
+      setLoadingBucket(false)
+    }
+  }, [toast])
+
+  useEffect(() => {
+    fetchBucketImages(bucketFolder)
+  }, [bucketFolder, fetchBucketImages])
 
   const handlePresetChange = (index: number) => {
     setSelectedPreset(index)
@@ -209,6 +233,53 @@ export default function AdminAiPhotoPage() {
             />
             <p className="text-xs text-gray-500 mt-2 max-w-xs truncate">{referenceImage}</p>
           </Card>
+        </div>
+
+        {/* Bucket Reference Photos */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-300 mb-2">Or pick from Supabase bucket (ai-photos)</label>
+          <div className="flex gap-3 mb-3">
+            {(['male', 'female'] as const).map((folder) => (
+              <button
+                key={folder}
+                onClick={() => setBucketFolder(folder)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors capitalize ${
+                  bucketFolder === folder
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+              >
+                {folder}
+              </button>
+            ))}
+          </div>
+          {loadingBucket ? (
+            <div className="flex items-center gap-2 text-gray-400 text-sm py-4">
+              <Loader2 className="w-4 h-4 animate-spin" /> Loading...
+            </div>
+          ) : bucketImages.length === 0 ? (
+            <p className="text-gray-500 text-sm">No images found in {bucketFolder}/ folder</p>
+          ) : (
+            <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 max-h-64 overflow-y-auto">
+              {bucketImages.map((img) => (
+                <button
+                  key={img.name}
+                  onClick={() => setReferenceImage(img.url)}
+                  className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                    referenceImage === img.url
+                      ? 'border-purple-500 ring-2 ring-purple-500/50'
+                      : 'border-transparent hover:border-gray-600'
+                  }`}
+                >
+                  <img
+                    src={img.url}
+                    alt={img.name}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Editable Prompt */}
