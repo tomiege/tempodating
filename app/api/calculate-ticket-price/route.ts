@@ -90,7 +90,12 @@ function calculateAdjustedPrice(basePrice: number, ticketsSold: number): { price
     const increased = Math.floor(basePrice * 1.3 / 100) * 100
     return { price: increased, soldOut: false }
   }
-
+  if (ticketsSold >= 20) {
+    // 30% increase on base price, rounded down to nearest dollar (100 cents)
+    const increased = Math.floor(basePrice * 1.1 / 100) * 100
+    return { price: increased, soldOut: false }
+  }
+  
   // 0-29: normal price
   return { price: basePrice, soldOut: false }
 }

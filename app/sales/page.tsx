@@ -262,8 +262,13 @@ async function getSalesData(): Promise<SalesData[]> {
     }
   }
 
-  // Sort by product_id
-  return salesData.sort((a, b) => a.product_id - b.product_id)
+  // Sort by event date (earliest first), then product_id for non-event items
+  return salesData.sort((a, b) => {
+    if (a.event_datetime && b.event_datetime) return new Date(a.event_datetime).getTime() - new Date(b.event_datetime).getTime()
+    if (a.event_datetime) return -1
+    if (b.event_datetime) return 1
+    return a.product_id - b.product_id
+  })
 }
 
 async function getDailyCheckouts(): Promise<DailyData[]> {
