@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Copy, Search, ArrowLeft, CheckCircle, Users, Download, Eye, EyeOff, Grid3X3, Grid2X2, UserX } from 'lucide-react'
+import { Copy, Search, ArrowLeft, CheckCircle, Users, Download, Eye, EyeOff, Grid3X3, Grid2X2, UserX, ClipboardList } from 'lucide-react'
+import EventSOP from './components/EventSOP'
 import { useToast } from '@/hooks/use-toast'
 import { parseNameAndEmoji } from './utils/nameParser'
-import { runSpeedDatingEvent } from './utils/speedDating'
+import { runSpeedDatingEvent, runGaySpeedDatingEvent } from './utils/speedDating'
 import { Attendee, RoundResult } from './utils/types'
 
 interface AttendanceRecord {
@@ -40,6 +41,8 @@ export default function AdminAttendancePage() {
   const [showStatistics, setShowStatistics] = useState(true)
   const [pairingColumns, setPairingColumns] = useState(2)
   const [excludedAttendees, setExcludedAttendees] = useState<Set<string>>(new Set())
+  const [isGayEvent, setIsGayEvent] = useState(false)
+  const [showSOP, setShowSOP] = useState(false)
   const { toast } = useToast()
 
   const fetchAttendances = async () => {
@@ -79,6 +82,7 @@ export default function AdminAttendancePage() {
     setShowPairings(false)
     setPairings(null)
     setExcludedAttendees(new Set()) // Reset exclusions when going back
+    setIsGayEvent(false)
   }
 
   const getEventAttendanceSummary = (): EventAttendanceSummary[] => {
@@ -199,26 +203,45 @@ export default function AdminAttendancePage() {
         return
       }
 
-      const maleCount = attendees.filter(a => a.gender === 'M').length
-      const femaleCount = attendees.filter(a => a.gender === 'F').length
-
-      if (maleCount === 0 || femaleCount === 0) {
+      if (isGayEvent) {
+        // Gay speed dating: match all attendees of the same gender with each other
+        const maleAttendees = attendees.filter(a => a.gender === 'M')
+        if (maleAttendees.length < 2) {
+          toast({
+            title: "Cannot generate pairings",
+            description: "Need at least 2 male attendees for gay speed dating",
+            variant: "destructive",
+          })
+          return
+        }
+        const result = runGaySpeedDatingEvent(maleAttendees, numRounds)
+        setPairings(result.rounds)
+        setShowPairings(true)
         toast({
-          title: "Cannot generate pairings",
-          description: "Need both male and female attendees to generate pairings",
-          variant: "destructive",
+          title: "Pairings generated!",
+          description: `Generated ${numRounds} gay speed dating rounds for ${maleAttendees.length} attendees`,
         })
-        return
-      }
+      } else {
+        const maleCount = attendees.filter(a => a.gender === 'M').length
+        const femaleCount = attendees.filter(a => a.gender === 'F').length
 
-      const result = runSpeedDatingEvent(attendees, numRounds)
-      setPairings(result.rounds)
-      setShowPairings(true)
-      
-      toast({
-        title: "Pairings generated!",
-        description: `Generated ${numRounds} rounds for ${attendees.length} attendees`,
-      })
+        if (maleCount === 0 || femaleCount === 0) {
+          toast({
+            title: "Cannot generate pairings",
+            description: "Need both male and female attendees to generate pairings",
+            variant: "destructive",
+          })
+          return
+        }
+
+        const result = runSpeedDatingEvent(attendees, numRounds)
+        setPairings(result.rounds)
+        setShowPairings(true)
+        toast({
+          title: "Pairings generated!",
+          description: `Generated ${numRounds} rounds for ${attendees.length} attendees`,
+        })
+      }
     } catch (error) {
       console.error('Error generating pairings:', error)
       toast({
@@ -316,7 +339,7 @@ export default function AdminAttendancePage() {
                   Back to Attendees
                 </Button>
                 <h1 className="text-4xl font-bold text-gray-800">
-                  Event {selectedProductId} - Speed Dating Pairings
+                  Event {selectedProductId} - {isGayEvent ? 'Gay ' : ''}Speed Dating Pairings
                 </h1>
               </div>
 
@@ -541,9 +564,9 @@ export default function AdminAttendancePage() {
             {/* Pairing Controls */}
             <Card className="p-6 mb-6 bg-white/80 backdrop-blur-sm border-orange-100">
               <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 flex-wrap">
                   <h3 className="text-xl font-semibold text-gray-700">Speed Dating Pairings</h3>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 flex-wrap">
                     <div className="flex items-center gap-2">
                       <label htmlFor="numRounds" className="text-sm text-gray-600">Rounds:</label>
                       <Input
@@ -556,6 +579,17 @@ export default function AdminAttendancePage() {
                         className="w-20"
                       />
                     </div>
+                    <button
+                      onClick={() => setIsGayEvent(!isGayEvent)}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${
+                        isGayEvent
+                          ? 'bg-purple-100 border-purple-400 text-purple-800'
+                          : 'bg-gray-50 border-gray-300 text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      <span>{isGayEvent ? '🏳️‍🌈' : '👥'}</span>
+                      {isGayEvent ? 'Gay Speed Dating' : 'Mixed Speed Dating'}
+                    </button>
                     {excludedAttendees.size > 0 && (
                       <Badge variant="destructive" className="text-sm">
                         {excludedAttendees.size} excluded
@@ -719,6 +753,24 @@ export default function AdminAttendancePage() {
         </h1>
         
         <div className="max-w-4xl mx-auto">
+          {/* SOP Toggle */}
+          <div className="mb-6 flex justify-center">
+            <Button
+              onClick={() => setShowSOP(!showSOP)}
+              variant={showSOP ? 'default' : 'outline'}
+              className={`flex items-center gap-2 ${showSOP ? 'bg-purple-600 hover:bg-purple-700' : ''}`}
+            >
+              <ClipboardList className="w-4 h-4" />
+              {showSOP ? 'Hide SOP & Script' : 'Show SOP & Script'}
+            </Button>
+          </div>
+
+          {showSOP && (
+            <div className="mb-6">
+              <EventSOP />
+            </div>
+          )}
+
           <Card className="p-6 mb-6 bg-white/80 backdrop-blur-sm border-orange-100">
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-6">
               <div className="flex items-center gap-4">

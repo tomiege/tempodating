@@ -410,6 +410,11 @@ export default async function SalesPage() {
 
   return (
     <div className="container mx-auto py-10 space-y-6">
+      <div className="flex justify-end">
+        <Link href="/admin/support" className="text-sm text-blue-600 hover:underline">
+          Support Tickets →
+        </Link>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>Event Sales</CardTitle>
@@ -442,7 +447,7 @@ export default async function SalesPage() {
                 {eventSales.map((row) => (
                   <TableRow key={row.product_id}>
                     <TableCell className="font-medium">
-                      <Link href={`/sales/customers?product_id=${row.product_id}`} className="text-blue-600 hover:underline">
+                      <Link href={`/admin/sales/customers?product_id=${row.product_id}`} className="text-blue-600 hover:underline">
                         {row.product_id}
                       </Link>
                     </TableCell>
@@ -529,7 +534,7 @@ export default async function SalesPage() {
                 {onDemandSales.map((row) => (
                   <TableRow key={row.product_id}>
                     <TableCell className="font-medium">
-                      <Link href={`/sales/customers?product_id=${row.product_id}`} className="text-blue-600 hover:underline">
+                      <Link href={`/admin/sales/customers?product_id=${row.product_id}`} className="text-blue-600 hover:underline">
                         {row.product_id}
                       </Link>
                     </TableCell>

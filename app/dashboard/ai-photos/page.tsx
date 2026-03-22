@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
@@ -89,6 +89,7 @@ export default function AiPhotosPage() {
   const [existingPhotoUrl, setExistingPhotoUrl] = useState<string | null>(null)
   const [dragging, setDragging] = useState(false)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [isMale, setIsMale] = useState<boolean | null>(null)
   const [styleImages, setStyleImages] = useState<{ src: string; label: string }[]>(EXAMPLE_STYLES)
   const { toast } = useToast()
@@ -504,13 +505,14 @@ export default function AiPhotosPage() {
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
+              onClick={() => { if (uploadedCount < 6) fileInputRef.current?.click() }}
               className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors mb-4 ${
                 dragging
                   ? 'border-primary bg-primary/5'
                   : 'border-border hover:border-primary/50'
               } ${uploadedCount >= 6 ? 'opacity-50 pointer-events-none' : 'cursor-pointer'}`}
             >
-              <label className="flex flex-col items-center gap-2 cursor-pointer">
+              <div className="flex flex-col items-center gap-2">
                 <Upload className="w-10 h-10 text-muted-foreground" />
                 <span className="text-muted-foreground text-sm">
                   Drag & drop images here, or <span className="text-primary underline">browse</span>
@@ -518,15 +520,16 @@ export default function AiPhotosPage() {
                 <span className="text-muted-foreground/60 text-xs">
                   {uploadedCount >= 6 ? 'All 6 photos selected' : `Select up to ${6 - uploadedCount} more`}
                 </span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  onChange={handleInputChange}
-                  disabled={uploadedCount >= 6}
-                />
-              </label>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="sr-only"
+                onChange={handleInputChange}
+                disabled={uploadedCount >= 6}
+              />
             </div>
 
             {/* Preview grid */}
@@ -536,8 +539,8 @@ export default function AiPhotosPage() {
                   <div key={index} className="relative aspect-square rounded-lg overflow-hidden group bg-muted">
                     <img src={preview} alt={`Photo ${index + 1}`} className="w-full h-full object-cover" />
                     <button
-                      onClick={() => removeFile(index)}
-                      className="absolute top-1 right-1 bg-destructive hover:bg-destructive/80 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => { e.stopPropagation(); removeFile(index) }}
+                      className="absolute top-1 right-1 bg-destructive hover:bg-destructive/80 rounded-full p-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                     >
                       <X className="w-3 h-3 text-white" />
                     </button>

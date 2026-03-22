@@ -119,7 +119,7 @@ export default async function CustomersPage({ searchParams }: Props) {
           <CardContent className="py-8">
             <p className="text-center text-muted-foreground">
               No product ID specified.{' '}
-              <Link href="/sales" className="text-blue-600 hover:underline">
+              <Link href="/admin/sales" className="text-blue-600 hover:underline">
                 Go back to Sales
               </Link>
             </p>
@@ -138,7 +138,7 @@ export default async function CustomersPage({ searchParams }: Props) {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Link href="/sales" className="text-muted-foreground hover:text-foreground text-sm">
+            <Link href="/admin/sales" className="text-muted-foreground hover:text-foreground text-sm">
               ← Sales
             </Link>
           </div>

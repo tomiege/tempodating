@@ -52,7 +52,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               id: assignUserId,
               email: checkout.email,
               full_name: checkout.name || profileData?.name || null,
-              gender: checkout.is_male !== null ? (checkout.is_male ? 'male' : 'female') : null,
+              is_male: checkout.is_male ?? null,
               city: checkout.query_city || profileData?.query_city || null,
               country: checkout.query_city || profileData?.query_city || null, // Using city as country fallback
             });

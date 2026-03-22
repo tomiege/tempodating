@@ -7,14 +7,13 @@ export async function GET(
   { params }: { params: Promise<{ ticketId: string }> }
 ) {
   try {
-    const authSupabase = await createServerSupabaseClient()
-    const { data: { user }, error: authError } = await authSupabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const { ticketId } = await params
     const serviceSupabase = createServiceSupabaseClient()
+    const adminParam = new URL(request.url).searchParams.get('admin') === 'true'
+
+    // Try to get the authenticated user (optional for admin requests)
+    const authSupabase = await createServerSupabaseClient()
+    const { data: { user } } = await authSupabase.auth.getUser()
 
     // Get the ticket
     const { data: ticket, error: ticketError } = await serviceSupabase
@@ -27,12 +26,15 @@ export async function GET(
       return NextResponse.json({ error: 'Ticket not found' }, { status: 404 })
     }
 
-    // Non-admin users can only see their own tickets
-    // (admin check is loose here — admin pages pass ?admin=true and we trust the auth)
-    const isOwner = ticket.user_id === user.id
-    const adminParam = new URL(request.url).searchParams.get('admin') === 'true'
-    if (!isOwner && !adminParam) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    // Non-admin users must be authenticated and can only see their own tickets
+    if (!adminParam) {
+      if (!user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+      const isOwner = ticket.user_id === user.id
+      if (!isOwner) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      }
     }
 
     // Get messages for this ticket
@@ -84,18 +86,25 @@ export async function POST(
   { params }: { params: Promise<{ ticketId: string }> }
 ) {
   try {
-    const authSupabase = await createServerSupabaseClient()
-    const { data: { user }, error: authError } = await authSupabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const { ticketId } = await params
     const body = await request.json()
     const { message, isAdmin } = body
 
     if (!message || typeof message !== 'string') {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 })
+    }
+
+    // Admin replies use service client directly; user replies require auth
+    let userId: string | null
+    if (isAdmin) {
+      userId = null
+    } else {
+      const authSupabase = await createServerSupabaseClient()
+      const { data: { user }, error: authError } = await authSupabase.auth.getUser()
+      if (authError || !user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+      userId = user.id
     }
 
     const serviceSupabase = createServiceSupabaseClient()
@@ -112,7 +121,7 @@ export async function POST(
     }
 
     // Non-admin users can only message their own tickets
-    if (!isAdmin && ticket.user_id !== user.id) {
+    if (!isAdmin && ticket.user_id !== userId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -121,7 +130,7 @@ export async function POST(
       .from('support_messages')
       .insert({
         ticket_id: ticketId,
-        user_id: user.id,
+        user_id: userId,
         message: message.trim().slice(0, 5000),
         is_admin: !!isAdmin,
       })
@@ -164,12 +173,6 @@ export async function PATCH(
   { params }: { params: Promise<{ ticketId: string }> }
 ) {
   try {
-    const authSupabase = await createServerSupabaseClient()
-    const { data: { user }, error: authError } = await authSupabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const { ticketId } = await params
     const body = await request.json()
     const { status, priority } = body

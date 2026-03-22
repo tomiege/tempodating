@@ -238,7 +238,9 @@ export default function TicketModal({
             const userData = await response.json()
             setEmail(userData.email || user.email || "")
             setName(userData.full_name || "")
-            setGender(userData.gender || "")
+            // Profile stores is_male (boolean), convert to gender string
+            if (userData.is_male === true) setGender('male')
+            else if (userData.is_male === false) setGender('female')
             setAge(userData.age?.toString() || "")
             setStep(3) // Go directly to payment step
           }
@@ -432,7 +434,7 @@ export default function TicketModal({
               id: leadId,
               name: name,
               age: parseInt(age),
-              gender: gender,
+              isMale: gender === 'male',
               city: eventCity,
               country: eventCity
             })

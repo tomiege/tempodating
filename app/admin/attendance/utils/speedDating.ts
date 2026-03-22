@@ -359,3 +359,132 @@ export function runSpeedDatingEvent(
     rounds
   };
 }
+
+/**
+ * Same-gender speed dating event (e.g. gay speed dating).
+ * Uses greedy minimum-cost matching where all attendees are the same gender
+ * and are paired with each other in a round-robin manner minimising age difference.
+ */
+export class SameGenderSpeedDatingEvent {
+  private attendees: Attendee[];
+  private previousPairings: Set<string>;
+  private rounds: RoundResult[] = [];
+  private readonly forbiddenPenalty = 1000000;
+
+  constructor(attendees: Attendee[], previousPairings: Array<[string, string]> = []) {
+    this.attendees = attendees;
+    this.previousPairings = new Set(
+      previousPairings.map(p => this.getSymmetricPairKey(p[0], p[1]))
+    );
+
+    this.attendees.forEach(person => {
+      person.bye_count = person.bye_count || 0;
+      person.consecutive_byes = person.consecutive_byes || 0;
+      person.dates = person.dates || [];
+    });
+  }
+
+  private getSymmetricPairKey(id1: string, id2: string): string {
+    return id1 < id2 ? `${id1}|${id2}` : `${id2}|${id1}`;
+  }
+
+  private computeLoss(a: Attendee, b: Attendee): number {
+    const pairKey = this.getSymmetricPairKey(a.id, b.id);
+    if (this.previousPairings.has(pairKey)) {
+      return this.forbiddenPenalty;
+    }
+
+    const ageDiff = Math.abs(a.age - b.age);
+    if (ageDiff <= 10) return 0;
+    return ageDiff - 10;
+  }
+
+  private byePenalty(person: Attendee): number {
+    const base = 50;
+    return base + 30 * (person.bye_count || 0) + 70 * (person.consecutive_byes || 0);
+  }
+
+  public runRounds(numRounds: number): RoundResult[] {
+    for (let roundNum = 1; roundNum <= numRounds; roundNum++) {
+      const roundResult: RoundResult = {
+        round: roundNum,
+        pairings: [],
+        byes: []
+      };
+
+      // Generate all possible pairs with costs
+      const allPairs: Array<{ i: number; j: number; cost: number }> = [];
+      for (let i = 0; i < this.attendees.length; i++) {
+        for (let j = i + 1; j < this.attendees.length; j++) {
+          allPairs.push({
+            i,
+            j,
+            cost: this.computeLoss(this.attendees[i], this.attendees[j])
+          });
+        }
+      }
+
+      // Sort by cost ascending for greedy matching
+      allPairs.sort((a, b) => a.cost - b.cost);
+
+      // Greedy minimum-cost matching
+      const used = new Set<number>();
+      for (const pair of allPairs) {
+        if (used.has(pair.i) || used.has(pair.j)) continue;
+        used.add(pair.i);
+        used.add(pair.j);
+
+        const personA = this.attendees[pair.i];
+        const personB = this.attendees[pair.j];
+
+        const pairing: Pairing = {
+          round: roundNum,
+          male_id: personA.id,
+          female_id: personB.id,
+          male_name: personA.name,
+          female_name: personB.name,
+          male_age: personA.age,
+          female_age: personB.age,
+          age_diff: Math.abs(personA.age - personB.age),
+          cost: pair.cost
+        };
+
+        roundResult.pairings.push(pairing);
+        personA.consecutive_byes = 0;
+        personB.consecutive_byes = 0;
+        personA.dates!.push(personB.name);
+        personB.dates!.push(personA.name);
+        this.previousPairings.add(this.getSymmetricPairKey(personA.id, personB.id));
+      }
+
+      // Anyone not matched gets a bye
+      for (let i = 0; i < this.attendees.length; i++) {
+        if (!used.has(i)) {
+          const person = this.attendees[i];
+          roundResult.byes.push({
+            round: roundNum,
+            attendee_id: person.id,
+            attendee_name: person.name,
+            bye_penalty: this.byePenalty(person)
+          });
+          person.bye_count! += 1;
+          person.consecutive_byes! += 1;
+        }
+      }
+
+      this.rounds.push(roundResult);
+    }
+
+    return this.rounds;
+  }
+}
+
+export function runGaySpeedDatingEvent(
+  attendees: Attendee[],
+  numRounds: number = 8,
+  previousPairings: Array<[string, string]> = []
+): { rounds: RoundResult[] } {
+  const event = new SameGenderSpeedDatingEvent(attendees, previousPairings);
+  const rounds = event.runRounds(numRounds);
+  return { rounds };
+}

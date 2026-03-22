@@ -26,7 +26,7 @@ export async function GET() {
       id: user.id,
       email: user.email,
       full_name: user.user_metadata?.full_name || '',
-      gender: user.user_metadata?.gender || '',
+      is_male: null,
       age: user.user_metadata?.age || null,
       city: user.user_metadata?.city || '',
       country: user.user_metadata?.country || ''
@@ -39,14 +39,17 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
-    const { user_id, email, full_name, gender, age, city, country } = body
+    const { user_id, email, full_name, gender, is_male, age, city, country } = body
 
     // Validate required fields
     if (!user_id || !email) {
       return NextResponse.json({ error: 'user_id and email are required' }, { status: 400 })
     }
 
-    console.log('📝 Updating profile for user:', user_id, 'with data:', { full_name, gender, age, city, country })
+    // Support both 'gender' (string) and 'is_male' (boolean) from callers
+    const isMale: boolean | null = is_male ?? (gender === 'male' ? true : gender === 'female' ? false : null)
+
+    console.log('📝 Updating profile for user:', user_id, 'with data:', { full_name, is_male: isMale, age, city, country })
 
     // Use service client to bypass RLS and update the users table
     const serviceSupabase = createServiceSupabaseClient()
@@ -67,7 +70,7 @@ export async function PUT(request: NextRequest) {
         .from('users')
         .update({
           full_name,
-          gender,
+          is_male: isMale,
           age: parseInt(age),
           city,
           country,
@@ -88,7 +91,7 @@ export async function PUT(request: NextRequest) {
           id: user_id,
           email: email,
           full_name,
-          gender,
+          is_male: isMale,
           age: parseInt(age),
           city,
           country,
