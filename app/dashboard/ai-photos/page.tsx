@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Upload, X, Loader2, Sparkles, Check, Camera, Download, ShoppingBag, Star } from 'lucide-react'
+import { Upload, X, Loader2, Sparkles, Check, Camera, Download, ShoppingBag, Star, Lock } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/use-auth'
 import { useRouter } from 'next/navigation'
@@ -79,6 +79,12 @@ const FEMALE_PRESET = {
 
 type Step = 'loading' | 'landing' | 'upload' | 'generating' | 'result' | 'purchased'
 
+function useScrollToTop(dep: unknown) {
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }, [dep])
+}
+
 export default function AiPhotosPage() {
   const [step, setStep] = useState<Step>('loading')
   const [files, setFiles] = useState<File[]>([])
@@ -92,9 +98,18 @@ export default function AiPhotosPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isMale, setIsMale] = useState<boolean | null>(null)
   const [styleImages, setStyleImages] = useState<{ src: string; label: string }[]>(EXAMPLE_STYLES)
+  // Paid template grid state
+  const [templateImages, setTemplateImages] = useState<{ name: string; url: string }[]>([])
+  const [paidGenerations, setPaidGenerations] = useState<Record<string, string>>({}) // referenceUrl -> outputUrl
+  const [generatingTemplate, setGeneratingTemplate] = useState<string | null>(null) // referenceUrl currently generating
+  const [paidUsedCount, setPaidUsedCount] = useState(0)
+  const [paidLimit, setPaidLimit] = useState(30)
   const { toast } = useToast()
   const { user, loading } = useAuth()
   const router = useRouter()
+
+  // Scroll to top whenever step changes so mobile users don't land on footer
+  useScrollToTop(step)
 
   // Gender-specific example images
   const exampleInputs = isMale === false
@@ -140,6 +155,66 @@ export default function AiPhotosPage() {
     }
   }
 
+  // Fetch template images and existing paid generations when entering purchased step
+  const loadPaidData = useCallback(async (gender: boolean | null) => {
+    const folder = gender === false ? 'female' : 'male'
+    try {
+      const [templatesRes, gensRes] = await Promise.all([
+        fetch(`/api/ai-photos/references?folder=${folder}`),
+        fetch('/api/ai-photos/paid-generations'),
+      ])
+      if (templatesRes.ok) {
+        const tData = await templatesRes.json()
+        setTemplateImages(tData.images ?? [])
+      }
+      if (gensRes.ok) {
+        const gData = await gensRes.json()
+        setPaidUsedCount(gData.usedCount ?? 0)
+        setPaidLimit(gData.limit ?? 30)
+        const map: Record<string, string> = {}
+        for (const g of gData.generations ?? []) {
+          if (g.reference_image_url && g.output_url) {
+            map[g.reference_image_url] = g.output_url
+          }
+        }
+        setPaidGenerations(map)
+      }
+    } catch {}
+  }, [])
+
+  const handleGenerateFromTemplate = async (referenceUrl: string) => {
+    if (generatingTemplate) return
+    if (paidUsedCount >= paidLimit) {
+      toast({ title: 'Limit reached', description: `You have used all ${paidLimit} generations`, variant: 'destructive' })
+      return
+    }
+
+    setGeneratingTemplate(referenceUrl)
+    try {
+      const res = await fetch('/api/ai-photos/generate-paid', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ referenceImageUrl: referenceUrl }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Generation failed')
+
+      if (data.outputUrl) {
+        setPaidGenerations((prev) => ({ ...prev, [referenceUrl]: data.outputUrl }))
+        setPaidUsedCount((prev) => prev + 1)
+        toast({ title: 'Photo ready!', description: 'Your AI photo has been generated' })
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Generation failed',
+        variant: 'destructive',
+      })
+    } finally {
+      setGeneratingTemplate(null)
+    }
+  }
+
   // Check for existing free AI photo generation and paid purchase on load
   // Only run when the component first mounts (step === 'loading') to avoid
   // resetting the user back to 'landing' if the effect re-fires.
@@ -148,10 +223,12 @@ export default function AiPhotosPage() {
     const checkExisting = async () => {
       try {
         // Fetch user profile for gender
+        let profileGender: boolean | null = null
         const profileRes = await fetch('/api/profile')
         if (profileRes.ok) {
           const profile = await profileRes.json()
           if (profile.isMale !== undefined && profile.isMale !== null) {
+            profileGender = profile.isMale
             setIsMale(profile.isMale)
           }
         }
@@ -168,6 +245,7 @@ export default function AiPhotosPage() {
               const genData = await genRes.json()
               if (genData.outputUrl) setExistingPhotoUrl(genData.outputUrl)
             }
+            loadPaidData(profileGender)
             setStep('purchased')
             return
           }
@@ -411,27 +489,41 @@ export default function AiPhotosPage() {
               </div>
             </div>
 
+            {/* Top CTA — visible immediately on mobile */}
+            <div className="text-center mb-10">
+              <Button
+                size="lg"
+                className="px-8 text-lg h-14 w-full sm:w-auto"
+                onClick={() => setStep('upload')}
+              >
+                <Sparkles className="w-5 h-5 mr-2" />
+                Get My Free AI Profile Photo
+              </Button>
+              <p className="text-muted-foreground text-sm mt-3">
+                1 free match-ready photo for your profile • unlock 30 for $29.99 only if you love it
+              </p>
+            </div>
+
             {/* Style showcase */}
             <div className="mb-10">
               <h3 className="font-serif text-xl font-semibold text-foreground text-center mb-2">Every Style You Need</h3>
               <p className="text-sm text-muted-foreground text-center mb-4">From professional headshots to adventure shots</p>
               <div className="grid grid-cols-4 gap-3">
                 {styleImages.map((style, i) => (
-                  <div key={i} className="text-center group">
-                    <div className="aspect-[3/4] rounded-lg overflow-hidden shadow-sm mb-1">
+                  <div key={i} className="group">
+                    <div className="aspect-[3/4] rounded-lg overflow-hidden shadow-sm">
                       <img src={style.src} alt={style.label} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
                     </div>
-                    <p className="text-[11px] text-muted-foreground">{style.label}</p>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* CTA */}
+            {/* Bottom CTA */}
             <div className="text-center">
               <Button
                 size="lg"
-                className="px-8 text-lg h-14"
+                className="px-8 text-lg h-14 w-full sm:w-auto"
                 onClick={() => setStep('upload')}
               >
                 <Sparkles className="w-5 h-5 mr-2" />
@@ -464,9 +556,27 @@ export default function AiPhotosPage() {
         <section className="pt-24 pb-16">
           <div className="max-w-2xl mx-auto px-4">
             <h2 className="font-serif text-2xl font-bold text-foreground mb-2">Upload Your 6 Best Selfies</h2>
-            <p className="text-muted-foreground mb-6">
+            <p className="text-muted-foreground mb-4">
               Use clear, well-lit photos of yourself. Different angles and expressions work best.
             </p>
+
+            {/* Prominent 6-photo requirement banner */}
+            <div className={`rounded-xl p-4 mb-6 text-center border-2 ${
+              uploadedCount < 6
+                ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700'
+                : 'bg-green-50 dark:bg-green-950/30 border-green-300 dark:border-green-700'
+            }`}>
+              <p className={`text-lg font-bold ${
+                uploadedCount < 6
+                  ? 'text-amber-700 dark:text-amber-400'
+                  : 'text-green-700 dark:text-green-400'
+              }`}>
+                {uploadedCount < 6
+                  ? `⚠️ ${6 - uploadedCount} more photo${6 - uploadedCount === 1 ? '' : 's'} needed — you must upload exactly 6`
+                  : '✓ All 6 photos uploaded — ready to generate!'}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">{uploadedCount}/6 photos selected</p>
+            </div>
 
             {/* Photo guidelines */}
             <div className="grid grid-cols-2 gap-3 mb-6">
@@ -552,19 +662,21 @@ export default function AiPhotosPage() {
               </div>
             )}
 
-            {/* Actions */}
-            <div className="flex items-center justify-between">
-              <p className="text-muted-foreground text-sm">{uploadedCount}/6 photos</p>
-              <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setStep('landing')}>Back</Button>
-                <Button
-                  onClick={handleGenerate}
-                  disabled={uploadedCount !== 6}
-                  className="px-6"
-                >
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Generate My Photo
-                </Button>
+            {/* Generate button — prominent */}
+            <div className="space-y-3">
+              <Button
+                onClick={handleGenerate}
+                disabled={uploadedCount !== 6}
+                size="lg"
+                className="w-full text-lg h-14"
+              >
+                <Sparkles className="w-5 h-5 mr-2" />
+                {uploadedCount === 6
+                  ? 'Generate My Photo'
+                  : `Upload ${6 - uploadedCount} more photo${6 - uploadedCount === 1 ? '' : 's'} to continue`}
+              </Button>
+              <div className="flex justify-center">
+                <Button variant="outline" onClick={() => setStep('landing')}>← Back</Button>
               </div>
             </div>
           </div>
@@ -608,13 +720,12 @@ export default function AiPhotosPage() {
                 </p>
                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                   {styleImages.map((style, i) => (
-                    <div key={i} className="text-center">
+                    <div key={i}>
                       <img
                         src={style.src}
                         alt={style.label}
                         className="w-full aspect-square object-cover rounded-lg"
                       />
-                      <p className="text-[11px] text-muted-foreground mt-1">{style.label}</p>
                     </div>
                   ))}
                 </div>
@@ -627,24 +738,39 @@ export default function AiPhotosPage() {
     )
   }
 
-  // ─── STEP: Purchased — 30 photos being prepared ─────────────
+  // ─── STEP: Purchased — interactive template grid ─────────────
   if (step === 'purchased') {
+    const remaining = paidLimit - paidUsedCount
     return (
       <main className="min-h-screen bg-background">
         <Header />
         <section className="pt-24 pb-16">
-          <div className="max-w-3xl mx-auto px-4">
+          <div className="max-w-5xl mx-auto px-4">
+            {/* Header */}
             <div className="text-center mb-8">
               <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-medium mb-4">
                 <Sparkles className="w-4 h-4" />
-                30-Photo Pack Purchased
+                30-Photo Pack
               </div>
               <h1 className="font-serif text-3xl sm:text-4xl font-bold text-foreground mb-3">
-                Your AI Photos Are Being Prepared
+                Choose Your Photos
               </h1>
               <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-                We&apos;re generating your 30 match-ready photos in multiple styles and backgrounds. This may take some time — we&apos;ll notify you when they&apos;re ready.
+                Click any template below to generate your AI photo in that style. Each click uses one of your generations.
               </p>
+            </div>
+
+            {/* Counter */}
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <Card className="inline-flex items-center gap-2 px-4 py-2">
+                <Camera className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">
+                  {paidUsedCount} / {paidLimit} generated
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  ({remaining} remaining)
+                </span>
+              </Card>
             </div>
 
             {/* Show their free photo if they have one */}
@@ -654,15 +780,10 @@ export default function AiPhotosPage() {
                 <img
                   src={existingPhotoUrl}
                   alt="Your AI-generated preview"
-                  className="w-full max-w-sm rounded-lg mx-auto"
+                  className="w-full max-w-xs rounded-lg mx-auto"
                 />
                 <div className="flex gap-3 mt-3 justify-center">
-                  <a
-                    href={existingPhotoUrl}
-                    download="match-ready-photo.jpg"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                  <a href={existingPhotoUrl} download="preview-photo.jpg" target="_blank" rel="noopener noreferrer">
                     <Button size="sm" variant="outline">
                       <Download className="w-4 h-4 mr-1.5" />
                       Download
@@ -672,35 +793,97 @@ export default function AiPhotosPage() {
               </Card>
             )}
 
-            {/* Status card */}
-            <Card className="p-6 sm:p-8 border-primary/30 bg-primary/5">
-              <div className="flex items-start gap-4">
-                <div className="shrink-0 mt-1">
-                  <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground text-lg mb-1">Processing Your 30 Photos</h3>
-                  <p className="text-muted-foreground text-sm mb-3">
-                    Our AI is generating your photos across multiple styles — professional headshots, date night, outdoor, lifestyle, and more.
-                  </p>
-                  <ul className="space-y-1.5">
-                    {[
-                      '30 professional-quality photos',
-                      'Multiple styles & backgrounds',
-                      'Optimized for dating apps & social media',
-                      'Keep forever — one-time purchase',
-                    ].map((item, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-foreground">
-                        <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+            {/* Template grid */}
+            {templateImages.length === 0 ? (
+              <div className="flex items-center justify-center gap-2 py-12">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span className="text-muted-foreground">Loading templates...</span>
               </div>
-            </Card>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {templateImages.map((template) => {
+                  const generatedUrl = paidGenerations[template.url]
+                  const isGenerating = generatingTemplate === template.url
+                  const isGenerated = !!generatedUrl
+                  const isDisabled = remaining <= 0 && !isGenerated
 
-            <div className="text-center mt-8">
+                  return (
+                    <div key={template.name} className="relative group">
+                      <button
+                        onClick={() => {
+                          if (!isGenerated && !isGenerating && !isDisabled) {
+                            handleGenerateFromTemplate(template.url)
+                          }
+                        }}
+                        disabled={isGenerating || isDisabled}
+                        className={`relative w-full aspect-[3/4] rounded-xl overflow-hidden border-2 transition-all ${
+                          isGenerated
+                            ? 'border-primary shadow-lg'
+                            : isGenerating
+                            ? 'border-primary/50 animate-pulse'
+                            : isDisabled
+                            ? 'border-border opacity-40 cursor-not-allowed'
+                            : 'border-border hover:border-primary/50 cursor-pointer hover:shadow-md'
+                        }`}
+                      >
+                        {/* Template image (low opacity if not yet generated) */}
+                        <img
+                          src={isGenerated ? generatedUrl : template.url}
+                          alt={template.name}
+                          className={`w-full h-full object-cover transition-opacity ${
+                            isGenerated ? 'opacity-100' : 'opacity-30'
+                          }`}
+                        />
+
+                        {/* Loading overlay */}
+                        {isGenerating && (
+                          <div className="absolute inset-0 bg-background/60 flex flex-col items-center justify-center gap-2">
+                            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                            <span className="text-xs font-medium text-foreground">Generating...</span>
+                          </div>
+                        )}
+
+                        {/* Click-to-generate overlay (only when not generated and not generating) */}
+                        {!isGenerated && !isGenerating && !isDisabled && (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/40">
+                            <Sparkles className="w-6 h-6 text-primary" />
+                            <span className="text-xs font-semibold text-foreground">Click to Generate</span>
+                          </div>
+                        )}
+
+                        {/* Generated badge */}
+                        {isGenerated && (
+                          <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-1">
+                            <Check className="w-3 h-3" />
+                          </div>
+                        )}
+
+                        {/* Locked badge when limit reached */}
+                        {isDisabled && !isGenerated && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <Lock className="w-6 h-6 text-muted-foreground" />
+                          </div>
+                        )}
+                      </button>
+
+                      {/* Download button for generated photos */}
+                      {isGenerated && (
+                        <div className="flex justify-center mt-1">
+                          <a href={generatedUrl} download target="_blank" rel="noopener noreferrer">
+                            <Button size="sm" variant="ghost" className="h-7 text-xs">
+                              <Download className="w-3 h-3 mr-1" />
+                              Download
+                            </Button>
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            <div className="text-center mt-10">
               <Button variant="outline" asChild>
                 <Link href="/dashboard">← Back to Dashboard</Link>
               </Button>
@@ -829,13 +1012,12 @@ export default function AiPhotosPage() {
             </h3>
             <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
               {styleImages.map((style, i) => (
-                <div key={i} className="text-center">
+                <div key={i}>
                   <img
                     src={style.src}
                     alt={style.label}
                     className="w-full aspect-square object-cover rounded-lg"
                   />
-                  <p className="text-xs text-muted-foreground mt-1">{style.label}</p>
                 </div>
               ))}
             </div>

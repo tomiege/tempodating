@@ -38,9 +38,6 @@ const EVENT_PRODUCT_TYPES = [
   "onlineSpeedDatingJewish",
   "onlineSpeedDatingIndian",
   "onlineSpeedDatingMuslim",
-  "geoMaxing",
-  "socialMediaMaxing",
-  "workshop",
 ]
 
 const PRODUCT_TYPE_LABELS: Record<string, string> = {
@@ -49,6 +46,9 @@ const PRODUCT_TYPE_LABELS: Record<string, string> = {
   colorPalette: "Color Palette Analysis",
   soulmateSketching: "Soulmate Sketching",
   datingEbook: "Dating eBook",
+  socialMediaMaxing: "Social Media Maxing",
+  geoMaxing: "Geo Maxing",
+  workshop: "Workshop",
 }
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
@@ -125,7 +125,7 @@ export function MyPurchasesComponent({ checkouts, loading = false }: MyPurchases
                         purchase.productDescription ||
                         purchase.productType}
                     </h3>
-                    {purchase.productType !== "aiPhotos" && (
+                    {!["aiPhotos", "socialMediaMaxing", "geoMaxing"].includes(purchase.productType) && (
                       <Badge variant="outline" className="text-xs">
                         {formatLocalPrice(Math.round(purchase.totalOrder * 100))}
                       </Badge>
