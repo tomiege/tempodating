@@ -38,16 +38,17 @@ def get_sheet_data_and_convert_to_json(output_json_path="events.json", max_retri
 
             # Define the required fields based on your JSON structure
             required_fields = [
-                "eventId", "gmtdatetime", "title", "country", "city", "timezone", 
+                "productId", "gmtdatetime", "country", "city", "timezone", 
                 "price_male", "price_female", "days_before_event", "currency", 
-                "duration_in_minutes", "soldOut", "eventType", "zoomInvite"
+                "duration_in_minutes", "soldOut", "productType", "zoomInvite"
             ]
             
+
             # Filter out rows with missing eventId or any required fields
             valid_rows = []
             for _, row in df.iterrows():
-                # Check if eventId is valid (not NaN)
-                if pd.isna(row.get("eventId")):
+                # Check if productId is valid (not NaN)
+                if pd.isna(row.get("productId")):
                     continue
                 if row.get("siteName") !='tempo':
                     continue
@@ -64,13 +65,13 @@ def get_sheet_data_and_convert_to_json(output_json_path="events.json", max_retri
             # Convert valid rows to the desired JSON format
             json_data = []
             for row in valid_rows:
-                if not row['eventId']:
+                if not row['productId']:
                     continue
                 print(row)
                 try:
                     city = row['city']
                     country = row['country']
-                    title = "For Gay men" if row['eventType'] =="onlineSpeedDatingGay" else ""
+                    title = "For Gay men" if row['productType'] =="onlineSpeedDatingGay" else ""
                     
                     # Get latitude and longitude for the city, country
                     address = f"{city}, {country}"
@@ -84,7 +85,7 @@ def get_sheet_data_and_convert_to_json(output_json_path="events.json", max_retri
                         longitude = None
                     
                     json_obj = {
-                        "productId": int(row["eventId"]),
+                        "productId": int(row["productId"]),
                         "gmtdatetime": row["gmtdatetime"],
                         "title": f'Online Speed Dating',
                         "country": country,
@@ -97,7 +98,7 @@ def get_sheet_data_and_convert_to_json(output_json_path="events.json", max_retri
                         "currency": row["currency"],
                         "duration_in_minutes": int(float(row["duration_in_minutes"])),
                         "soldOut": str(row["soldOut"]).lower() == "true",
-                        "productType": row["eventType"],
+                        "productType": row["productType"],
                         "zoomInvite": row["zoomInvite"],
                         "region_id": row["region_id"],
                     }
