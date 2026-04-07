@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { CheckCircle2, Mail, Loader2, Video } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { capture } from '@/components/analytics'
@@ -402,13 +403,11 @@ export default function CheckoutSuccessClient({
                     Click below to join the Zoom meeting when it&apos;s time for your event.
                   </p>
                 </div>
-                <Button
-                  size="lg"
-                  className="gap-2 bg-blue-600 hover:bg-blue-700 text-white shrink-0"
-                  onClick={() => window.open(zoomInvite, '_blank')}
-                >
-                  <Video className="w-5 h-5" />
-                  Join Event
+                <Button asChild size="lg" className="gap-2 bg-blue-600 hover:bg-blue-700 text-white shrink-0">
+                  <Link href={`/event_waitrooms?productId=${checkout?.product_id}&productType=${checkout?.product_type}`}>
+                    <Video className="w-5 h-5" />
+                    Join Event
+                  </Link>
                 </Button>
               </div>
             </div>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -311,13 +312,11 @@ export function MyCheckoutsComponent({
                 
                 {/* Join Event button for onlineSpeedDating with zoomInvite */}
                 {event.productType.startsWith('onlineSpeedDating') && event.zoomInvite && (
-                  <Button 
-                    size="sm" 
-                    className="gap-2"
-                    onClick={() => window.open(event.zoomInvite, '_blank')}
-                  >
-                    <Video className="w-4 h-4" />
-                    Join Event
+                  <Button asChild size="sm" className="gap-2">
+                    <Link href={`/event_waitrooms?productId=${event.productId}&productType=${event.productType}`}>
+                      <Video className="w-4 h-4" />
+                      Join Event
+                    </Link>
                   </Button>
                 )}
                 
