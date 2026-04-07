@@ -107,7 +107,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
       try {
         const { error: emailError } = await resend.emails.send({
-          from: 'Tempo Dating <noreply@tempodating.com>',
+          from: 'Tempo Dating <support@tempodating.com>',
           to: checkout.email,
           subject: '✅ Order Confirmed - Tempo Dating',
           html: `

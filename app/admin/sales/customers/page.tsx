@@ -11,6 +11,9 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 interface Customer {
   name: string
   email: string

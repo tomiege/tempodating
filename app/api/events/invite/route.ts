@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
 
     try {
       const { error: emailError } = await resend.emails.send({
-        from: 'Tempo Dating <noreply@tempodating.com>',
+        from: 'Tempo Dating <support@tempodating.com>',
         to: toEmail,
         subject: `${senderName} invited you to an Online Speed Dating event! 🎉`,
         html: `

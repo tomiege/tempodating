@@ -15,7 +15,7 @@ export default function MailPage() {
 
     try {
       const { data, error } = await resend.emails.send({
-        from: 'Tempo Dating <noreply@tempodating.com>',
+        from: 'Tempo Dating <support@tempodating.com>',
         to: email,
         subject: 'Test Email from Tempo Dating',
         html: `

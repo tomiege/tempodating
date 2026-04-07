@@ -17,6 +17,9 @@ import { SendZoomEmailButton } from './send-zoom-email-button'
 import { SendInviteEmailButton } from './send-invite-email-button'
 import { Star } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 interface EventEntry {
   productId: number
   gmtdatetime: string

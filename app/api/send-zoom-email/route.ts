@@ -412,7 +412,7 @@ export async function POST(req: NextRequest) {
       }
 
       const { error } = await resend.emails.send({
-        from: 'Tempo Dating <noreply@tempodating.com>',
+        from: 'Tempo Dating <support@tempodating.com>',
         to: testEmail,
         subject,
         html,
@@ -437,7 +437,7 @@ export async function POST(req: NextRequest) {
       console.log(`Sending leads-reminder email to ${leads.length} leads for product ${productId}`)
 
       const batchEmails = leads.map((lead) => ({
-        from: 'Tempo Dating <noreply@tempodating.com>' as const,
+        from: 'Tempo Dating <support@tempodating.com>' as const,
         to: lead.email,
         subject,
         html: buildLeadsReminderHtml(productId, productType, lead.city || city),
@@ -476,7 +476,7 @@ export async function POST(req: NextRequest) {
       console.log(`Sending next-event email to ${recipients.length} attendees for product ${productId}`)
 
       const batchEmails = recipients.map((r) => ({
-        from: 'Tempo Dating <noreply@tempodating.com>' as const,
+        from: 'Tempo Dating <support@tempodating.com>' as const,
         to: r.email,
         subject,
         html: buildNextEventHtml(nextEvent!, city),
@@ -530,7 +530,7 @@ export async function POST(req: NextRequest) {
         html = buildPreEventHtml(zoomLink!)
       }
       return {
-        from: 'Tempo Dating <noreply@tempodating.com>' as const,
+        from: 'Tempo Dating <support@tempodating.com>' as const,
         to: r.email,
         subject,
         html,
@@ -569,10 +569,14 @@ export async function POST(req: NextRequest) {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/
 
 function isValidEmail(email: string | null | undefined): boolean {
-  return typeof email === 'string' && EMAIL_REGEX.test(email.trim())
+  if (typeof email !== 'string') return false
+  const trimmed = email.trim()
+  // Reject consecutive dots anywhere in the address
+  if (trimmed.includes('..')) return false
+  return EMAIL_REGEX.test(trimmed)
 }
 
 async function sendBatchEmails(
@@ -580,9 +584,10 @@ async function sendBatchEmails(
 ): Promise<{ totalSent: number; totalFailed: number }> {
   // Filter out invalid emails before sending
   const validEmails = batchEmails.filter((e) => isValidEmail(e.to))
-  const skipped = batchEmails.length - validEmails.length
+  const invalidEmails = batchEmails.filter((e) => !isValidEmail(e.to))
+  const skipped = invalidEmails.length
   if (skipped > 0) {
-    console.warn(`Skipped ${skipped} emails with invalid/null addresses`)
+    console.warn(`Skipped ${skipped} emails with invalid/null addresses:`, invalidEmails.map((e) => e.to))
   }
 
   let totalSent = 0
@@ -607,7 +612,12 @@ async function sendBatchEmails(
       // On validation error, fall back to sending individually
       if (error.name === 'validation_error') {
         console.log(`Falling back to individual sends for chunk ${chunkIndex}/${totalChunks}`)
-        for (const email of chunk) {
+        for (let j = 0; j < chunk.length; j++) {
+          const email = chunk[j]
+          // Rate limit: pause every 10 individual sends to avoid Resend throttling
+          if (j > 0 && j % 10 === 0) {
+            await sleep(1000)
+          }
           try {
             const { error: singleError } = await resend.emails.send(email)
             if (singleError) {

@@ -184,7 +184,7 @@ export async function POST(req: NextRequest) {
       const inviteLink = `${BASE_URL}/product?productId=${productId}&productType=onlineSpeedDating&city=TestCity&redemptionId=TEST`
       const html = buildInviteHtml(inviteGender, inviteLink)
       const { error } = await resend.emails.send({
-        from: 'Tempo Dating <noreply@tempodating.com>',
+        from: 'Tempo Dating <support@tempodating.com>',
         to: testEmail,
         subject: `Invite a ${inviteGender === 'female' ? 'Female' : 'Male'} Friend to Speed Dating — Free Spot! 🎁`,
         html,
@@ -241,7 +241,7 @@ export async function POST(req: NextRequest) {
       const inviteLink = `${BASE_URL}/product?${params.toString()}`
 
       return {
-        from: 'Tempo Dating <noreply@tempodating.com>' as const,
+        from: 'Tempo Dating <support@tempodating.com>' as const,
         to: r.email,
         subject,
         html: buildInviteHtml(inviteGender, inviteLink),

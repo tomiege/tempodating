@@ -390,23 +390,6 @@ export default function AdminAttendancePage() {
                       </Button>
                     </div>
                     <Button
-                      onClick={() => setShowStatistics(!showStatistics)}
-                      variant="outline"
-                      className="flex items-center gap-2"
-                    >
-                      {showStatistics ? (
-                        <>
-                          <EyeOff className="w-4 h-4" />
-                          Hide Stats
-                        </>
-                      ) : (
-                        <>
-                          <Eye className="w-4 h-4" />
-                          Show Stats
-                        </>
-                      )}
-                    </Button>
-                    <Button
                       onClick={copyPairingsTable}
                       className="bg-green-500 hover:bg-green-600 flex items-center gap-2"
                     >
@@ -430,9 +413,25 @@ export default function AdminAttendancePage() {
                       });
                       return (
                     <div key={round.round} className="bg-white rounded border border-gray-200 p-3">
-                      <h3 className="text-xl font-bold text-gray-800 mb-3">
-                        Round {round.round}
-                      </h3>
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-xl font-bold text-gray-800">
+                          Round {round.round}
+                        </h3>
+                        <Button
+                          onClick={() => setShowStatistics(!showStatistics)}
+                          variant="outline"
+                          size="icon"
+                          className="h-9 w-9 shrink-0"
+                          aria-label={showStatistics ? 'Hide stats' : 'Show stats'}
+                          title={showStatistics ? 'Hide stats' : 'Show stats'}
+                        >
+                          {showStatistics ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </div>
                       
                       {round.pairings.length > 0 && (
                         <div className="mb-4">
