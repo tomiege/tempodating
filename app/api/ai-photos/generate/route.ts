@@ -2,6 +2,9 @@ import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/s
 import { fal } from "@fal-ai/client"
 import { NextRequest, NextResponse } from 'next/server'
 
+export const runtime = 'nodejs'
+export const maxDuration = 300
+
 fal.config({
   credentials: process.env.FAL_AI_API_KEY,
 })
@@ -45,25 +48,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const body = await request.json()
+    const { imageUrls, prompt, referenceImageUrl, adminBypass } = body
+    const shouldBypassFreeLimit = adminBypass === true
+
     // Server-side check: only 1 free generation per user (check ai_photo_generations table)
     const serviceSupabase = createServiceSupabaseClient()
-    const { data: existingGeneration } = await serviceSupabase
-      .from('ai_photo_generations')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('is_free', true)
-      .limit(1)
-      .single()
+    if (!shouldBypassFreeLimit) {
+      const { data: existingGeneration } = await serviceSupabase
+        .from('ai_photo_generations')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('is_free', true)
+        .limit(1)
+        .single()
 
-    if (existingGeneration) {
-      return NextResponse.json(
-        { error: 'You have already used your free AI photo generation. Purchase the 30-pack for more.' },
-        { status: 403 }
-      )
+      if (existingGeneration) {
+        return NextResponse.json(
+          { error: 'You have already used your free AI photo generation. Purchase the 30-pack for more.' },
+          { status: 403 }
+        )
+      }
     }
-
-    const body = await request.json()
-    const { imageUrls, prompt, referenceImageUrl } = body
 
     if (!imageUrls || !Array.isArray(imageUrls) || imageUrls.length !== 6) {
       return NextResponse.json({ error: 'Exactly 6 image URLs are required' }, { status: 400 })
@@ -113,7 +119,7 @@ export async function POST(request: NextRequest) {
         reference_image_url: referenceImageUrl,
         output_url: outputUrl,
         result: result.data,
-        is_free: true,
+        is_free: !shouldBypassFreeLimit,
         created_at: new Date().toISOString(),
       })
 

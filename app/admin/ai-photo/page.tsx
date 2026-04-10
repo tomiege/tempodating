@@ -168,7 +168,7 @@ export default function AdminAiPhotoPage() {
       const response = await fetch('/api/ai-photos/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageUrls, prompt, referenceImageUrl: referenceImage }),
+        body: JSON.stringify({ imageUrls, prompt, referenceImageUrl: referenceImage, adminBypass: true }),
       })
 
       const data = await response.json()

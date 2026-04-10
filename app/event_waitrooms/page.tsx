@@ -36,19 +36,19 @@ const PROCESS_SLIDES = [
     src: '/speedDatingProcess/1.png',
     alt: 'Breakout rooms button location',
     caption:
-      'WE will be using breakoutrooms, look at the bottom of your screen for the Breakoutrooms button. 1.png shows where to find it.',
+      'We will use breakout rooms. Look at the bottom of your screen for the Breakout Rooms button.',
   },
   {
     src: '/speedDatingProcess/2.png',
     alt: 'Breakout room join menu',
     caption:
-      '2.png shows what the breakoutroom menu looks like after they click breakout rooms. It looks like room1, join, room2 join, room3 join, and so on.',
+      'After you click Breakout Rooms, you will see a list of rooms with Join buttons.',
   },
   {
     src: '/speedDatingProcess/3.png',
     alt: 'Pairings example',
     caption:
-      '3.png shows what the pairings look like. For example: Adam and Eve, Room 1. Then go to Room 1.',
+      'You will see pairings like Adam and Eve, Room 1. Then join that room.',
   },
 ] as const
 
@@ -129,7 +129,7 @@ function WaitroomPageInner() {
   const searchParams = useSearchParams()
   const productId = searchParams.get('productId')
   const productType = searchParams.get('productType')
-  const isTestMode = searchParams.get('testmode') === 'true'
+  const [isTestMode, setIsTestMode] = useState(false)
 
   const [event, setEvent] = useState<EventProduct | null>(null)
   const [loading, setLoading] = useState(true)
@@ -156,6 +156,15 @@ function WaitroomPageInner() {
   }, [])
 
   useEffect(() => {
+    const nextTestMode =
+      typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search).get('testmode') === 'true'
+        : searchParams.get('testmode') === 'true'
+
+    setIsTestMode(nextTestMode)
+  }, [searchParams])
+
+  useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 1000)
     return () => clearInterval(interval)
   }, [])
@@ -180,6 +189,11 @@ function WaitroomPageInner() {
       if (existingAttendance.age) setAge(String(existingAttendance.age))
     }
   }, [productId, isTestMode])
+
+  useEffect(() => {
+    if (!isTestMode) return
+    setCountdownStartMs(Date.now() + 60 * 1000)
+  }, [isTestMode])
 
   useEffect(() => {
     async function fetchEvent() {
@@ -461,9 +475,10 @@ function WaitroomPageInner() {
             <h1 className="mb-3 text-3xl font-black tracking-tight text-slate-900">
               You are being directed to the Zoom Event
             </h1>
-            <p className="mb-6 text-lg text-slate-600">
-              Hold tight. You&apos;ll be directed to Zoom in {Math.max(0, Math.ceil(holdRemainingMs / 1000))} seconds.
+            <p className="mb-2 text-5xl font-black text-orange-600">
+              {Math.max(0, Math.ceil(holdRemainingMs / 1000))}
             </p>
+            <p className="mb-6 text-lg text-slate-600">You&apos;ll be directed to Zoom in a moment.</p>
             <div className="mx-auto h-2 w-full max-w-sm overflow-hidden rounded-full bg-orange-100">
               <div className="h-full w-1/3 animate-[loading-bar_0.9s_ease-in-out_infinite] rounded-full bg-orange-500" />
             </div>
@@ -580,20 +595,13 @@ function WaitroomPageInner() {
                   </p>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-2xl bg-white/10 p-5">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-100">People Here Now</p>
-                    <p className="mt-2 text-4xl font-black">{activePeopleCount}</p>
-                    <p className="mt-2 text-sm text-slate-300">Tracked with a live heartbeat from everyone in this wait room.</p>
-                  </div>
-                  <div className="rounded-2xl bg-white/10 p-5">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-100">Zoom Opens In</p>
-                    <p className="mt-2 text-4xl font-black">
-                      {String(holdCountdown.minutes).padStart(2, '0')}:
-                      {String(holdCountdown.seconds).padStart(2, '0')}
-                    </p>
-                    <p className="mt-2 text-sm text-slate-300">At 10 seconds to go, we&apos;ll show the redirect countdown and your backup Zoom link.</p>
-                  </div>
+                <div className="rounded-2xl bg-white/10 p-5 text-center">
+                  <p className="text-sm text-slate-300">You&apos;re in the right place.</p>
+                  <p className="mt-3 text-5xl font-black">
+                    {String(holdCountdown.minutes).padStart(2, '0')}:
+                    {String(holdCountdown.seconds).padStart(2, '0')}
+                  </p>
+                  <p className="mt-3 text-sm text-slate-300">{activePeopleCount} people waiting right now</p>
                 </div>
 
                 <div className="mt-6 overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/5">
@@ -607,10 +615,7 @@ function WaitroomPageInner() {
                     />
                   </div>
                   <div className="border-t border-white/10 px-5 py-4">
-                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-100">
-                      How This Works
-                    </p>
-                    <p className="mt-2 text-sm text-slate-200">
+                    <p className="text-sm text-slate-200">
                       {PROCESS_SLIDES[activeSlideIndex].caption}
                     </p>
                     <div className="mt-4 flex gap-2">
@@ -628,10 +633,6 @@ function WaitroomPageInner() {
                     </div>
                   </div>
                 </div>
-
-                <p className="mt-6 text-sm text-slate-300">
-                  Attendance confirmed for {confirmedName || 'you'}. Stay here and we&apos;ll send you into Zoom automatically.
-                </p>
               </div>
             )}
           </section>
@@ -767,16 +768,10 @@ function WaitroomPageInner() {
 
             {phase === 'holding' && (
               <>
-                <h2 className="text-2xl font-black text-slate-900">You&apos;re checked in</h2>
+                <h2 className="text-2xl font-black text-slate-900">Please wait here</h2>
                 <p className="mt-3 text-slate-600">
-                  We&apos;ll keep updating the live room count while you wait. The images rotate to show you how breakout rooms and pairings will look.
+                  We&apos;ll send you to Zoom automatically when it&apos;s time.
                 </p>
-                <div className="mt-8 rounded-2xl border border-orange-100 bg-orange-50 p-5 text-sm text-slate-600">
-                  <p className="font-semibold text-slate-900">Current room snapshot</p>
-                  <p className="mt-2">Name on file: {confirmedName}</p>
-                  <p>People currently waiting: {activePeopleCount}</p>
-                  <p>Auto-redirect countdown begins 10 seconds before Zoom opens.</p>
-                </div>
               </>
             )}
           </section>

@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/use-auth'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { capture } from '@/components/analytics'
 
 const EXAMPLE_STYLES = [
   { src: "https://photolike.s3.us-east-2.amazonaws.com/assets/dating/landing/st1.jpg", label: "Professional Headshot" },
@@ -117,8 +118,15 @@ export default function AiPhotosPage() {
     : ['/aiPhotos/o1.png', '/aiPhotos/o2.png', '/aiPhotos/o3.png']
   const exampleOutput = isMale === false ? '/aiPhotos/female_output.png' : '/aiPhotos/male_output.png'
 
+  useEffect(() => {
+    if (!loading && user) {
+      capture('viewed_dashboard_ai_photos', { user_id: user.id })
+    }
+  }, [loading, user])
+
   const handleCheckout = async () => {
     setCheckoutLoading(true)
+    capture('dashboard_ai_photo_checkout_started')
     try {
       // Fetch the aiPhotos product to get price info
       const prodRes = await fetch('/api/products/onDemand')
@@ -147,8 +155,17 @@ export default function AiPhotosPage() {
       })
       if (!res.ok) throw new Error('Checkout failed')
       const { url } = await res.json()
-      if (url) window.location.href = url
+      if (url) {
+        capture('dashboard_ai_photo_checkout_redirected')
+        window.location.href = url
+        return
+      }
+
+      throw new Error('No checkout URL received')
     } catch (err: any) {
+      capture('dashboard_ai_photo_checkout_failed', {
+        message: err instanceof Error ? err.message : 'Unknown error',
+      })
       toast({ title: 'Error', description: err.message || 'Something went wrong', variant: 'destructive' })
     } finally {
       setCheckoutLoading(false)
@@ -376,6 +393,7 @@ export default function AiPhotosPage() {
     }
 
     try {
+      capture('dashboard_ai_photo_generation_started', { uploaded_count: files.length })
       setStep('generating')
       setUploading(true)
 
@@ -406,9 +424,13 @@ export default function AiPhotosPage() {
       setResult(data.result)
       setExistingPhotoUrl(data.outputUrl || data.result?.images?.[0]?.url || null)
       setStep('result')
+      capture('dashboard_ai_photo_generation_succeeded')
       toast({ title: 'Your photo is ready!', description: 'Check out your match-ready photo below' })
     } catch (error) {
       console.error('Generation error:', error)
+      capture('dashboard_ai_photo_generation_failed', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+      })
       toast({
         title: 'Error',
         description: error instanceof Error ? error.message : 'Something went wrong',
@@ -494,7 +516,10 @@ export default function AiPhotosPage() {
               <Button
                 size="lg"
                 className="px-8 text-lg h-14 w-full sm:w-auto"
-                onClick={() => setStep('upload')}
+                onClick={() => {
+                  capture('dashboard_ai_photo_upload_started', { placement: 'top_cta' })
+                  setStep('upload')
+                }}
               >
                 <Sparkles className="w-5 h-5 mr-2" />
                 Get My Free AI Profile Photo
@@ -524,7 +549,10 @@ export default function AiPhotosPage() {
               <Button
                 size="lg"
                 className="px-8 text-lg h-14 w-full sm:w-auto"
-                onClick={() => setStep('upload')}
+                onClick={() => {
+                  capture('dashboard_ai_photo_upload_started', { placement: 'bottom_cta' })
+                  setStep('upload')
+                }}
               >
                 <Sparkles className="w-5 h-5 mr-2" />
                 Get My Free AI Profile Photo

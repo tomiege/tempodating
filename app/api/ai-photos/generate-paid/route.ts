@@ -2,6 +2,9 @@ import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/s
 import { fal } from "@fal-ai/client"
 import { NextRequest, NextResponse } from 'next/server'
 
+export const runtime = 'nodejs'
+export const maxDuration = 300
+
 fal.config({
   credentials: process.env.FAL_AI_API_KEY,
 })
