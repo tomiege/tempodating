@@ -419,7 +419,7 @@ export default function AiPhotosPage() {
       })
 
       const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'Generation failed')
+      if (!response.ok) throw new Error(data.details || data.error || 'Generation failed')
 
       setResult(data.result)
       setExistingPhotoUrl(data.outputUrl || data.result?.images?.[0]?.url || null)

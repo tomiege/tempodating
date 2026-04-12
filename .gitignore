@@ -42,3 +42,7 @@ next-env.d.ts
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+# Auto-host media
+/public/auto-host/*.mp4
+/public/auto-host/*.m4a

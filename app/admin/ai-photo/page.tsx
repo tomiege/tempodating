@@ -174,7 +174,7 @@ export default function AdminAiPhotoPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Generation failed')
+        throw new Error(data.details || data.error || 'Generation failed')
       }
 
       setResult(data.result)

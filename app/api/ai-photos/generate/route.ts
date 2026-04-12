@@ -9,6 +9,61 @@ fal.config({
   credentials: process.env.FAL_AI_API_KEY,
 })
 
+function stringifyErrorDetail(detail: unknown): string | null {
+  if (typeof detail === 'string' && detail.trim()) return detail
+
+  if (Array.isArray(detail)) {
+    const messages = detail
+      .map((item) => {
+        if (typeof item === 'string') return item
+        if (item && typeof item === 'object' && 'msg' in item && typeof item.msg === 'string') {
+          return item.msg
+        }
+        return null
+      })
+      .filter((value): value is string => Boolean(value))
+
+    if (messages.length > 0) {
+      return messages.join('; ')
+    }
+  }
+
+  if (detail && typeof detail === 'object') {
+    try {
+      return JSON.stringify(detail)
+    } catch {
+      return null
+    }
+  }
+
+  return null
+}
+
+function extractErrorInfo(error: unknown) {
+  const defaultMessage = 'Failed to generate AI photo'
+
+  if (!error || typeof error !== 'object') {
+    return { message: defaultMessage, status: 500, requestId: null as string | null }
+  }
+
+  const maybeError = error as Error & {
+    body?: { detail?: unknown; message?: unknown }
+    requestId?: unknown
+    status?: unknown
+  }
+
+  const detailMessage =
+    stringifyErrorDetail(maybeError.body?.detail) ||
+    (typeof maybeError.body?.message === 'string' ? maybeError.body.message : null) ||
+    (typeof maybeError.message === 'string' && maybeError.message.trim() ? maybeError.message : null)
+
+  return {
+    message: detailMessage || defaultMessage,
+    status: typeof maybeError.status === 'number' ? maybeError.status : 500,
+    requestId: typeof maybeError.requestId === 'string' && maybeError.requestId.trim() ? maybeError.requestId : null,
+  }
+}
+
 // GET: Check if user already has a free generation
 export async function GET() {
   try {
@@ -134,10 +189,11 @@ export async function POST(request: NextRequest) {
       requestId: result.requestId,
     })
   } catch (error) {
-    console.error('AI photo generation error:', error)
+    const { message, status, requestId } = extractErrorInfo(error)
+    console.error('AI photo generation error:', { error, message, status, requestId })
     return NextResponse.json(
-      { error: 'Failed to generate AI photo', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+      { error: message, details: message, requestId },
+      { status }
     )
   }
 }
