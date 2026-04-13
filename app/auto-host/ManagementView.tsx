@@ -363,7 +363,7 @@ export default function ManagementView({ events }: { events: EventEntry[] }) {
                   <div className="text-xs font-semibold text-gray-800 truncate leading-tight">
                     {event.city}
                   </div>
-                  <div className="text-xs text-gray-400 truncate leading-tight">
+                  <div className="text-xs text-gray-400 truncate leading-tight" suppressHydrationWarning>
                     {sesh
                       ? sesh.phase === 'round' ? `R${sesh.currentRound}/${sesh.totalRounds}` :
                         sesh.phase === 'welcome' ? 'Welcome' :
@@ -394,7 +394,7 @@ export default function ManagementView({ events }: { events: EventEntry[] }) {
               </h2>
               <div className="text-xs text-gray-500">
                 {formatStartTime(selectedEvent.gmtdatetime, selectedEvent.timezone)} · ID: {selectedEvent.productId} ·{' '}
-                <span className="font-mono text-orange-600">{formatCountdown(selectedEvent.gmtdatetime)}</span>
+                <span className="font-mono text-orange-600" suppressHydrationWarning>{formatCountdown(selectedEvent.gmtdatetime)}</span>
               </div>
             </div>
             <a
