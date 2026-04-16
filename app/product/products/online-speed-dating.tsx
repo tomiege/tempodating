@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from "react"
 import * as Sentry from '@sentry/nextjs'
+import { capture } from '@/components/analytics'
 import { useSearchParams } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
@@ -90,7 +91,18 @@ function ProductContent() {
   useEffect(() => {
     async function fetchProduct() {
       if (!productId || !productType) {
-        setError('Missing productId or productType in URL')
+        const msg = 'Missing productId or productType in URL'
+        Sentry.captureMessage(msg, {
+          level: 'warning',
+          tags: { source: 'product-page' },
+          extra: { productId, productType, url: window.location.href },
+        })
+        capture('product_not_found', {
+          reason: 'missing_params',
+          product_id: productId,
+          product_type: productType,
+        })
+        setError(msg)
         setLoading(false)
         return
       }
@@ -108,7 +120,18 @@ function ProductContent() {
         } else if (productType === 'onDemand' || productType === 'datingEbook') {
           apiUrl = '/api/products/onDemand'
         } else {
-          setError(`Unknown product type: ${productType}`)
+          const msg = `Unknown product type: ${productType}`
+          Sentry.captureMessage(msg, {
+            level: 'warning',
+            tags: { source: 'product-page', productType: productType ?? undefined },
+            extra: { productId, productType, url: window.location.href },
+          })
+          capture('product_not_found', {
+            reason: 'unknown_product_type',
+            product_id: productId,
+            product_type: productType,
+          })
+          setError(msg)
           setLoading(false)
           return
         }
@@ -127,7 +150,18 @@ function ProductContent() {
         )
 
         if (!foundProduct) {
-          setError(`Product with ID ${productId} not found`)
+          const msg = `Product with ID ${productId} not found`
+          Sentry.captureMessage(msg, {
+            level: 'warning',
+            tags: { source: 'product-page', productId: productId ?? undefined, productType: productType ?? undefined },
+            extra: { productId, productType, url: window.location.href },
+          })
+          capture('product_not_found', {
+            reason: 'id_not_found',
+            product_id: productId,
+            product_type: productType,
+          })
+          setError(msg)
         } else {
           if (productType === 'onDemand' || productType === 'datingEbook') {
             setOnDemandProduct(foundProduct as OnDemandProduct)

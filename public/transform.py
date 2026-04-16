@@ -6,7 +6,7 @@ from random import uniform
 import math
 from google_maps.googlemaps import GoogleMaps
 
-def get_sheet_data_and_convert_to_json(output_json_path="events.json", max_retries=3, sheet_id="1DKRL7HTK2DNcyMTo6ItvXDvZIem4Vls6hIvnqHfNY8E"):
+def get_sheet_data_and_convert_to_json(output_json_path="public/products/events.json", max_retries=3, sheet_id="1DKRL7HTK2DNcyMTo6ItvXDvZIem4Vls6hIvnqHfNY8E"):
     """
     Fetches data from Google Sheet, filters valid rows, and converts to JSON format.
     
@@ -132,7 +132,7 @@ def get_sheet_data_and_convert_to_json(output_json_path="events.json", max_retri
 
 # Example usage
 if __name__ == "__main__":
-    data = get_sheet_data_and_convert_to_json(output_json_path="events.json")
+    data = get_sheet_data_and_convert_to_json(output_json_path="public/products/events.json")
     
     if data:
         print(f"Successfully converted {len(data)} events to JSON")

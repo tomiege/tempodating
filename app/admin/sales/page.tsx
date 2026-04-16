@@ -347,6 +347,34 @@ async function getDailyLeads(): Promise<DailyData[]> {
     .sort((a, b) => a.day.localeCompare(b.day))
 }
 
+interface ErrorEvent {
+  id: number
+  event_name: string
+  url: string | null
+  properties: Record<string, unknown>
+  created_at: string
+}
+
+async function getRecentErrors(): Promise<ErrorEvent[]> {
+  const supabase = createServiceSupabaseClient()
+  const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString()
+
+  const { data, error } = await supabase
+    .from('analytics_events')
+    .select('id, event_name, url, properties, created_at')
+    .neq('event_name', 'viewed_product')
+    .gte('created_at', threeHoursAgo)
+    .order('created_at', { ascending: false })
+    .limit(100)
+
+  if (error) {
+    console.error('Error fetching recent errors:', error)
+    return []
+  }
+
+  return (data || []) as ErrorEvent[]
+}
+
 interface FeedbackData {
   id: number
   user_name: string | null
@@ -401,11 +429,12 @@ function timeAgo(dateString: string): string {
 }
 
 export default async function SalesPage() {
-  const [salesData, dailyCheckouts, dailyLeads, recentFeedback] = await Promise.all([
+  const [salesData, dailyCheckouts, dailyLeads, recentFeedback, recentErrors] = await Promise.all([
     getSalesData(),
     getDailyCheckouts(),
     getDailyLeads(),
     getRecentFeedback(),
+    getRecentErrors(),
   ])
 
   const eventSales = salesData.filter((row) => !ON_DEMAND_PRODUCT_TYPES.includes(row.product_type))
@@ -418,6 +447,64 @@ export default async function SalesPage() {
           Support Tickets →
         </Link>
       </div>
+
+      {/* Recent Errors */}
+      <Card className={recentErrors.length > 0 ? 'border-red-300 shadow-red-100 shadow-sm' : ''}>
+        <CardHeader>
+          <CardTitle className={recentErrors.length > 0 ? 'text-red-600' : ''}>
+            Recent Errors
+            {recentErrors.length > 0 && (
+              <span className="ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full bg-red-100 text-red-600 text-xs font-bold">
+                {recentErrors.length}
+              </span>
+            )}
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Analytics error events in the last 3 hours
+          </p>
+        </CardHeader>
+        <CardContent>
+          {recentErrors.length === 0 ? (
+            <p className="text-center text-muted-foreground py-4 text-sm">No errors in the last 3 hours</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Time</TableHead>
+                  <TableHead>Event</TableHead>
+                  <TableHead>Reason</TableHead>
+                  <TableHead>Product ID</TableHead>
+                  <TableHead>Product Type</TableHead>
+                  <TableHead>URL</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {recentErrors.map((row) => (
+                  <TableRow key={row.id}>
+                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                      {timeAgo(row.created_at)}
+                    </TableCell>
+                    <TableCell className="font-medium text-sm">{row.event_name}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {String(row.properties?.reason ?? '—')}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {row.properties?.product_id != null ? String(row.properties.product_id) : '—'}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {row.properties?.product_type != null ? String(row.properties.product_type) : '—'}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground max-w-xs truncate">
+                      {row.url || '—'}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Event Sales</CardTitle>
