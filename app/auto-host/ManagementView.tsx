@@ -19,7 +19,7 @@ import {
 import { runSpeedDatingEvent, runGaySpeedDatingEvent } from '@/app/admin/attendance/utils/speedDating'
 import { parseNameAndEmoji } from '@/app/admin/attendance/utils/nameParser'
 import { Attendee, RoundResult } from '@/app/admin/attendance/utils/types'
-import { EventEntry } from './page'
+import { EventEntry } from '@/app/admin/auto-host/page'
 
 interface EventSession {
   productId: string
@@ -361,6 +361,7 @@ export default function ManagementView({ events, initialProductId }: { events: E
                   setSession(null); setPairings(null); setPreviewRound(null)
                   setHiddenPairings(new Set()); setHideByes(false); setExcludedAttendees(new Set())
                   loadAttendees(event.productId)
+                  window.history.replaceState(null, '', `/admin/auto-host?productId=${event.productId}`)
                 }}
                 className={`w-full text-left rounded-lg px-2 py-2 flex items-center gap-2 transition-colors ${
                   isSelected
@@ -417,7 +418,7 @@ export default function ManagementView({ events, initialProductId }: { events: E
               </a>
             )}
             <a
-              href={`/auto-host?productId=${selectedEvent.productId}&display=1`}
+              href={`/auto-host?productId=${selectedEvent.productId}`}
               target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-1 text-xs text-blue-600 hover:underline shrink-0"
             >

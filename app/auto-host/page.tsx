@@ -1,42 +1,27 @@
-import { readFile } from 'fs/promises'
-import path from 'path'
-import ManagementView from './ManagementView'
 import DisplayView from './DisplayView'
 
-export interface EventEntry {
-  productId: number
-  gmtdatetime: string
-  timezone: string
-  title: string
-  city: string
-  productType?: string
-  duration_in_minutes?: number
-  zoomInvite?: string
-}
-
-async function getEvents(): Promise<EventEntry[]> {
-  try {
-    const filePath = path.join(process.cwd(), 'public', 'products', 'events.json')
-    const raw = await readFile(filePath, 'utf-8')
-    return JSON.parse(raw)
-  } catch {
-    return []
-  }
-}
+export const metadata = { title: 'Speed Dating' }
 
 export const dynamic = 'force-dynamic'
 
 export default async function AutoHostPage({
   searchParams,
 }: {
-  searchParams: Promise<{ productId?: string; display?: string }>
+  searchParams: Promise<{ productId?: string }>
 }) {
-  const { productId, display } = await searchParams
+  const { productId } = await searchParams
 
-  if (productId && display) {
-    return <DisplayView productId={productId} />
+  if (!productId) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-900 via-orange-800 to-orange-950 flex items-center justify-center">
+        <div className="text-center text-white px-6">
+          <div className="text-7xl mb-8">💛</div>
+          <h1 className="text-5xl font-bold mb-4">Welcome to Speed Dating!</h1>
+          <p className="text-xl text-orange-200">Get ready — the event is about to begin.</p>
+        </div>
+      </div>
+    )
   }
 
-  const events = await getEvents()
-  return <ManagementView events={events} initialProductId={productId} />
+  return <DisplayView productId={productId} />
 }
