@@ -29,6 +29,9 @@ interface Recipient {
   is_male: boolean
   checkout_session_id: string
   product_type: string
+  query_city: string | null
+  name: string | null
+  phone_number: string | null
 }
 
 async function getRecipientsForProduct(productId: number): Promise<{ males: Recipient[]; females: Recipient[] }> {
@@ -36,7 +39,7 @@ async function getRecipientsForProduct(productId: number): Promise<{ males: Reci
 
   const { data: checkouts, error } = await supabase
     .from('checkout')
-    .select('is_male, user_id, email, checkout_session_id, product_type')
+    .select('is_male, user_id, email, checkout_session_id, product_type, query_city, name, phone_number')
     .eq('product_id', productId)
     .eq('confirmation_email_sent', true)
 
@@ -61,6 +64,9 @@ async function getRecipientsForProduct(productId: number): Promise<{ males: Reci
       is_male: c.is_male === true,
       checkout_session_id: c.checkout_session_id,
       product_type: c.product_type || 'onlineSpeedDating',
+      query_city: c.query_city || null,
+      name: c.name || null,
+      phone_number: c.phone_number || null,
     }
     if (c.is_male === true) males.push(recipient)
     else if (c.is_male === false) females.push(recipient)
@@ -177,7 +183,7 @@ async function logCampaign(
 
 // ─── Email Templates ───────────────────────────────────────────────
 
-export type TemplateId = 'pre-event' | 'post-event' | 'leads-reminder' | 'next-event'
+export type TemplateId = 'pre-event' | 'post-event' | 'leads-reminder' | 'next-event' | 'complimentary-ticket'
 
 function buildPreEventHtml(zoomLink: string): string {
   return `
@@ -327,11 +333,52 @@ function buildNextEventHtml(nextEvent: OnlineSpeedDatingEvent, city: string): st
     </html>`
 }
 
+function buildComplimentaryTicketHtml(city: string, successUrl: string): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; padding: 0; margin: 0; background-color: #f9fafb;">
+      <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+        <div style="background-color: #ffffff; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 32px;">
+          <p style="color: #111827; font-size: 16px; line-height: 1.6; margin: 0 0 16px 0;">Hi there,</p>
+          <p style="color: #111827; font-size: 16px; line-height: 1.6; margin: 0 0 16px 0;">
+            We wanted to reach out personally regarding our recent Speed Dating event in <strong>${city}</strong>.
+          </p>
+          <p style="color: #111827; font-size: 16px; line-height: 1.6; margin: 0 0 16px 0;">
+            We experienced some technical issues during the event, and we sincerely apologize for any inconvenience this may have caused. We are working hard to improve and deliver a much better experience for you.
+          </p>
+          <div style="background-color: #f0fdf4; border-radius: 12px; padding: 20px; margin-bottom: 24px; border-left: 4px solid #10b981;">
+            <p style="color: #065f46; font-size: 15px; font-weight: 600; margin: 0 0 8px 0;">🎁 A gift from us to you</p>
+            <p style="color: #064e3b; font-size: 14px; line-height: 1.6; margin: 0;">
+              As a token of our appreciation for your patience and understanding, we'd like to offer you a <strong>complimentary ticket</strong> to our next Speed Dating event in <strong>${city}</strong> — completely free, on us!
+            </p>
+          </div>
+          <div style="text-align: center; margin-bottom: 24px;">
+            <a href="${successUrl}" style="display: inline-block; background-color: #10b981; color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px;">Claim Your Free Ticket 🎟️</a>
+          </div>
+          <p style="color: #6b7280; font-size: 13px; text-align: center; margin: 0 0 24px 0; word-break: break-all;">
+            <a href="${successUrl}" style="color: #10b981;">${successUrl}</a>
+          </p>
+          <p style="color: #111827; font-size: 16px; line-height: 1.6; margin: 0;">
+            We look forward to seeing you at the next event! 💕<br>
+            <span style="color: #6b7280; font-size: 14px;">— The Tempo Dating Team</span>
+          </p>
+        </div>
+        <div style="text-align: center; color: #9ca3af; font-size: 14px; margin-top: 24px;">
+          <p style="margin: 0;">© ${new Date().getFullYear()} Tempo Dating. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>`
+}
+
 const TEMPLATE_SUBJECTS: Record<TemplateId, string> = {
   'pre-event': 'Your online Speed Dating event is starting soon!',
   'post-event': 'Thank you for attending! Select your matches 💕',
   'leads-reminder': 'Don\'t miss out — spots are filling up! 💕',
   'next-event': 'Enjoyed the event? Our next one is coming up! 🎉',
+  'complimentary-ticket': 'A free ticket from us — we\'re sorry 💚',
 }
 
 export async function POST(req: NextRequest) {
@@ -362,9 +409,9 @@ export async function POST(req: NextRequest) {
       zoomLink = event.zoomInvite
     }
 
-    // For next-event, find the next event in the same region
+    // For next-event and complimentary-ticket, find the next event in the same region
     let nextEvent: OnlineSpeedDatingEvent | null = null
-    if (template === 'next-event') {
+    if (template === 'next-event' || template === 'complimentary-ticket') {
       if (!event) {
         return NextResponse.json({ error: 'Event not found for this product' }, { status: 404 })
       }
@@ -372,7 +419,7 @@ export async function POST(req: NextRequest) {
       nextEvent = findNextEventFromData(events, productId, event.region_id)
       if (!nextEvent) {
         return NextResponse.json(
-          { error: `No upcoming event found for region ${event.region_id} (${event.city}). Cannot send next-event email.` },
+          { error: `No upcoming event found for region ${event.region_id} (${event.city}). Cannot send ${template} email.` },
           { status: 400 }
         )
       }
@@ -407,6 +454,30 @@ export async function POST(req: NextRequest) {
         html = buildLeadsReminderHtml(productId, productType, city)
       } else if (template === 'next-event') {
         html = buildNextEventHtml(nextEvent!, city)
+      } else if (template === 'complimentary-ticket') {
+        const supabase = createServiceSupabaseClient()
+        const testSessionId = `COMPLIMENTARY_${crypto.randomUUID()}`
+        await supabase.from('checkout').insert({
+          checkout_session_id: testSessionId,
+          user_id: null,
+          email: testEmail,
+          site_name: 'tempodating',
+          total_order: 0,
+          customer_id: '',
+          product_type: nextEvent!.productType || 'onlineSpeedDating',
+          product_id: nextEvent!.productId,
+          confirmation_email_sent: true,
+          currency: 'usd',
+          product_description: `Complimentary ticket - ${nextEvent!.city}`,
+          experiment: null,
+          checkout_time: new Date().toISOString(),
+          name: null,
+          phone_number: null,
+          is_male: null,
+          query_city: city || null,
+        })
+        const testSuccessUrl = `${BASE_URL}/checkout-success/${nextEvent!.productType || 'onlineSpeedDating'}?checkoutSessionId=${testSessionId}&email=${encodeURIComponent(testEmail)}`
+        html = buildComplimentaryTicketHtml(city || nextEvent!.city, testSuccessUrl)
       } else {
         html = buildPreEventHtml(zoomLink!)
       }
@@ -499,6 +570,80 @@ export async function POST(req: NextRequest) {
         failed: result.totalFailed,
         total: recipients.length,
         audience,
+        nextEventProductId: nextEvent!.productId,
+        nextEventCity: nextEvent!.city,
+      })
+    }
+
+    // ── Complimentary ticket (paid attendees of current event) ──
+    if (template === 'complimentary-ticket') {
+      const { males, females } = await getRecipientsForProduct(productId)
+      const recipients = [...males, ...females]
+
+      if (recipients.length === 0) {
+        return NextResponse.json({ error: 'No paid attendees found for this product' }, { status: 400 })
+      }
+
+      console.log(`Sending complimentary-ticket email to ${recipients.length} attendees for product ${productId}`)
+
+      const supabase = createServiceSupabaseClient()
+      const batchEmails: { from: string; to: string; subject: string; html: string }[] = []
+
+      for (const r of recipients) {
+        const recipientCity = r.query_city || city
+        const sessionId = `COMPLIMENTARY_${crypto.randomUUID()}`
+
+        const { error: insertError } = await supabase.from('checkout').insert({
+          checkout_session_id: sessionId,
+          user_id: null,
+          email: r.email,
+          site_name: 'tempodating',
+          total_order: 0,
+          customer_id: '',
+          product_type: nextEvent!.productType || 'onlineSpeedDating',
+          product_id: nextEvent!.productId,
+          confirmation_email_sent: true,
+          currency: 'usd',
+          product_description: `Complimentary ticket - ${nextEvent!.city}`,
+          experiment: null,
+          checkout_time: new Date().toISOString(),
+          name: r.name || null,
+          phone_number: r.phone_number || null,
+          is_male: r.is_male,
+          query_city: r.query_city || null,
+        })
+
+        if (insertError) {
+          console.error(`Failed to create complimentary checkout for ${r.email}:`, insertError)
+          continue
+        }
+
+        const successUrl = `${BASE_URL}/checkout-success/${nextEvent!.productType || 'onlineSpeedDating'}?checkoutSessionId=${sessionId}&email=${encodeURIComponent(r.email)}`
+        batchEmails.push({
+          from: 'Tempo Dating <support@tempodating.com>',
+          to: r.email,
+          subject,
+          html: buildComplimentaryTicketHtml(recipientCity, successUrl),
+        })
+      }
+
+      const result = await sendBatchEmails(batchEmails)
+
+      await logCampaign(
+        productId,
+        productType,
+        'complimentary-ticket',
+        subject,
+        recipients.map((r) => r.email),
+        'all'
+      )
+
+      return NextResponse.json({
+        success: true,
+        sent: result.totalSent,
+        failed: result.totalFailed,
+        total: recipients.length,
+        audience: 'all',
         nextEventProductId: nextEvent!.productId,
         nextEventCity: nextEvent!.city,
       })

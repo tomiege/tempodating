@@ -31,7 +31,7 @@ type SendStatus = {
   message: string
 }
 
-type TemplateId = 'pre-event' | 'post-event' | 'leads-reminder' | 'next-event'
+type TemplateId = 'pre-event' | 'post-event' | 'leads-reminder' | 'next-event' | 'complimentary-ticket'
 
 interface EmailTemplate {
   id: TemplateId
@@ -114,6 +114,24 @@ If you had a great time, why not come back for another round? Meet even more ama
 [Book Next Event]
 
 See you there! 💕`,
+  },
+  {
+    id: 'complimentary-ticket',
+    label: '🎁 Complimentary Ticket (Apology)',
+    subject: "A free ticket from us — we're sorry 💚",
+    previewBody: `Hi there,
+
+We wanted to reach out personally regarding our recent Speed Dating event in [City].
+
+We experienced some technical issues during the event, and we sincerely apologize for any inconvenience this may have caused. We are working hard to improve and deliver a much better experience for you.
+
+🎁 A gift from us to you
+As a token of our appreciation for your patience and understanding, we'd like to offer you a complimentary ticket to our next Speed Dating event in [City] — completely free, on us!
+
+[Claim Your Free Ticket 🎟️]
+
+We look forward to seeing you at the next event! 💕
+— The Tempo Dating Team`,
   },
 ]
 
@@ -316,6 +334,21 @@ export function SendZoomEmailButton({ productId, maleEmails, femaleEmails }: Sen
               </Button>
               <p className="text-xs text-muted-foreground mt-1.5">
                 Sends to all paid attendees, inviting them to the next event in the same region.
+              </p>
+            </div>
+          ) : selectedTemplate === 'complimentary-ticket' ? (
+            <div>
+              <Button
+                variant="outline"
+                onClick={() => sendEmails('all')}
+                disabled={status.type === 'loading' || totalEmails === 0}
+                className="w-full text-emerald-600 border-emerald-200 hover:bg-emerald-50"
+              >
+                <Send className="h-3.5 w-3.5 mr-1.5" />
+                Send Complimentary Ticket to All Attendees ({totalEmails})
+              </Button>
+              <p className="text-xs text-muted-foreground mt-1.5">
+                Creates a free checkout for each attendee&apos;s next event and sends them a personalised apology email with a claim link.
               </p>
             </div>
           ) : (

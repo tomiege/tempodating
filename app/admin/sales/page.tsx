@@ -414,6 +414,52 @@ async function getRecentFeedback(): Promise<FeedbackData[]> {
   return feedback || []
 }
 
+async function getEmailCampaignsByProduct(): Promise<Map<number, Set<string>>> {
+  const supabase = createServiceSupabaseClient()
+  const { data, error } = await supabase
+    .from('email_campaigns')
+    .select('product_id, template')
+
+  if (error || !data) {
+    console.error('Error fetching email campaigns:', error)
+    return new Map()
+  }
+
+  const map = new Map<number, Set<string>>()
+  for (const row of data) {
+    if (!row.product_id || !row.template) continue
+    if (!map.has(row.product_id)) map.set(row.product_id, new Set())
+    map.get(row.product_id)!.add(row.template)
+  }
+  return map
+}
+
+const TEMPLATE_DOTS: { id: string; color: string; label: string }[] = [
+  { id: 'pre-event',            color: 'bg-blue-500',    label: 'Pre-event (Zoom link) sent' },
+  { id: 'post-event',           color: 'bg-pink-500',    label: 'Post-event (select matches) sent' },
+  { id: 'leads-reminder',       color: 'bg-orange-500',  label: 'Leads reminder sent' },
+  { id: 'next-event',           color: 'bg-purple-500',  label: 'Next event email sent' },
+  { id: 'complimentary-ticket', color: 'bg-emerald-500', label: 'Complimentary ticket sent' },
+  { id: 'invite-friend-male',   color: 'bg-sky-400',     label: 'Invite-a-friend (male) sent' },
+  { id: 'invite-friend-female', color: 'bg-rose-400',    label: 'Invite-a-friend (female) sent' },
+]
+
+function EmailStatusDots({ sentTemplates }: { sentTemplates: Set<string> }) {
+  const sent = TEMPLATE_DOTS.filter((t) => sentTemplates.has(t.id))
+  if (sent.length === 0) return null
+  return (
+    <div className="flex flex-wrap gap-0.5 justify-end mt-1">
+      {sent.map((t) => (
+        <span
+          key={t.id}
+          title={t.label}
+          className={`inline-block w-2 h-2 rounded-full ${t.color}`}
+        />
+      ))}
+    </div>
+  )
+}
+
 function timeAgo(dateString: string): string {
   const now = new Date()
   const date = new Date(dateString)
@@ -429,12 +475,13 @@ function timeAgo(dateString: string): string {
 }
 
 export default async function SalesPage() {
-  const [salesData, dailyCheckouts, dailyLeads, recentFeedback, recentErrors] = await Promise.all([
+  const [salesData, dailyCheckouts, dailyLeads, recentFeedback, recentErrors, campaignsByProduct] = await Promise.all([
     getSalesData(),
     getDailyCheckouts(),
     getDailyLeads(),
     getRecentFeedback(),
     getRecentErrors(),
+    getEmailCampaignsByProduct(),
   ])
 
   const eventSales = salesData.filter((row) => !ON_DEMAND_PRODUCT_TYPES.includes(row.product_type))
@@ -577,17 +624,20 @@ export default async function SalesPage() {
                     <TableCell className={`text-right font-semibold ${getDifferentialColor(row.differential)}`}>
                       {formatDifferential(row.differential)}
                     </TableCell>
-                    <TableCell className="text-right flex items-center justify-end gap-1">
-                      <SendInviteEmailButton
-                        productId={row.product_id}
-                        maleEmails={row.male_emails}
-                        femaleEmails={row.female_emails}
-                      />
-                      <SendZoomEmailButton
-                        productId={row.product_id}
-                        maleEmails={row.male_emails}
-                        femaleEmails={row.female_emails}
-                      />
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <SendInviteEmailButton
+                          productId={row.product_id}
+                          maleEmails={row.male_emails}
+                          femaleEmails={row.female_emails}
+                        />
+                        <SendZoomEmailButton
+                          productId={row.product_id}
+                          maleEmails={row.male_emails}
+                          femaleEmails={row.female_emails}
+                        />
+                      </div>
+                      <EmailStatusDots sentTemplates={campaignsByProduct.get(row.product_id) ?? new Set()} />
                     </TableCell>
                   </TableRow>
                 ))}
