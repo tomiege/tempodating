@@ -66,7 +66,7 @@ function SessionDot({ session }: { session: EventSession | undefined }) {
   return <span className="w-2 h-2 rounded-full bg-green-500 shrink-0 inline-block animate-pulse" />
 }
 
-export default function ManagementView({ events }: { events: EventEntry[] }) {
+export default function ManagementView({ events, initialProductId }: { events: EventEntry[]; initialProductId?: string }) {
   const [selectedEvent, setSelectedEvent] = useState<EventEntry | null>(null)
   const [now, setNow] = useState(Date.now())
 
@@ -111,6 +111,16 @@ export default function ManagementView({ events }: { events: EventEntry[] }) {
     const id = setInterval(() => setNow(Date.now()), 1000)
     return () => clearInterval(id)
   }, [])
+
+  // Auto-select event from URL param
+  useEffect(() => {
+    if (!initialProductId || !events.length) return
+    const match = events.find(e => String(e.productId) === initialProductId)
+    if (match) {
+      setSelectedEvent(match)
+      loadAttendees(match.productId)
+    }
+  }, [initialProductId, events.length])
 
   // Load video metadata to refine defaults
   useEffect(() => {
@@ -397,8 +407,17 @@ export default function ManagementView({ events }: { events: EventEntry[] }) {
                 <span className="font-mono text-orange-600" suppressHydrationWarning>{formatCountdown(selectedEvent.gmtdatetime)}</span>
               </div>
             </div>
+            {selectedEvent.zoomInvite && (
+              <a
+                href={selectedEvent.zoomInvite}
+                target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1 text-xs text-white bg-blue-600 hover:bg-blue-700 rounded px-2 py-1 shrink-0 transition-colors font-medium"
+              >
+                <Video className="w-3 h-3" /> Zoom
+              </a>
+            )}
             <a
-              href={`/auto-host?productId=${selectedEvent.productId}`}
+              href={`/auto-host?productId=${selectedEvent.productId}&display=1`}
               target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-1 text-xs text-blue-600 hover:underline shrink-0"
             >

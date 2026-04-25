@@ -11,6 +11,7 @@ export interface EventEntry {
   city: string
   productType?: string
   duration_in_minutes?: number
+  zoomInvite?: string
 }
 
 async function getEvents(): Promise<EventEntry[]> {
@@ -28,14 +29,14 @@ export const dynamic = 'force-dynamic'
 export default async function AutoHostPage({
   searchParams,
 }: {
-  searchParams: Promise<{ productId?: string }>
+  searchParams: Promise<{ productId?: string; display?: string }>
 }) {
-  const { productId } = await searchParams
+  const { productId, display } = await searchParams
 
-  if (productId) {
+  if (productId && display) {
     return <DisplayView productId={productId} />
   }
 
   const events = await getEvents()
-  return <ManagementView events={events} />
+  return <ManagementView events={events} initialProductId={productId} />
 }
