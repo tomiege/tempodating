@@ -211,7 +211,7 @@ export default function AdminAiPhotoPage() {
                 key={i}
                 onClick={() => handlePresetChange(i)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  selectedPreset === i
+                  selectedPreset === i && selectedPreset !== -1
                     ? 'bg-purple-600 text-white'
                     : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                 }`}
@@ -264,7 +264,10 @@ export default function AdminAiPhotoPage() {
               {bucketImages.map((img) => (
                 <button
                   key={img.name}
-                  onClick={() => setReferenceImage(img.url)}
+                  onClick={() => {
+                    setReferenceImage(img.url)
+                    setSelectedPreset(-1)
+                  }}
                   className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
                     referenceImage === img.url
                       ? 'border-purple-500 ring-2 ring-purple-500/50'
