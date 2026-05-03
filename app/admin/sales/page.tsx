@@ -414,6 +414,31 @@ async function getRecentFeedback(): Promise<FeedbackData[]> {
   return feedback || []
 }
 
+const NEXT_EVENT_TYPES = new Set(['onlineSpeedDating', 'onlineSpeedDatingGay'])
+
+async function getNextEventMap(): Promise<Map<number, number>> {
+  const filePath = path.join(process.cwd(), 'public', 'products', 'events.json')
+  const raw = await readFile(filePath, 'utf-8')
+  const events: { productId: number; gmtdatetime: string; city: string; productType: string }[] = JSON.parse(raw)
+
+  const targets = events.filter((e) => NEXT_EVENT_TYPES.has(e.productType))
+  const nextMap = new Map<number, number>()
+
+  for (const event of targets) {
+    const next = targets
+      .filter(
+        (e) =>
+          e.productType === event.productType &&
+          e.city === event.city &&
+          new Date(e.gmtdatetime) > new Date(event.gmtdatetime)
+      )
+      .sort((a, b) => new Date(a.gmtdatetime).getTime() - new Date(b.gmtdatetime).getTime())[0]
+    if (next) nextMap.set(event.productId, next.productId)
+  }
+
+  return nextMap
+}
+
 async function getEmailCampaignsByProduct(): Promise<Map<number, Set<string>>> {
   const supabase = createServiceSupabaseClient()
   const { data, error } = await supabase
@@ -475,13 +500,14 @@ function timeAgo(dateString: string): string {
 }
 
 export default async function SalesPage() {
-  const [salesData, dailyCheckouts, dailyLeads, recentFeedback, recentErrors, campaignsByProduct] = await Promise.all([
+  const [salesData, dailyCheckouts, dailyLeads, recentFeedback, recentErrors, campaignsByProduct, nextEventMap] = await Promise.all([
     getSalesData(),
     getDailyCheckouts(),
     getDailyLeads(),
     getRecentFeedback(),
     getRecentErrors(),
     getEmailCampaignsByProduct(),
+    getNextEventMap(),
   ])
 
   const eventSales = salesData.filter((row) => !ON_DEMAND_PRODUCT_TYPES.includes(row.product_type))
@@ -577,6 +603,7 @@ export default async function SalesPage() {
                   <TableHead className="text-right">Female Tickets</TableHead>
                   <TableHead className="text-right">Total</TableHead>
                   <TableHead className="text-right">Gender Balance</TableHead>
+                  <TableHead className="text-right">Next Event</TableHead>
                   <TableHead className="text-right w-10"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -623,6 +650,20 @@ export default async function SalesPage() {
                     </TableCell>
                     <TableCell className={`text-right font-semibold ${getDifferentialColor(row.differential)}`}>
                       {formatDifferential(row.differential)}
+                    </TableCell>
+                    <TableCell className="text-right text-sm">
+                      {NEXT_EVENT_TYPES.has(row.product_type) ? (
+                        nextEventMap.has(row.product_id) ? (
+                          <Link
+                            href={`/admin/sales/customers?product_id=${nextEventMap.get(row.product_id)}`}
+                            className="text-blue-600 hover:underline"
+                          >
+                            {nextEventMap.get(row.product_id)}
+                          </Link>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )
+                      ) : null}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
