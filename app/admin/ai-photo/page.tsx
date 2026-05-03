@@ -231,7 +231,7 @@ export default function AdminAiPhotoPage() {
               alt="Reference"
               className="h-48 w-auto rounded object-cover"
             />
-            <p className="text-xs text-gray-500 mt-2 max-w-xs truncate">{referenceImage}</p>
+            <p className="text-xs text-gray-500 mt-2 max-w-xs break-all">{referenceImage}</p>
           </Card>
         </div>
 

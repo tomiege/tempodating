@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     }
 
     const images = (data ?? [])
-      .filter((f) => f.name && !f.name.startsWith('.'))
+      .filter((f) => f.name && !f.name.startsWith('.') && f.id !== null)
       .map((f) => {
         const { data: { publicUrl } } = supabase.storage
           .from('ai-photos')
