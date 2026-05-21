@@ -281,6 +281,7 @@ CREATE TABLE IF NOT EXISTS public.paypal_webhooks (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+
 CREATE UNIQUE INDEX IF NOT EXISTS idx_paypal_webhooks_event_id
   ON public.paypal_webhooks(paypal_event_id)
   WHERE paypal_event_id IS NOT NULL;
