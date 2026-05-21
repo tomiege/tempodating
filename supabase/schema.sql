@@ -266,3 +266,32 @@ CREATE TABLE IF NOT EXISTS public.ai_photo_generations (
 
 CREATE INDEX IF NOT EXISTS idx_ai_photo_generations_user ON public.ai_photo_generations(user_id);
 
+-- PayPal webhook events (raw storage of all incoming PayPal webhooks)
+CREATE TABLE IF NOT EXISTS public.paypal_webhooks (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  paypal_event_id TEXT,                         -- PayPal's own event ID (may be null for malformed events)
+  event_type TEXT NOT NULL,                     -- e.g. PAYMENT.CAPTURE.COMPLETED
+  resource_type TEXT,                           -- e.g. capture, order, subscription
+  resource_id TEXT,                             -- ID of the PayPal resource the event concerns
+  summary TEXT,                                 -- Human-readable summary from PayPal
+  payload JSONB NOT NULL DEFAULT '{}',          -- Full webhook body
+  raw_headers JSONB NOT NULL DEFAULT '{}',      -- PayPal signature headers for audit / re-verification
+  verified BOOLEAN NOT NULL DEFAULT false,      -- Whether signature was successfully verified
+  verification_error TEXT,                      -- Error message if verification threw
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_paypal_webhooks_event_id
+  ON public.paypal_webhooks(paypal_event_id)
+  WHERE paypal_event_id IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_paypal_webhooks_event_type
+  ON public.paypal_webhooks(event_type, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_paypal_webhooks_resource_id
+  ON public.paypal_webhooks(resource_id)
+  WHERE resource_id IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_paypal_webhooks_created_at
+  ON public.paypal_webhooks(created_at DESC);
+

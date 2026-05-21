@@ -10,6 +10,7 @@ import posthog from 'posthog-js'
 import { useFeatureFlagVariantKey } from 'posthog-js/react'
 import * as Sentry from '@sentry/nextjs'
 import { capture } from '@/components/analytics'
+const PAYMENT_PROCESSOR = process.env.NEXT_PUBLIC_PAYMENT_PROCESSOR || 'STRIPE'
 
 interface TicketModalProps {
   isOpen: boolean
@@ -1336,6 +1337,7 @@ export default function TicketModal({
                   </div>
                 </div>
               )}
+
             </div>
           )}
 
@@ -1435,7 +1437,11 @@ export default function TicketModal({
                 <p className="text-base font-semibold text-foreground">
                   Secure payment powered by
                 </p>
-                <img src="/brands/stripe-logo.png" alt="Stripe" className="h-14" />
+                {PAYMENT_PROCESSOR === 'PAYPAL' ? (
+                  <img src="/brands/paypal-logo.png" alt="PayPal" className="h-8" />
+                ) : (
+                  <img src="/brands/stripe-logo.png" alt="Stripe" className="h-14" />
+                )}
               </div>
             </div>
           )}
