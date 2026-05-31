@@ -183,7 +183,7 @@ async function logCampaign(
 
 // ─── Email Templates ───────────────────────────────────────────────
 
-export type TemplateId = 'pre-event' | 'post-event' | 'leads-reminder' | 'next-event' | 'complimentary-ticket'
+export type TemplateId = 'pre-event' | 'post-event' | 'leads-reminder' | 'next-event' | 'complimentary-ticket' | 'event-postponed'
 
 function buildPreEventHtml(zoomLink: string): string {
   return `
@@ -373,12 +373,50 @@ function buildComplimentaryTicketHtml(city: string, successUrl: string): string 
     </html>`
 }
 
+function buildEventPostponedHtml(formattedDate: string, zoomLink: string): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; padding: 0; margin: 0; background-color: #f9fafb;">
+      <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+        <div style="background-color: #ffffff; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 32px;">
+          <p style="color: #111827; font-size: 16px; line-height: 1.6; margin: 0 0 16px 0;">Hi there,</p>
+          <p style="color: #111827; font-size: 16px; line-height: 1.6; margin: 0 0 16px 0;">
+            Your event has been postponed to:
+          </p>
+          <div style="background-color: #fef3c7; border-radius: 12px; padding: 20px; margin-bottom: 24px; border-left: 4px solid #f59e0b;">
+            <p style="color: #92400e; font-size: 17px; font-weight: 700; margin: 0;">${formattedDate}</p>
+          </div>
+          <p style="color: #111827; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
+            Your Zoom link remains the same — we look forward to seeing you then!
+          </p>
+          <div style="text-align: center; margin-bottom: 24px;">
+            <a href="${zoomLink}" style="display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px;">Join Zoom Meeting</a>
+          </div>
+          <p style="color: #6b7280; font-size: 14px; text-align: center; margin: 0 0 24px 0; word-break: break-all;">
+            <a href="${zoomLink}" style="color: #2563eb;">${zoomLink}</a>
+          </p>
+          <p style="color: #111827; font-size: 16px; line-height: 1.6; margin: 0;">
+            Apologies for any inconvenience. We appreciate your understanding! 💕<br>
+            <span style="color: #6b7280; font-size: 14px;">— The Tempo Dating Team</span>
+          </p>
+        </div>
+        <div style="text-align: center; color: #9ca3af; font-size: 14px; margin-top: 24px;">
+          <p style="margin: 0;">© ${new Date().getFullYear()} Tempo Dating. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>`
+}
+
 const TEMPLATE_SUBJECTS: Record<TemplateId, string> = {
   'pre-event': 'Your online Speed Dating event is starting soon!',
   'post-event': 'Thank you for attending! Select your matches 💕',
   'leads-reminder': 'Don\'t miss out — spots are filling up! 💕',
   'next-event': 'Enjoyed the event? Our next one is coming up! 🎉',
   'complimentary-ticket': 'A free ticket from us — we\'re sorry 💚',
+  'event-postponed': 'Important update: your event has been postponed',
 }
 
 export async function POST(req: NextRequest) {
@@ -402,7 +440,7 @@ export async function POST(req: NextRequest) {
 
     // For pre-event, we need the zoom link
     let zoomLink: string | null = null
-    if (template === 'pre-event') {
+    if (template === 'pre-event' || template === 'event-postponed') {
       if (!event) {
         return NextResponse.json({ error: 'No zoom link found for this product' }, { status: 404 })
       }
@@ -454,6 +492,22 @@ export async function POST(req: NextRequest) {
         html = buildLeadsReminderHtml(productId, productType, city)
       } else if (template === 'next-event') {
         html = buildNextEventHtml(nextEvent!, city)
+      } else if (template === 'event-postponed') {
+        if (!event) {
+          return NextResponse.json({ error: 'Event not found for this product' }, { status: 404 })
+        }
+        const formattedDate = new Date(event.gmtdatetime).toLocaleString('en-US', {
+          timeZone: event.timezone,
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+          timeZoneName: 'short',
+        })
+        html = buildEventPostponedHtml(formattedDate, zoomLink!)
       } else if (template === 'complimentary-ticket') {
         const supabase = createServiceSupabaseClient()
         const testSessionId = `COMPLIMENTARY_${crypto.randomUUID()}`
@@ -667,10 +721,27 @@ export async function POST(req: NextRequest) {
 
     console.log(`Sending ${template} email to ${recipients.length} recipients for product ${productId} (audience: ${audience})`)
 
+    let postponedFormattedDate = ''
+    if (template === 'event-postponed' && event) {
+      postponedFormattedDate = new Date(event.gmtdatetime).toLocaleString('en-US', {
+        timeZone: event.timezone,
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+        timeZoneName: 'short',
+      })
+    }
+
     const batchEmails = recipients.map((r) => {
       let html: string
       if (template === 'post-event') {
         html = buildPostEventHtml(buildCheckoutSuccessUrl(r))
+      } else if (template === 'event-postponed') {
+        html = buildEventPostponedHtml(postponedFormattedDate, zoomLink!)
       } else {
         html = buildPreEventHtml(zoomLink!)
       }

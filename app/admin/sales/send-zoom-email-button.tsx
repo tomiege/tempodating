@@ -31,7 +31,7 @@ type SendStatus = {
   message: string
 }
 
-type TemplateId = 'pre-event' | 'post-event' | 'leads-reminder' | 'next-event' | 'complimentary-ticket'
+type TemplateId = 'pre-event' | 'post-event' | 'leads-reminder' | 'next-event' | 'complimentary-ticket' | 'event-postponed'
 
 interface EmailTemplate {
   id: TemplateId
@@ -114,6 +114,23 @@ If you had a great time, why not come back for another round? Meet even more ama
 [Book Next Event]
 
 See you there! 💕`,
+  },
+  {
+    id: 'event-postponed',
+    label: '⏳ Event Postponed',
+    subject: 'Important update: your event has been postponed',
+    previewBody: `Hi there,
+
+Your event has been postponed to:
+
+[ New Date & Time in Event Timezone ]
+
+Your Zoom link remains the same — we look forward to seeing you then!
+
+[Join Zoom Meeting]
+
+Apologies for any inconvenience. We appreciate your understanding! 💕
+— The Tempo Dating Team`,
   },
   {
     id: 'complimentary-ticket',
