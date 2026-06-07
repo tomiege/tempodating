@@ -62,6 +62,8 @@ const EMAIL_TEMPLATES: EmailTemplate[] = [
 
 Your online Speed Dating event is starting shortly!
 
+[Event date & time in the event's timezone]
+
 If you haven't already, please click here to get your Zoom Link to join the event!
 
 [Join Zoom Meeting]

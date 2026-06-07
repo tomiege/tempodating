@@ -69,6 +69,7 @@ def get_sheet_data_and_convert_to_json(output_json_path="products/events.json", 
                     continue
                 print(row)
                 try:
+                    row = {k: (None if isinstance(v, float) and math.isnan(v) else v) for k, v in row.items()}
                     city = row['city']
                     country = row['country']
                     title = "For Gay men" if row['productType'] =="onlineSpeedDatingGay" else ""
@@ -108,9 +109,9 @@ def get_sheet_data_and_convert_to_json(output_json_path="products/events.json", 
                     print(f"Error details: {e}")
                     continue
             
-            # Write the JSON data to a file
+            # Write the JSON data to a file (NaN → null)
             with open(output_json_path, 'w', encoding='utf-8') as json_file:
-                json.dump(json_data, json_file, indent=4)
+                json.dump(json_data, json_file, indent=4, default=lambda v: None if (isinstance(v, float) and math.isnan(v)) else v)
             
             print(f"Conversion completed! JSON file saved at {output_json_path}")
             return json_data

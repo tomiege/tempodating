@@ -185,7 +185,7 @@ async function logCampaign(
 
 export type TemplateId = 'pre-event' | 'post-event' | 'leads-reminder' | 'next-event' | 'complimentary-ticket' | 'event-postponed'
 
-function buildPreEventHtml(zoomLink: string): string {
+function buildPreEventHtml(zoomLink: string, formattedDatetime: string): string {
   return `
     <!DOCTYPE html>
     <html>
@@ -196,6 +196,9 @@ function buildPreEventHtml(zoomLink: string): string {
           <p style="color: #111827; font-size: 16px; line-height: 1.6; margin: 0 0 16px 0;">Hi there,</p>
           <p style="color: #111827; font-size: 16px; line-height: 1.6; margin: 0 0 16px 0;">
             Your online Speed Dating event is starting shortly!
+          </p>
+          <p style="color: #111827; font-size: 16px; line-height: 1.6; margin: 0 0 16px 0;">
+            <strong>${formattedDatetime}</strong>
           </p>
           <p style="color: #111827; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
             If you haven't already, please click here to get your Zoom Link to join the event!
@@ -533,7 +536,18 @@ export async function POST(req: NextRequest) {
         const testSuccessUrl = `${BASE_URL}/checkout-success/${nextEvent!.productType || 'onlineSpeedDating'}?checkoutSessionId=${testSessionId}&email=${encodeURIComponent(testEmail)}`
         html = buildComplimentaryTicketHtml(city || nextEvent!.city, testSuccessUrl)
       } else {
-        html = buildPreEventHtml(zoomLink!)
+        const preEventDatetime = event ? new Date(event.gmtdatetime).toLocaleString('en-US', {
+          timeZone: event.timezone,
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+          timeZoneName: 'short',
+        }) : ''
+        html = buildPreEventHtml(zoomLink!, preEventDatetime)
       }
 
       const { error } = await resend.emails.send({
@@ -722,8 +736,9 @@ export async function POST(req: NextRequest) {
     console.log(`Sending ${template} email to ${recipients.length} recipients for product ${productId} (audience: ${audience})`)
 
     let postponedFormattedDate = ''
-    if (template === 'event-postponed' && event) {
-      postponedFormattedDate = new Date(event.gmtdatetime).toLocaleString('en-US', {
+    let preEventFormattedDatetime = ''
+    if (event) {
+      const dateFormatOptions: Intl.DateTimeFormatOptions = {
         timeZone: event.timezone,
         weekday: 'long',
         month: 'long',
@@ -733,7 +748,10 @@ export async function POST(req: NextRequest) {
         minute: '2-digit',
         hour12: true,
         timeZoneName: 'short',
-      })
+      }
+      const formatted = new Date(event.gmtdatetime).toLocaleString('en-US', dateFormatOptions)
+      if (template === 'event-postponed') postponedFormattedDate = formatted
+      if (template === 'pre-event') preEventFormattedDatetime = formatted
     }
 
     const batchEmails = recipients.map((r) => {
@@ -743,7 +761,7 @@ export async function POST(req: NextRequest) {
       } else if (template === 'event-postponed') {
         html = buildEventPostponedHtml(postponedFormattedDate, zoomLink!)
       } else {
-        html = buildPreEventHtml(zoomLink!)
+        html = buildPreEventHtml(zoomLink!, preEventFormattedDatetime)
       }
       return {
         from: 'Tempo Dating <support@tempodating.com>' as const,
