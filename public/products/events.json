@@ -3326,7 +3326,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": NaN,
+        "zoomInvite": "TBA",
         "region_id": "LDN_EAST_6"
     },
     {
@@ -3344,7 +3344,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": NaN,
+        "zoomInvite": "TBA",
         "region_id": "E_W_MIDS_7"
     },
     {
@@ -3362,7 +3362,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": NaN,
+        "zoomInvite": "TBA",
         "region_id": "SE_SW_ENG_8"
     },
     {
@@ -3380,7 +3380,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": NaN,
+        "zoomInvite": "TBA",
         "region_id": "NW_ENG_YORKS_9"
     },
     {
