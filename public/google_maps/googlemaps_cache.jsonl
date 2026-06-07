@@ -28,3 +28,4 @@
 {"input": "Dublin, Ireland", "output": [53.3498053, -6.2603097]}
 {"input": "New Orleans, USA", "output": [29.9508941, -90.07583559999999]}
 {"input": "Raleigh, USA", "output": [35.7795897, -78.6381787]}
+{"input": "mpas, Australia", "output": [-6.083400999999999, 143.624405]}
