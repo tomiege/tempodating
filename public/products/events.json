@@ -167,7 +167,7 @@
         "title": "Online Speed Dating",
         "country": "Canada",
         "city": "Calgary",
-        "latitude": 51.04473309999998,
+        "latitude": 51.04473309999999,
         "longitude": -114.0718831,
         "timezone": "America/Denver",
         "male_price": 2200,
@@ -2952,24 +2952,6 @@
         "region_id": "AZ_18"
     },
     {
-        "productId": 543,
-        "gmtdatetime": "2026-06-07T21:00:00Z",
-        "title": "Online Speed Dating",
-        "country": "USA",
-        "city": "Jacksonville",
-        "latitude": 30.3297566,
-        "longitude": -81.6591529,
-        "timezone": "America/New_York",
-        "male_price": 1600,
-        "female_price": 1200,
-        "currency": "USD",
-        "duration_in_minutes": 60,
-        "soldOut": false,
-        "productType": "onlineSpeedDatingGay",
-        "zoomInvite": "https://us02web.zoom.us/j/89807693671?pwd=6TppXCxNDqUrsCgFQanTPSJrS8nSGt.1",
-        "region_id": "FL_13"
-    },
-    {
         "productId": 547,
         "gmtdatetime": "2026-06-07T21:00:00Z",
         "title": "Online Speed Dating",
@@ -3004,6 +2986,24 @@
         "productType": "onlineSpeedDatingGay",
         "zoomInvite": "https://us05web.zoom.us/j/83504000466?pwd=KwyFy1JC39F7glcEH8bYkh8IOZ63Fn.1",
         "region_id": "NY_NJ_21"
+    },
+    {
+        "productId": 543,
+        "gmtdatetime": "2026-06-07T22:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "USA",
+        "city": "Jacksonville",
+        "latitude": 30.3297566,
+        "longitude": -81.6591529,
+        "timezone": "America/New_York",
+        "male_price": 1600,
+        "female_price": 1200,
+        "currency": "USD",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDatingGay",
+        "zoomInvite": "https://us02web.zoom.us/j/89807693671?pwd=6TppXCxNDqUrsCgFQanTPSJrS8nSGt.1",
+        "region_id": "FL_13"
     },
     {
         "productId": 535,
