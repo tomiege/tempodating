@@ -2988,6 +2988,24 @@
         "region_id": "TX_17"
     },
     {
+        "productId": 551,
+        "gmtdatetime": "2026-06-07T22:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "USA",
+        "city": "New York City",
+        "latitude": 40.7127753,
+        "longitude": -74.0059728,
+        "timezone": "America/New_York",
+        "male_price": 1600,
+        "female_price": 1200,
+        "currency": "USD",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDatingGay",
+        "zoomInvite": "TBA",
+        "region_id": "NY_NJ_21"
+    },
+    {
         "productId": 535,
         "gmtdatetime": "2026-06-28T19:00:00Z",
         "title": "Online Speed Dating",
@@ -3204,24 +3222,6 @@
         "region_id": "AB_11"
     },
     {
-        "productId": 551,
-        "gmtdatetime": "2026-06-28T22:00:00Z",
-        "title": "Online Speed Dating",
-        "country": "USA",
-        "city": "New York City",
-        "latitude": 40.7127753,
-        "longitude": -74.0059728,
-        "timezone": "America/New_York",
-        "male_price": 1600,
-        "female_price": 1200,
-        "currency": "USD",
-        "duration_in_minutes": 60,
-        "soldOut": false,
-        "productType": "onlineSpeedDatingGay",
-        "zoomInvite": "TBA",
-        "region_id": "NY_NJ_21"
-    },
-    {
         "productId": 538,
         "gmtdatetime": "2026-06-28T22:00:00Z",
         "title": "Online Speed Dating",
@@ -3294,7 +3294,7 @@
         "region_id": "ON_15"
     },
     {
-        "productId": 534,
+        "productId": 529,
         "gmtdatetime": "2026-06-28T21:00:00Z",
         "title": "Online Speed Dating",
         "country": "Canada",
