@@ -2646,6 +2646,24 @@
         "region_id": "VIC_5"
     },
     {
+        "productId": 515,
+        "gmtdatetime": "2026-06-07T09:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "Australia",
+        "city": "Brisbane",
+        "latitude": -27.4704528,
+        "longitude": 153.0260341,
+        "timezone": "Australia/Brisbane",
+        "male_price": 2200,
+        "female_price": 1600,
+        "currency": "AUD",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/84513628444?pwd=N4VPKuKcCmOHDI5E1jbqf3JwY5vbDh.1",
+        "region_id": "QLD_25"
+    },
+    {
         "productId": 508,
         "gmtdatetime": "2026-06-28T09:00:00Z",
         "title": "Online Speed Dating",
@@ -2716,24 +2734,6 @@
         "productType": "onlineSpeedDatingGay",
         "zoomInvite": "TBA",
         "region_id": "NL_26"
-    },
-    {
-        "productId": 515,
-        "gmtdatetime": "2026-06-28T09:00:00Z",
-        "title": "Online Speed Dating",
-        "country": "Australia",
-        "city": "Brisbane",
-        "latitude": -27.4704528,
-        "longitude": 153.0260341,
-        "timezone": "Australia/Brisbane",
-        "male_price": 2200,
-        "female_price": 1600,
-        "currency": "AUD",
-        "duration_in_minutes": 60,
-        "soldOut": false,
-        "productType": "onlineSpeedDating",
-        "zoomInvite": "TBA",
-        "region_id": "QLD_25"
     },
     {
         "productId": 516,
