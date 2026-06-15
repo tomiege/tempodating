@@ -12,7 +12,7 @@ export interface EventSession {
   welcomeShown: boolean
   goodbyeShown: boolean
   isGayEvent: boolean
-  reminder: 'registration' | null
+  reminder: 'registration' | 'postponed' | null
   reminderUntil: number | null
 }
 

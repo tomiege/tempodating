@@ -16,7 +16,7 @@ interface EventSession {
   welcomeShown: boolean
   goodbyeShown: boolean
   isGayEvent: boolean
-  reminder: 'registration' | null
+  reminder: 'registration' | 'postponed' | null
   reminderUntil: number | null
 }
 
@@ -156,26 +156,49 @@ export default function DisplayView({ productId }: { productId: string }) {
   })()
 
   // Reminder overlay — shown on top of any phase for 10 seconds
-  const showReminder = session?.reminder === 'registration' &&
+  const showReminder = (session?.reminder === 'registration' || session?.reminder === 'postponed') &&
     session.reminderUntil != null &&
     now < session.reminderUntil
 
-  const ReminderOverlay = () => showReminder ? (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl shadow-2xl px-12 py-10 max-w-xl w-full mx-6 text-center">
-        <div className="text-6xl mb-5">📋</div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-4 leading-tight">
-          Please fill in the attendance form
-        </h2>
-        <p className="text-lg text-gray-600 leading-relaxed">
-          To be included in tonight's pairings, fill in the attendance form.
-        </p>
-        <p className="text-lg font-semibold text-orange-600 mt-3">
-          The link is posted in this meeting's group chat.
-        </p>
+  const ReminderOverlay = () => {
+    if (!showReminder) return null
+    if (session?.reminder === 'postponed') {
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-2xl px-12 py-10 max-w-xl w-full mx-6 text-center">
+            <div className="text-6xl mb-5">⏳</div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4 leading-tight">
+              Tonight's event is being postponed
+            </h2>
+            <p className="text-lg text-gray-600 leading-relaxed">
+              Some attendees are running into technical issues joining, so we're
+              rescheduling to make sure everyone can take part. We're sorry for
+              the inconvenience.
+            </p>
+            <p className="text-lg font-semibold text-rose-600 mt-3">
+              You'll receive an email shortly with the new details and next steps.
+            </p>
+          </div>
+        </div>
+      )
+    }
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+        <div className="bg-white rounded-3xl shadow-2xl px-12 py-10 max-w-xl w-full mx-6 text-center">
+          <div className="text-6xl mb-5">📋</div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4 leading-tight">
+            Please fill in the attendance form
+          </h2>
+          <p className="text-lg text-gray-600 leading-relaxed">
+            To be included in tonight's pairings, fill in the attendance form.
+          </p>
+          <p className="text-lg font-semibold text-orange-600 mt-3">
+            The link is posted in this meeting's group chat.
+          </p>
+        </div>
       </div>
-    </div>
-  ) : null
+    )
+  }
 
   // Mute toggle button (shown in corner on all phases)
   const MuteBtn = () => (

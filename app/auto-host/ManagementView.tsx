@@ -33,7 +33,7 @@ interface EventSession {
   welcomeShown: boolean
   goodbyeShown: boolean
   isGayEvent: boolean
-  reminder: 'registration' | null
+  reminder: 'registration' | 'postponed' | null
   reminderUntil: number | null
 }
 
@@ -727,6 +727,12 @@ export default function ManagementView({ events, initialProductId }: { events: E
                   onClick={() => patchSession({ reminder: 'registration', reminderUntil: Date.now() + 10000 })}
                 >
                   📋 Remind Registration
+                </Button>
+                <Button
+                  className="w-full bg-rose-500 hover:bg-rose-600 h-8 text-xs mt-2"
+                  onClick={() => patchSession({ reminder: 'postponed', reminderUntil: Date.now() + 10000 })}
+                >
+                  ⏳ Postponed Reminder
                 </Button>
               </Card>
             </div>
