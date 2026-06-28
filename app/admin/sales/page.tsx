@@ -13,8 +13,7 @@ import {
 } from '@/components/ui/table'
 import { DailyCheckoutsChart, DailyLeadsChart } from './charts'
 import { CopyEmailsButton } from './copy-emails-button'
-import { SendZoomEmailButton } from './send-zoom-email-button'
-import { SendInviteEmailButton } from './send-invite-email-button'
+import { EventSalesTable } from './event-sales-table'
 import { Star } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -61,23 +60,6 @@ async function getEventsMap(): Promise<Map<number, EventEntry>> {
     console.error('Error loading events.json')
     return new Map()
   }
-}
-
-function formatEventDatetime(gmtdatetime: string): string {
-  const date = new Date(gmtdatetime)
-  return date.toLocaleString('en-US', {
-    timeZone: 'UTC',
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  }) + ' GMT'
-}
-
-function isEventFinished(gmtdatetime: string): boolean {
-  return new Date(gmtdatetime) < new Date()
 }
 
 interface VisitorInfo {
@@ -186,7 +168,10 @@ async function getSalesData(): Promise<SalesData[]> {
       female_tickets: counts.female,
       total: counts.male + counts.female,
       differential: counts.male - counts.female,
-      city: counts.city,
+      // Display the event's canonical city from events.json (same source as the /products API).
+      // Fall back to the buyer's query_city only when the product isn't in events.json.
+      // NB: emails still use query_city — that logic lives server-side in /api/send-zoom-email.
+      city: event?.city || counts.city,
       male_emails: counts.male_emails,
       female_emails: counts.female_emails,
       event_datetime: event?.gmtdatetime ?? null,
@@ -385,18 +370,6 @@ interface FeedbackData {
   created_at: string
 }
 
-function getDifferentialColor(diff: number): string {
-  if (Math.abs(diff) <= 4) return 'text-green-600'
-  if (diff > 0) return 'text-blue-600' // More males
-  return 'text-pink-600' // More females
-}
-
-function formatDifferential(diff: number): string {
-  if (Math.abs(diff) <= 4) return 'Balanced'
-  if (diff > 0) return `+${diff} M`
-  return `+${Math.abs(diff)} F`
-}
-
 async function getRecentFeedback(): Promise<FeedbackData[]> {
   const supabase = createServiceSupabaseClient()
 
@@ -459,32 +432,6 @@ async function getEmailCampaignsByProduct(): Promise<Map<number, Set<string>>> {
   return map
 }
 
-const TEMPLATE_DOTS: { id: string; color: string; label: string }[] = [
-  { id: 'pre-event',            color: 'bg-blue-500',    label: 'Pre-event (Zoom link) sent' },
-  { id: 'post-event',           color: 'bg-pink-500',    label: 'Post-event (select matches) sent' },
-  { id: 'leads-reminder',       color: 'bg-orange-500',  label: 'Leads reminder sent' },
-  { id: 'next-event',           color: 'bg-purple-500',  label: 'Next event email sent' },
-  { id: 'complimentary-ticket', color: 'bg-emerald-500', label: 'Complimentary ticket sent' },
-  { id: 'invite-friend-male',   color: 'bg-sky-400',     label: 'Invite-a-friend (male) sent' },
-  { id: 'invite-friend-female', color: 'bg-rose-400',    label: 'Invite-a-friend (female) sent' },
-]
-
-function EmailStatusDots({ sentTemplates }: { sentTemplates: Set<string> }) {
-  const sent = TEMPLATE_DOTS.filter((t) => sentTemplates.has(t.id))
-  if (sent.length === 0) return null
-  return (
-    <div className="flex flex-wrap gap-0.5 justify-end mt-1">
-      {sent.map((t) => (
-        <span
-          key={t.id}
-          title={t.label}
-          className={`inline-block w-2 h-2 rounded-full ${t.color}`}
-        />
-      ))}
-    </div>
-  )
-}
-
 function timeAgo(dateString: string): string {
   const now = new Date()
   const date = new Date(dateString)
@@ -512,6 +459,12 @@ export default async function SalesPage() {
 
   const eventSales = salesData.filter((row) => !ON_DEMAND_PRODUCT_TYPES.includes(row.product_type))
   const onDemandSales = salesData.filter((row) => ON_DEMAND_PRODUCT_TYPES.includes(row.product_type))
+
+  // Serialize Maps to plain objects so they can cross the server→client boundary
+  const nextEventObj: Record<number, number> = Object.fromEntries(nextEventMap)
+  const campaignsObj: Record<number, string[]> = Object.fromEntries(
+    Array.from(campaignsByProduct.entries()).map(([id, set]) => [id, Array.from(set)])
+  )
 
   return (
     <div className="container mx-auto py-10 space-y-6">
@@ -586,105 +539,7 @@ export default async function SalesPage() {
           </p>
         </CardHeader>
         <CardContent>
-          {eventSales.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              No event sales data available
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Product ID</TableHead>
-                  <TableHead>Product Type</TableHead>
-                  <TableHead>City</TableHead>
-                  <TableHead>Event Date</TableHead>
-                  <TableHead className="text-right">Visitors</TableHead>
-                  <TableHead className="text-right">Male Tickets</TableHead>
-                  <TableHead className="text-right">Female Tickets</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead className="text-right">Gender Balance</TableHead>
-                  <TableHead className="text-right">Next Event</TableHead>
-                  <TableHead className="text-right w-10"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {eventSales.map((row) => (
-                  <TableRow key={row.product_id}>
-                    <TableCell className="font-medium">
-                      <Link href={`/admin/sales/customers?product_id=${row.product_id}`} className="text-blue-600 hover:underline">
-                        {row.product_id}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{row.product_type}</TableCell>
-                    <TableCell>{row.city || '—'}</TableCell>
-                    <TableCell>
-                      {row.event_datetime ? (
-                        <span className={`font-medium ${
-                          isEventFinished(row.event_datetime)
-                            ? 'text-green-600'
-                            : 'text-blue-600'
-                        }`}>
-                          {formatEventDatetime(row.event_datetime)}
-                        </span>
-                      ) : (
-                        '—'
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right text-muted-foreground">{row.visitors}</TableCell>
-                    <TableCell className="text-right">
-                      {row.male_tickets}
-                      <CopyEmailsButton emails={row.male_emails} />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {row.female_tickets}
-                      <CopyEmailsButton emails={row.female_emails} />
-                    </TableCell>
-                    <TableCell className="text-right font-semibold">
-                      {row.total}
-                      {row.visitors > 0 && (
-                        <span className="text-xs text-muted-foreground ml-1">
-                          ({((row.total / row.visitors) * 100).toFixed(1)}%)
-                        </span>
-                      )}
-                      <CopyEmailsButton emails={[...row.male_emails, ...row.female_emails]} />
-                    </TableCell>
-                    <TableCell className={`text-right font-semibold ${getDifferentialColor(row.differential)}`}>
-                      {formatDifferential(row.differential)}
-                    </TableCell>
-                    <TableCell className="text-right text-sm">
-                      {NEXT_EVENT_TYPES.has(row.product_type) ? (
-                        nextEventMap.has(row.product_id) ? (
-                          <Link
-                            href={`/admin/sales/customers?product_id=${nextEventMap.get(row.product_id)}`}
-                            className="text-blue-600 hover:underline"
-                          >
-                            {nextEventMap.get(row.product_id)}
-                          </Link>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )
-                      ) : null}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <SendInviteEmailButton
-                          productId={row.product_id}
-                          maleEmails={row.male_emails}
-                          femaleEmails={row.female_emails}
-                        />
-                        <SendZoomEmailButton
-                          productId={row.product_id}
-                          maleEmails={row.male_emails}
-                          femaleEmails={row.female_emails}
-                        />
-                      </div>
-                      <EmailStatusDots sentTemplates={campaignsByProduct.get(row.product_id) ?? new Set()} />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+          <EventSalesTable rows={eventSales} nextEventMap={nextEventObj} campaignsByProduct={campaignsObj} />
         </CardContent>
       </Card>
 

@@ -31,9 +31,9 @@ type SendStatus = {
   message: string
 }
 
-type TemplateId = 'pre-event' | 'post-event' | 'leads-reminder' | 'next-event' | 'complimentary-ticket' | 'event-postponed'
+export type TemplateId = 'pre-event' | 'post-event' | 'leads-reminder' | 'next-event' | 'complimentary-ticket' | 'event-postponed'
 
-interface EmailTemplate {
+export interface EmailTemplate {
   id: TemplateId
   label: string
   subject: string
@@ -53,7 +53,7 @@ interface CampaignRecord {
 
 const DASHBOARD_URL = 'https://www.tempodating.com/dashboard'
 
-const EMAIL_TEMPLATES: EmailTemplate[] = [
+export const EMAIL_TEMPLATES: EmailTemplate[] = [
   {
     id: 'pre-event',
     label: '📹 Pre-Event (Zoom Link)',

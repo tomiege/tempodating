@@ -3007,7 +3007,7 @@
     },
     {
         "productId": 535,
-        "gmtdatetime": "2026-06-28T19:00:00Z",
+        "gmtdatetime": "2026-07-26T19:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "Houston",
@@ -3025,7 +3025,7 @@
     },
     {
         "productId": 523,
-        "gmtdatetime": "2026-06-28T19:00:00Z",
+        "gmtdatetime": "2026-07-26T19:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "Atlanta",
@@ -3043,7 +3043,7 @@
     },
     {
         "productId": 525,
-        "gmtdatetime": "2026-06-28T17:00:00Z",
+        "gmtdatetime": "2026-07-26T17:00:00Z",
         "title": "Online Speed Dating",
         "country": "UK",
         "city": "Glasgow",
@@ -3061,7 +3061,7 @@
     },
     {
         "productId": 526,
-        "gmtdatetime": "2026-06-28T18:00:00Z",
+        "gmtdatetime": "2026-07-26T18:00:00Z",
         "title": "Online Speed Dating",
         "country": "Ireland",
         "city": "Dublin",
@@ -3079,7 +3079,7 @@
     },
     {
         "productId": 553,
-        "gmtdatetime": "2026-06-28T17:00:00Z",
+        "gmtdatetime": "2026-07-26T17:00:00Z",
         "title": "Online Speed Dating",
         "country": "UK",
         "city": "Glasgow",
@@ -3097,7 +3097,7 @@
     },
     {
         "productId": 554,
-        "gmtdatetime": "2026-06-28T21:00:00Z",
+        "gmtdatetime": "2026-07-26T21:00:00Z",
         "title": "Online Speed Dating",
         "country": "United Kingdom",
         "city": "Leeds",
@@ -3115,7 +3115,7 @@
     },
     {
         "productId": 550,
-        "gmtdatetime": "2026-06-28T22:00:00Z",
+        "gmtdatetime": "2026-07-26T22:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "Seattle",
@@ -3133,7 +3133,7 @@
     },
     {
         "productId": 546,
-        "gmtdatetime": "2026-06-28T18:00:00Z",
+        "gmtdatetime": "2026-07-26T18:00:00Z",
         "title": "Online Speed Dating",
         "country": "Canada",
         "city": "Montreal",
@@ -3151,7 +3151,7 @@
     },
     {
         "productId": 544,
-        "gmtdatetime": "2026-06-28T17:00:00Z",
+        "gmtdatetime": "2026-07-26T17:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "Columbus",
@@ -3169,7 +3169,7 @@
     },
     {
         "productId": 540,
-        "gmtdatetime": "2026-06-28T18:00:00Z",
+        "gmtdatetime": "2026-07-26T18:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "Chicago",
@@ -3187,7 +3187,7 @@
     },
     {
         "productId": 549,
-        "gmtdatetime": "2026-06-28T21:00:00Z",
+        "gmtdatetime": "2026-07-26T21:00:00Z",
         "title": "Online Speed Dating",
         "country": "Canada",
         "city": "Vancouver",
@@ -3205,7 +3205,7 @@
     },
     {
         "productId": 541,
-        "gmtdatetime": "2026-06-28T19:00:00Z",
+        "gmtdatetime": "2026-07-26T19:00:00Z",
         "title": "Online Speed Dating",
         "country": "Canada",
         "city": "Calgary",
@@ -3223,7 +3223,7 @@
     },
     {
         "productId": 538,
-        "gmtdatetime": "2026-06-28T22:00:00Z",
+        "gmtdatetime": "2026-07-26T22:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "Seattle",
@@ -3254,26 +3254,8 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "TBA",
+        "zoomInvite": "https://us02web.zoom.us/j/89166862299?pwd=GDNLkPwsz8nTFp1MLj5kPEuXXkobcy.1",
         "region_id": "BC_19"
-    },
-    {
-        "productId": 529,
-        "gmtdatetime": "2026-06-28T21:00:00Z",
-        "title": "Online Speed Dating",
-        "country": "Canada",
-        "city": "Calgary",
-        "latitude": 51.04473309999999,
-        "longitude": -114.0718831,
-        "timezone": "America/Denver",
-        "male_price": 2200,
-        "female_price": 1600,
-        "currency": "CAD",
-        "duration_in_minutes": 60,
-        "soldOut": false,
-        "productType": "onlineSpeedDating",
-        "zoomInvite": "TBA",
-        "region_id": "AB_11"
     },
     {
         "productId": 533,
@@ -3290,7 +3272,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "TBA",
+        "zoomInvite": "https://us02web.zoom.us/j/89166862299?pwd=GDNLkPwsz8nTFp1MLj5kPEuXXkobcy.1",
         "region_id": "ON_15"
     },
     {
@@ -3308,7 +3290,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "TBA",
+        "zoomInvite": "https://us02web.zoom.us/j/89166862299?pwd=GDNLkPwsz8nTFp1MLj5kPEuXXkobcy.1",
         "region_id": "QC_16"
     },
     {
@@ -3326,7 +3308,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "https://us02web.zoom.us/j/86817373887?pwd=rDP74HiiyPJBvkVm2KpOxpufjZdX8B.1",
+        "zoomInvite": "TBA",
         "region_id": "LDN_EAST_6"
     },
     {
@@ -3344,7 +3326,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "https://us02web.zoom.us/j/86817373887?pwd=rDP74HiiyPJBvkVm2KpOxpufjZdX8B.1",
+        "zoomInvite": "TBA",
         "region_id": "E_W_MIDS_7"
     },
     {
@@ -3362,7 +3344,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "https://us02web.zoom.us/j/86817373887?pwd=rDP74HiiyPJBvkVm2KpOxpufjZdX8B.1",
+        "zoomInvite": "TBA",
         "region_id": "SE_SW_ENG_8"
     },
     {
@@ -3380,7 +3362,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "https://us02web.zoom.us/j/86817373887?pwd=rDP74HiiyPJBvkVm2KpOxpufjZdX8B.1",
+        "zoomInvite": "TBA",
         "region_id": "NW_ENG_YORKS_9"
     },
     {
@@ -3730,9 +3712,9 @@
         "gmtdatetime": "2026-07-26T09:00:00Z",
         "title": "Online Speed Dating",
         "country": "Australia",
-        "city": "mpas",
-        "latitude": -6.083400999999999,
-        "longitude": 143.624405,
+        "city": "Brisbane",
+        "latitude": -27.4704528,
+        "longitude": 153.0260341,
         "timezone": "Australia/Brisbane",
         "male_price": 2200,
         "female_price": 1600,
@@ -3794,7 +3776,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "TBA",
+        "zoomInvite": "https://us02web.zoom.us/j/87862524945?pwd=w4lhcC6agBQuO9TFW61h9krNMIHfW2.1",
         "region_id": "AZ_18"
     },
     {
@@ -3812,7 +3794,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "TBA",
+        "zoomInvite": "https://us02web.zoom.us/j/87862524945?pwd=w4lhcC6agBQuO9TFW61h9krNMIHfW2.1",
         "region_id": "CA_12"
     },
     {
@@ -3830,7 +3812,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "TBA",
+        "zoomInvite": "https://us02web.zoom.us/j/89616236562?pwd=V46VywbPllct9uCRxUNKlexxOlrfCu.1",
         "region_id": "VA_24"
     },
     {
@@ -3848,7 +3830,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "TBA",
+        "zoomInvite": "https://us02web.zoom.us/j/89616236562?pwd=V46VywbPllct9uCRxUNKlexxOlrfCu.1",
         "region_id": "NY_NJ_21"
     },
     {
@@ -3866,7 +3848,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "TBA",
+        "zoomInvite": "https://us02web.zoom.us/j/89616236562?pwd=V46VywbPllct9uCRxUNKlexxOlrfCu.1",
         "region_id": "FL_13"
     },
     {
@@ -3884,7 +3866,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "TBA",
+        "zoomInvite": "https://us02web.zoom.us/j/89616236562?pwd=V46VywbPllct9uCRxUNKlexxOlrfCu.1",
         "region_id": "IN_MI_OH_14"
     },
     {
@@ -3902,12 +3884,12 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "TBA",
+        "zoomInvite": "https://us02web.zoom.us/j/89616236562?pwd=V46VywbPllct9uCRxUNKlexxOlrfCu.1",
         "region_id": "IL_WI_10"
     },
     {
         "productId": 576,
-        "gmtdatetime": "2026-06-28T22:00:00Z",
+        "gmtdatetime": "2026-07-26T22:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "New Orleans",
@@ -3925,7 +3907,7 @@
     },
     {
         "productId": 577,
-        "gmtdatetime": "2026-06-28T22:00:00Z",
+        "gmtdatetime": "2026-07-26T22:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "Kansas City",
@@ -3943,7 +3925,7 @@
     },
     {
         "productId": 578,
-        "gmtdatetime": "2026-06-28T21:00:00Z",
+        "gmtdatetime": "2026-07-26T21:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "Los Angeles",
@@ -3961,7 +3943,7 @@
     },
     {
         "productId": 579,
-        "gmtdatetime": "2026-06-28T21:00:00Z",
+        "gmtdatetime": "2026-07-26T21:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "Phoenix",
@@ -3979,7 +3961,7 @@
     },
     {
         "productId": 580,
-        "gmtdatetime": "2026-06-28T21:00:00Z",
+        "gmtdatetime": "2026-07-26T21:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "Houston",
@@ -3997,7 +3979,7 @@
     },
     {
         "productId": 581,
-        "gmtdatetime": "2026-06-28T22:00:00Z",
+        "gmtdatetime": "2026-07-26T22:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "New York City",
@@ -4015,7 +3997,7 @@
     },
     {
         "productId": 582,
-        "gmtdatetime": "2026-06-28T22:00:00Z",
+        "gmtdatetime": "2026-07-26T22:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "Jacksonville",
