@@ -127,10 +127,6 @@ Your event has been postponed to:
 
 [ New Date & Time in Event Timezone ]
 
-Your Zoom link remains the same — we look forward to seeing you then!
-
-[Join Zoom Meeting]
-
 Apologies for any inconvenience. We appreciate your understanding! 💕
 — The Tempo Dating Team`,
   },

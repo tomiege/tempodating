@@ -2664,96 +2664,6 @@
         "region_id": "QLD_25"
     },
     {
-        "productId": 508,
-        "gmtdatetime": "2026-06-28T09:00:00Z",
-        "title": "Online Speed Dating",
-        "country": "Australia",
-        "city": "Sydney",
-        "latitude": -33.8622503,
-        "longitude": 151.207684,
-        "timezone": "Australia/Sydney",
-        "male_price": 2200,
-        "female_price": 1600,
-        "currency": "AUD",
-        "duration_in_minutes": 60,
-        "soldOut": false,
-        "productType": "onlineSpeedDatingGay",
-        "zoomInvite": "TBA",
-        "region_id": "NSW_4"
-    },
-    {
-        "productId": 509,
-        "gmtdatetime": "2026-06-28T09:00:00Z",
-        "title": "Online Speed Dating",
-        "country": "Australia",
-        "city": "Melbourne",
-        "latitude": -37.8136276,
-        "longitude": 144.9630576,
-        "timezone": "Australia/Sydney",
-        "male_price": 2200,
-        "female_price": 1600,
-        "currency": "AUD",
-        "duration_in_minutes": 60,
-        "soldOut": false,
-        "productType": "onlineSpeedDatingGay",
-        "zoomInvite": "TBA",
-        "region_id": "VIC_5"
-    },
-    {
-        "productId": 513,
-        "gmtdatetime": "2026-06-28T09:00:00Z",
-        "title": "Online Speed Dating",
-        "country": "Australia",
-        "city": "Brisbane",
-        "latitude": -27.4704528,
-        "longitude": 153.0260341,
-        "timezone": "Australia/Brisbane",
-        "male_price": 2200,
-        "female_price": 1600,
-        "currency": "AUD",
-        "duration_in_minutes": 60,
-        "soldOut": false,
-        "productType": "onlineSpeedDatingGay",
-        "zoomInvite": "TBA",
-        "region_id": "QLD_25"
-    },
-    {
-        "productId": 514,
-        "gmtdatetime": "2026-06-28T09:00:00Z",
-        "title": "Online Speed Dating",
-        "country": "Netherlands",
-        "city": "Amsterdam",
-        "latitude": 52.3675734,
-        "longitude": 4.9041389,
-        "timezone": "Europe/Amsterdam",
-        "male_price": 1600,
-        "female_price": 1200,
-        "currency": "EUR",
-        "duration_in_minutes": 60,
-        "soldOut": false,
-        "productType": "onlineSpeedDatingGay",
-        "zoomInvite": "TBA",
-        "region_id": "NL_26"
-    },
-    {
-        "productId": 516,
-        "gmtdatetime": "2026-06-28T09:00:00Z",
-        "title": "Online Speed Dating",
-        "country": "Netherlands",
-        "city": "Amsterdam",
-        "latitude": 52.3675734,
-        "longitude": 4.9041389,
-        "timezone": "Europe/Amsterdam",
-        "male_price": 1600,
-        "female_price": 1200,
-        "currency": "EUR",
-        "duration_in_minutes": 60,
-        "soldOut": false,
-        "productType": "onlineSpeedDating",
-        "zoomInvite": "TBA",
-        "region_id": "NL_26"
-    },
-    {
         "productId": 536,
         "gmtdatetime": "2026-06-07T20:00:00Z",
         "title": "Online Speed Dating",
@@ -3672,7 +3582,7 @@
         "region_id": "QLD_25"
     },
     {
-        "productId": 564,
+        "productId": 508,
         "gmtdatetime": "2026-07-26T09:00:00Z",
         "title": "Online Speed Dating",
         "country": "Australia",
@@ -3690,7 +3600,7 @@
         "region_id": "NSW_4"
     },
     {
-        "productId": 565,
+        "productId": 509,
         "gmtdatetime": "2026-07-26T09:00:00Z",
         "title": "Online Speed Dating",
         "country": "Australia",
@@ -3708,7 +3618,7 @@
         "region_id": "VIC_5"
     },
     {
-        "productId": 566,
+        "productId": 513,
         "gmtdatetime": "2026-07-26T09:00:00Z",
         "title": "Online Speed Dating",
         "country": "Australia",
@@ -3726,7 +3636,7 @@
         "region_id": "QLD_25"
     },
     {
-        "productId": 567,
+        "productId": 514,
         "gmtdatetime": "2026-07-26T09:00:00Z",
         "title": "Online Speed Dating",
         "country": "Netherlands",
@@ -3744,7 +3654,7 @@
         "region_id": "NL_26"
     },
     {
-        "productId": 568,
+        "productId": 516,
         "gmtdatetime": "2026-07-26T09:00:00Z",
         "title": "Online Speed Dating",
         "country": "Netherlands",
@@ -3763,7 +3673,7 @@
     },
     {
         "productId": 569,
-        "gmtdatetime": "2026-06-28T20:00:00Z",
+        "gmtdatetime": "2026-07-26T20:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "Phoenix",
@@ -3781,7 +3691,7 @@
     },
     {
         "productId": 570,
-        "gmtdatetime": "2026-06-28T20:00:00Z",
+        "gmtdatetime": "2026-07-26T20:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "Los Angeles",

@@ -376,7 +376,7 @@ function buildComplimentaryTicketHtml(city: string, successUrl: string): string 
     </html>`
 }
 
-function buildEventPostponedHtml(formattedDate: string, zoomLink: string): string {
+function buildEventPostponedHtml(formattedDate: string): string {
   return `
     <!DOCTYPE html>
     <html>
@@ -391,15 +391,6 @@ function buildEventPostponedHtml(formattedDate: string, zoomLink: string): strin
           <div style="background-color: #fef3c7; border-radius: 12px; padding: 20px; margin-bottom: 24px; border-left: 4px solid #f59e0b;">
             <p style="color: #92400e; font-size: 17px; font-weight: 700; margin: 0;">${formattedDate}</p>
           </div>
-          <p style="color: #111827; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
-            Your Zoom link remains the same — we look forward to seeing you then!
-          </p>
-          <div style="text-align: center; margin-bottom: 24px;">
-            <a href="${zoomLink}" style="display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px;">Join Zoom Meeting</a>
-          </div>
-          <p style="color: #6b7280; font-size: 14px; text-align: center; margin: 0 0 24px 0; word-break: break-all;">
-            <a href="${zoomLink}" style="color: #2563eb;">${zoomLink}</a>
-          </p>
           <p style="color: #111827; font-size: 16px; line-height: 1.6; margin: 0;">
             Apologies for any inconvenience. We appreciate your understanding! 💕<br>
             <span style="color: #6b7280; font-size: 14px;">— The Tempo Dating Team</span>
@@ -443,7 +434,7 @@ export async function POST(req: NextRequest) {
 
     // For pre-event, we need the zoom link
     let zoomLink: string | null = null
-    if (template === 'pre-event' || template === 'event-postponed') {
+    if (template === 'pre-event') {
       if (!event) {
         return NextResponse.json({ error: 'No zoom link found for this product' }, { status: 404 })
       }
@@ -510,7 +501,7 @@ export async function POST(req: NextRequest) {
           hour12: true,
           timeZoneName: 'short',
         })
-        html = buildEventPostponedHtml(formattedDate, zoomLink!)
+        html = buildEventPostponedHtml(formattedDate)
       } else if (template === 'complimentary-ticket') {
         const supabase = createServiceSupabaseClient()
         const testSessionId = `COMPLIMENTARY_${crypto.randomUUID()}`
@@ -759,7 +750,7 @@ export async function POST(req: NextRequest) {
       if (template === 'post-event') {
         html = buildPostEventHtml(buildCheckoutSuccessUrl(r))
       } else if (template === 'event-postponed') {
-        html = buildEventPostponedHtml(postponedFormattedDate, zoomLink!)
+        html = buildEventPostponedHtml(postponedFormattedDate)
       } else {
         html = buildPreEventHtml(zoomLink!, preEventFormattedDatetime)
       }
