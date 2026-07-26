@@ -3542,7 +3542,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "TBA",
+        "zoomInvite": "https://us02web.zoom.us/j/88250530819?pwd=tW7da40TK9dOJuPkLGttrj3V2FpUsA.1",
         "region_id": "NSW_4"
     },
     {
@@ -3560,7 +3560,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "TBA",
+        "zoomInvite": "https://us02web.zoom.us/j/88250530819?pwd=tW7da40TK9dOJuPkLGttrj3V2FpUsA.1",
         "region_id": "VIC_5"
     },
     {
@@ -3578,7 +3578,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "TBA",
+        "zoomInvite": "https://us02web.zoom.us/j/88250530819?pwd=tW7da40TK9dOJuPkLGttrj3V2FpUsA.1",
         "region_id": "QLD_25"
     },
     {
@@ -3596,7 +3596,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDatingGay",
-        "zoomInvite": "TBA",
+        "zoomInvite": "https://us05web.zoom.us/j/83553599510?pwd=HWeD3RoXnqnhGUN6peasln72j2jfL6.1",
         "region_id": "NSW_4"
     },
     {
@@ -3614,7 +3614,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDatingGay",
-        "zoomInvite": "TBA",
+        "zoomInvite": "https://us05web.zoom.us/j/83553599510?pwd=HWeD3RoXnqnhGUN6peasln72j2jfL6.1",
         "region_id": "VIC_5"
     },
     {
@@ -3632,12 +3632,12 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDatingGay",
-        "zoomInvite": "TBA",
+        "zoomInvite": "https://us05web.zoom.us/j/83553599510?pwd=HWeD3RoXnqnhGUN6peasln72j2jfL6.1",
         "region_id": "QLD_25"
     },
     {
         "productId": 514,
-        "gmtdatetime": "2026-07-26T09:00:00Z",
+        "gmtdatetime": "2026-08-23T09:00:00Z",
         "title": "Online Speed Dating",
         "country": "Netherlands",
         "city": "Amsterdam",
@@ -3655,7 +3655,7 @@
     },
     {
         "productId": 516,
-        "gmtdatetime": "2026-07-26T09:00:00Z",
+        "gmtdatetime": "2026-08-23T09:00:00Z",
         "title": "Online Speed Dating",
         "country": "Netherlands",
         "city": "Amsterdam",
@@ -4030,5 +4030,77 @@
         "productType": "onlineSpeedDating",
         "zoomInvite": "TBA",
         "region_id": "AB_11"
+    },
+    {
+        "productId": 590,
+        "gmtdatetime": "2026-08-02T19:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "United Kingdom",
+        "city": "London",
+        "latitude": 51.5072178,
+        "longitude": -0.1275862,
+        "timezone": "Europe/London",
+        "male_price": 1400,
+        "female_price": 1000,
+        "currency": "GBP",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/82072505301?pwd=NAmIaod3AqRFbUTaPzBsgKy958qG9H.1",
+        "region_id": "LDN_EAST_6"
+    },
+    {
+        "productId": 591,
+        "gmtdatetime": "2026-08-02T19:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "United Kingdom",
+        "city": "Birmingham",
+        "latitude": 52.4822694,
+        "longitude": -1.8900078,
+        "timezone": "Europe/London",
+        "male_price": 1400,
+        "female_price": 1000,
+        "currency": "GBP",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/82072505301?pwd=NAmIaod3AqRFbUTaPzBsgKy958qG9H.1",
+        "region_id": "E_W_MIDS_7"
+    },
+    {
+        "productId": 592,
+        "gmtdatetime": "2026-08-02T19:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "United Kingdom",
+        "city": "Bristol",
+        "latitude": 51.454513,
+        "longitude": -2.58791,
+        "timezone": "Europe/London",
+        "male_price": 1400,
+        "female_price": 1000,
+        "currency": "GBP",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/82072505301?pwd=NAmIaod3AqRFbUTaPzBsgKy958qG9H.1",
+        "region_id": "SE_SW_ENG_8"
+    },
+    {
+        "productId": 593,
+        "gmtdatetime": "2026-08-02T19:00:00Z",
+        "title": "Online Speed Dating",
+        "country": "United Kingdom",
+        "city": "Leeds",
+        "latitude": 53.8007554,
+        "longitude": -1.5490774,
+        "timezone": "Europe/London",
+        "male_price": 1400,
+        "female_price": 1000,
+        "currency": "GBP",
+        "duration_in_minutes": 60,
+        "soldOut": false,
+        "productType": "onlineSpeedDating",
+        "zoomInvite": "https://us02web.zoom.us/j/82072505301?pwd=NAmIaod3AqRFbUTaPzBsgKy958qG9H.1",
+        "region_id": "NW_ENG_YORKS_9"
     }
 ]
