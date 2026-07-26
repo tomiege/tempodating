@@ -26,6 +26,7 @@ interface EventEntry {
   title: string
   city: string
   productType?: string
+  zoomInvite?: string
 }
 
 interface SalesData {
@@ -41,6 +42,8 @@ interface SalesData {
   event_datetime: string | null
   event_timezone: string | null
   visitors: number
+  zoom_account: string
+  zoom_invite: string | null
 }
 
 interface DailyData {
@@ -58,6 +61,33 @@ async function getEventsMap(): Promise<Map<number, EventEntry>> {
     return map
   } catch {
     console.error('Error loading events.json')
+    return new Map()
+  }
+}
+
+// zoom_account is only present in the raw events.csv export — the generated events.json drops it.
+async function getZoomAccountMap(): Promise<Map<number, string>> {
+  try {
+    const filePath = path.join(process.cwd(), 'public', 'events.csv')
+    const raw = await readFile(filePath, 'utf-8')
+    const lines = raw.split('\n').filter((line) => line.trim().length > 0)
+    if (lines.length === 0) return new Map()
+    const headers = lines[0].split(',')
+    const productIdIdx = headers.indexOf('productId')
+    const zoomAccountIdx = headers.indexOf('zoom_account')
+    const map = new Map<number, string>()
+    if (productIdIdx === -1 || zoomAccountIdx === -1) return map
+    for (const line of lines.slice(1)) {
+      const cols = line.split(',')
+      const productId = Number(cols[productIdIdx])
+      const zoomAccount = cols[zoomAccountIdx]?.trim()
+      if (Number.isInteger(productId) && zoomAccount) {
+        map.set(productId, zoomAccount)
+      }
+    }
+    return map
+  } catch {
+    console.error('Error loading events.csv for zoom_account')
     return new Map()
   }
 }
@@ -103,7 +133,7 @@ const ON_DEMAND_PRODUCT_TYPES = ['aiPhotos', 'styleConsultant', 'colorPalette', 
 
 async function getSalesData(): Promise<SalesData[]> {
   const supabase = createServiceSupabaseClient()
-  const [eventsMap, visitorCounts] = await Promise.all([getEventsMap(), getVisitorCounts()])
+  const [eventsMap, visitorCounts, zoomAccountMap] = await Promise.all([getEventsMap(), getVisitorCounts(), getZoomAccountMap()])
 
   // Get only PAID checkouts (confirmation_email_sent = true)
   // Supabase defaults to 1000 rows — fetch all by paginating
@@ -177,6 +207,8 @@ async function getSalesData(): Promise<SalesData[]> {
       event_datetime: event?.gmtdatetime ?? null,
       event_timezone: event?.timezone ?? null,
       visitors: visitorCounts.get(productId)?.count || 0,
+      zoom_account: zoomAccountMap.get(productId) || '',
+      zoom_invite: event?.zoomInvite ?? null,
     }
   })
 
@@ -196,6 +228,8 @@ async function getSalesData(): Promise<SalesData[]> {
         event_datetime: event.gmtdatetime ?? null,
         event_timezone: event.timezone ?? null,
         visitors: visitorCounts.get(productId)?.count || 0,
+        zoom_account: zoomAccountMap.get(productId) || '',
+        zoom_invite: event.zoomInvite ?? null,
       })
     }
   }
@@ -220,6 +254,8 @@ async function getSalesData(): Promise<SalesData[]> {
           event_datetime: null,
           event_timezone: null,
           visitors: visitorCounts.get(product.productId)?.count || 0,
+          zoom_account: '',
+          zoom_invite: null,
         })
       }
     }
@@ -245,6 +281,8 @@ async function getSalesData(): Promise<SalesData[]> {
           event_datetime: null,
           event_timezone: null,
           visitors: info.count,
+          zoom_account: '',
+          zoom_invite: null,
         })
       }
     }

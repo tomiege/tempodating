@@ -30,6 +30,8 @@ export interface EventSalesRow {
   differential: number
   male_emails: string[]
   female_emails: string[]
+  zoom_account: string
+  zoom_invite: string | null
 }
 
 interface EventSalesTableProps {
@@ -79,6 +81,11 @@ function formatDifferential(diff: number): string {
   if (Math.abs(diff) <= 4) return 'Balanced'
   if (diff > 0) return `+${diff} M`
   return `+${Math.abs(diff)} F`
+}
+
+function lastSixChars(url: string | null): string {
+  if (!url) return '—'
+  return url.slice(-6)
 }
 
 function EmailStatusDots({ sentTemplates }: { sentTemplates: string[] }) {
@@ -163,6 +170,8 @@ export function EventSalesTable({ rows, nextEventMap, campaignsByProduct }: Even
             <TableHead className="text-right">Female Tickets</TableHead>
             <TableHead className="text-right">Total</TableHead>
             <TableHead className="text-right">Gender Balance</TableHead>
+            <TableHead>Zoom Account</TableHead>
+            <TableHead>Zoom Invite</TableHead>
             <TableHead className="text-right">Next Event</TableHead>
             <TableHead className="text-right w-10"></TableHead>
           </TableRow>
@@ -214,6 +223,8 @@ export function EventSalesTable({ rows, nextEventMap, campaignsByProduct }: Even
                 <TableCell className={`text-right font-semibold ${getDifferentialColor(row.differential)}`}>
                   {formatDifferential(row.differential)}
                 </TableCell>
+                <TableCell className="text-sm text-muted-foreground">{row.zoom_account || '—'}</TableCell>
+                <TableCell className="text-sm text-muted-foreground font-mono">{lastSixChars(row.zoom_invite)}</TableCell>
                 <TableCell className="text-right text-sm">
                   {NEXT_EVENT_TYPES.has(row.product_type) ? (
                     nextEventMap[row.product_id] ? (

@@ -2930,7 +2930,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "TBA",
+        "zoomInvite": null,
         "region_id": "TX_17"
     },
     {
@@ -2948,7 +2948,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "TBA",
+        "zoomInvite": null,
         "region_id": "GA_23"
     },
     {
@@ -2966,7 +2966,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "TBA",
+        "zoomInvite": null,
         "region_id": "SCO_27"
     },
     {
@@ -2984,7 +2984,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "TBA",
+        "zoomInvite": null,
         "region_id": "IE_NI_28"
     },
     {
@@ -3002,7 +3002,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDatingGay",
-        "zoomInvite": "TBA",
+        "zoomInvite": null,
         "region_id": "SCO_27"
     },
     {
@@ -3020,7 +3020,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDatingGay",
-        "zoomInvite": "TBA",
+        "zoomInvite": null,
         "region_id": "NW_ENG_YORKS_9"
     },
     {
@@ -3038,7 +3038,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDatingGay",
-        "zoomInvite": "TBA",
+        "zoomInvite": null,
         "region_id": "WA_OR_20"
     },
     {
@@ -3056,7 +3056,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDatingGay",
-        "zoomInvite": "TBA",
+        "zoomInvite": null,
         "region_id": "QC_16"
     },
     {
@@ -3074,7 +3074,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDatingGay",
-        "zoomInvite": "TBA",
+        "zoomInvite": null,
         "region_id": "IN_MI_OH_14"
     },
     {
@@ -3092,7 +3092,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDatingGay",
-        "zoomInvite": "TBA",
+        "zoomInvite": null,
         "region_id": "IL_WI_10"
     },
     {
@@ -3110,7 +3110,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDatingGay",
-        "zoomInvite": "TBA",
+        "zoomInvite": null,
         "region_id": "BC_19"
     },
     {
@@ -3128,7 +3128,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDatingGay",
-        "zoomInvite": "TBA",
+        "zoomInvite": null,
         "region_id": "AB_11"
     },
     {
@@ -3146,7 +3146,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "TBA",
+        "zoomInvite": null,
         "region_id": "WA_OR_20"
     },
     {
@@ -3164,7 +3164,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "https://us02web.zoom.us/j/89166862299?pwd=GDNLkPwsz8nTFp1MLj5kPEuXXkobcy.1",
+        "zoomInvite": null,
         "region_id": "BC_19"
     },
     {
@@ -3182,7 +3182,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "https://us02web.zoom.us/j/89166862299?pwd=GDNLkPwsz8nTFp1MLj5kPEuXXkobcy.1",
+        "zoomInvite": null,
         "region_id": "ON_15"
     },
     {
@@ -3200,7 +3200,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "https://us02web.zoom.us/j/89166862299?pwd=GDNLkPwsz8nTFp1MLj5kPEuXXkobcy.1",
+        "zoomInvite": null,
         "region_id": "QC_16"
     },
     {
@@ -3542,7 +3542,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "https://us02web.zoom.us/j/88250530819?pwd=tW7da40TK9dOJuPkLGttrj3V2FpUsA.1",
+        "zoomInvite": null,
         "region_id": "NSW_4"
     },
     {
@@ -3560,7 +3560,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "https://us02web.zoom.us/j/88250530819?pwd=tW7da40TK9dOJuPkLGttrj3V2FpUsA.1",
+        "zoomInvite": null,
         "region_id": "VIC_5"
     },
     {
@@ -3578,7 +3578,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "https://us02web.zoom.us/j/88250530819?pwd=tW7da40TK9dOJuPkLGttrj3V2FpUsA.1",
+        "zoomInvite": null,
         "region_id": "QLD_25"
     },
     {
@@ -3596,7 +3596,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDatingGay",
-        "zoomInvite": "https://us05web.zoom.us/j/83553599510?pwd=HWeD3RoXnqnhGUN6peasln72j2jfL6.1",
+        "zoomInvite": null,
         "region_id": "NSW_4"
     },
     {
@@ -3614,7 +3614,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDatingGay",
-        "zoomInvite": "https://us05web.zoom.us/j/83553599510?pwd=HWeD3RoXnqnhGUN6peasln72j2jfL6.1",
+        "zoomInvite": null,
         "region_id": "VIC_5"
     },
     {
@@ -3632,7 +3632,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDatingGay",
-        "zoomInvite": "https://us05web.zoom.us/j/83553599510?pwd=HWeD3RoXnqnhGUN6peasln72j2jfL6.1",
+        "zoomInvite": null,
         "region_id": "QLD_25"
     },
     {
@@ -3686,7 +3686,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "https://us02web.zoom.us/j/87862524945?pwd=w4lhcC6agBQuO9TFW61h9krNMIHfW2.1",
+        "zoomInvite": null,
         "region_id": "AZ_18"
     },
     {
@@ -3704,7 +3704,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "https://us02web.zoom.us/j/87862524945?pwd=w4lhcC6agBQuO9TFW61h9krNMIHfW2.1",
+        "zoomInvite": null,
         "region_id": "CA_12"
     },
     {
@@ -3812,7 +3812,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "TBA",
+        "zoomInvite": null,
         "region_id": "LA_29"
     },
     {
@@ -3830,7 +3830,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "TBA",
+        "zoomInvite": null,
         "region_id": "KC_22"
     },
     {
@@ -3848,7 +3848,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDatingGay",
-        "zoomInvite": "TBA",
+        "zoomInvite": null,
         "region_id": "CA_12"
     },
     {
@@ -3866,7 +3866,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDatingGay",
-        "zoomInvite": "TBA",
+        "zoomInvite": null,
         "region_id": "AZ_18"
     },
     {
@@ -3884,7 +3884,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDatingGay",
-        "zoomInvite": "TBA",
+        "zoomInvite": null,
         "region_id": "TX_17"
     },
     {
@@ -3902,7 +3902,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDatingGay",
-        "zoomInvite": "TBA",
+        "zoomInvite": null,
         "region_id": "NY_NJ_21"
     },
     {
@@ -3920,7 +3920,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDatingGay",
-        "zoomInvite": "TBA",
+        "zoomInvite": null,
         "region_id": "FL_13"
     },
     {
@@ -3938,7 +3938,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "https://us02web.zoom.us/j/89616236562?pwd=V46VywbPllct9uCRxUNKlexxOlrfCu.1",
+        "zoomInvite": null,
         "region_id": "VA_24"
     },
     {
@@ -3956,7 +3956,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "https://us02web.zoom.us/j/89616236562?pwd=V46VywbPllct9uCRxUNKlexxOlrfCu.1",
+        "zoomInvite": null,
         "region_id": "NY_NJ_21"
     },
     {
@@ -3974,7 +3974,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "https://us02web.zoom.us/j/89616236562?pwd=V46VywbPllct9uCRxUNKlexxOlrfCu.1",
+        "zoomInvite": null,
         "region_id": "FL_13"
     },
     {
@@ -3992,7 +3992,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "https://us02web.zoom.us/j/89616236562?pwd=V46VywbPllct9uCRxUNKlexxOlrfCu.1",
+        "zoomInvite": null,
         "region_id": "IN_MI_OH_14"
     },
     {
@@ -4010,7 +4010,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "https://us02web.zoom.us/j/89616236562?pwd=V46VywbPllct9uCRxUNKlexxOlrfCu.1",
+        "zoomInvite": null,
         "region_id": "IL_WI_10"
     },
     {
@@ -4028,7 +4028,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "TBA",
+        "zoomInvite": null,
         "region_id": "AB_11"
     },
     {
