@@ -685,7 +685,7 @@
     },
     {
         "productId": 517,
-        "gmtdatetime": "2026-08-02T18:00:00Z",
+        "gmtdatetime": "2026-08-30T18:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "Kansas City",
@@ -703,7 +703,7 @@
     },
     {
         "productId": 520,
-        "gmtdatetime": "2026-08-02T18:00:00Z",
+        "gmtdatetime": "2026-08-30T18:00:00Z",
         "title": "Online Speed Dating",
         "country": "Ireland",
         "city": "Dublin",
@@ -721,7 +721,7 @@
     },
     {
         "productId": 511,
-        "gmtdatetime": "2026-08-02T19:00:00Z",
+        "gmtdatetime": "2026-08-30T19:00:00Z",
         "title": "Online Speed Dating",
         "country": "United Kingdom",
         "city": "Birmingham",
@@ -739,7 +739,7 @@
     },
     {
         "productId": 518,
-        "gmtdatetime": "2026-08-02T19:00:00Z",
+        "gmtdatetime": "2026-08-30T19:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "Atlanta",
@@ -757,7 +757,7 @@
     },
     {
         "productId": 521,
-        "gmtdatetime": "2026-08-02T19:00:00Z",
+        "gmtdatetime": "2026-08-30T19:00:00Z",
         "title": "Online Speed Dating",
         "country": "USA",
         "city": "New Orleans",
@@ -775,7 +775,7 @@
     },
     {
         "productId": 590,
-        "gmtdatetime": "2026-08-02T19:00:00Z",
+        "gmtdatetime": "2026-08-30T19:00:00Z",
         "title": "Online Speed Dating",
         "country": "United Kingdom",
         "city": "London",
@@ -788,12 +788,12 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "https://us02web.zoom.us/j/82072505301?pwd=NAmIaod3AqRFbUTaPzBsgKy958qG9H.1",
+        "zoomInvite": "TBA",
         "region_id": "LDN_EAST_6"
     },
     {
         "productId": 591,
-        "gmtdatetime": "2026-08-02T19:00:00Z",
+        "gmtdatetime": "2026-08-30T19:00:00Z",
         "title": "Online Speed Dating",
         "country": "United Kingdom",
         "city": "Birmingham",
@@ -806,12 +806,12 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "https://us02web.zoom.us/j/82072505301?pwd=NAmIaod3AqRFbUTaPzBsgKy958qG9H.1",
+        "zoomInvite": "TBA",
         "region_id": "E_W_MIDS_7"
     },
     {
         "productId": 592,
-        "gmtdatetime": "2026-08-02T19:00:00Z",
+        "gmtdatetime": "2026-08-30T19:00:00Z",
         "title": "Online Speed Dating",
         "country": "United Kingdom",
         "city": "Bristol",
@@ -824,12 +824,12 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "https://us02web.zoom.us/j/82072505301?pwd=NAmIaod3AqRFbUTaPzBsgKy958qG9H.1",
+        "zoomInvite": "TBA",
         "region_id": "SE_SW_ENG_8"
     },
     {
         "productId": 593,
-        "gmtdatetime": "2026-08-02T19:00:00Z",
+        "gmtdatetime": "2026-08-30T19:00:00Z",
         "title": "Online Speed Dating",
         "country": "United Kingdom",
         "city": "Leeds",
@@ -842,7 +842,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": "https://us02web.zoom.us/j/82072505301?pwd=NAmIaod3AqRFbUTaPzBsgKy958qG9H.1",
+        "zoomInvite": "TBA",
         "region_id": "NW_ENG_YORKS_9"
     },
     {
