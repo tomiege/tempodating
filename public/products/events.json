@@ -469,7 +469,7 @@
     },
     {
         "productId": 553,
-        "gmtdatetime": "2026-08-23T17:00:00Z",
+        "gmtdatetime": "2026-09-20T17:00:00Z",
         "title": "Online Speed Dating",
         "country": "UK",
         "city": "Glasgow",
@@ -500,7 +500,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDatingGay",
-        "zoomInvite": null,
+        "zoomInvite": "https://us06web.zoom.us/j/83217386801?pwd=8bAjSpvH7246Y9QpdgsGGCuiLWPXao.1",
         "region_id": "QC_16"
     },
     {
@@ -523,7 +523,7 @@
     },
     {
         "productId": 554,
-        "gmtdatetime": "2026-08-23T21:00:00Z",
+        "gmtdatetime": "2026-09-20T21:00:00Z",
         "title": "Online Speed Dating",
         "country": "United Kingdom",
         "city": "Leeds",
@@ -608,7 +608,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDatingGay",
-        "zoomInvite": null,
+        "zoomInvite": "https://us06web.zoom.us/j/83217386801?pwd=8bAjSpvH7246Y9QpdgsGGCuiLWPXao.1",
         "region_id": "ON_15"
     },
     {
@@ -626,7 +626,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": null,
+        "zoomInvite": "https://us02web.zoom.us/j/81158843384?pwd=bpagnnjaqIlgZWon9utduuTM1uBUHw.1",
         "region_id": "SCO_27"
     },
     {
@@ -644,7 +644,7 @@
         "duration_in_minutes": 60,
         "soldOut": false,
         "productType": "onlineSpeedDating",
-        "zoomInvite": null,
+        "zoomInvite": "https://us02web.zoom.us/j/81158843384?pwd=bpagnnjaqIlgZWon9utduuTM1uBUHw.1",
         "region_id": "IE_NI_28"
     },
     {
@@ -685,7 +685,7 @@
     },
     {
         "productId": 510,
-        "gmtdatetime": "2026-08-23T13:00:00Z",
+        "gmtdatetime": "2026-09-20T13:00:00Z",
         "title": "Online Speed Dating",
         "country": "United Kingdom",
         "city": "London",
